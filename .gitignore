@@ -1,7 +1,10 @@
 .env
 .data/
 public/
+client-public/
 node_modules/
+.netlify-dev.stdout.log
+.netlify-dev.stderr.log
 
 # Local Netlify folder
 .netlify

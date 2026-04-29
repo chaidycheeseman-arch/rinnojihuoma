@@ -4,6 +4,7 @@
     "version": "1.0.0",
     "scripts": {
         "build": "node scripts/sync-public.mjs",
+        "build:user": "node scripts/build-user-client.mjs",
         "prepare:public": "node scripts/sync-public.mjs",
         "dev": "node scripts/sync-public.mjs && netlify dev --port 8888",
         "license:issue": "node scripts/issue-device-license.js",
