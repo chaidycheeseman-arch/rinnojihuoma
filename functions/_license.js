@@ -92,6 +92,23 @@ function shouldUseLocalStore() {
         || process.env.NETLIFY_DEV === 'true';
 }
 
+function getManualBlobStoreOptions() {
+    const siteID = String(
+        process.env.RINNO_NETLIFY_BLOBS_SITE_ID
+        || process.env.SITE_ID
+        || ''
+    ).trim();
+    const token = String(
+        process.env.RINNO_NETLIFY_BLOBS_TOKEN
+        || process.env.NETLIFY_AUTH_TOKEN
+        || ''
+    ).trim();
+
+    if (!siteID || !token) return null;
+
+    return { siteID, token };
+}
+
 async function readLocalStoreSnapshot() {
     try {
         const raw = await fs.readFile(resolveLocalStorePath(), 'utf8');
@@ -175,7 +192,10 @@ function findAdminAccountByEmail(accounts, email) {
 
 function getLicenseStore() {
     if (shouldUseLocalStore()) return createLocalStore();
-    return getStore(STORE_NAME);
+    const manualOptions = getManualBlobStoreOptions();
+    return manualOptions
+        ? getStore({ name: STORE_NAME, ...manualOptions })
+        : getStore(STORE_NAME);
 }
 
 function getLicenseSecret() {
