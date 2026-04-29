@@ -1,0 +1,360 @@
+.wanye-app {
+    --wanye-ink: #221b20;
+    --wanye-muted: #75656d;
+    --wanye-line: rgba(58, 43, 51, 0.13);
+    --wanye-rose: #c998a8;
+    --wanye-plum: #6e4b5b;
+    --wanye-paper: rgba(255, 253, 253, 0.76);
+    position: fixed;
+    inset: 0;
+    z-index: 1340;
+    color: var(--wanye-ink);
+    background:
+        radial-gradient(ellipse 120% 66% at 14% -8%, rgba(201, 152, 168, 0.3), transparent 58%),
+        linear-gradient(160deg, #fffdfd 0%, #f2e9ee 54%, #f9f7f8 100%);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+    transition: transform 0.24s ease, opacity 0.18s ease;
+}
+
+.wanye-app.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+.wanye-app * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.wanye-shell {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+}
+
+.wanye-top {
+    min-height: 188px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 46px;
+    gap: 16px;
+    align-items: end;
+    padding: 72px 18px 22px;
+    border-bottom: 1px solid var(--wanye-line);
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.72), transparent 64%),
+        linear-gradient(180deg, rgba(255, 253, 253, 0.88), rgba(244, 235, 240, 0.58));
+    position: relative;
+    overflow: hidden;
+}
+
+.wanye-top::after {
+    content: "NIGHT";
+    position: absolute;
+    right: -12px;
+    bottom: -18px;
+    color: rgba(34, 27, 32, 0.055);
+    font: 500 86px/1 "Times New Roman", Georgia, serif;
+}
+
+.wanye-heading,
+.wanye-icon-button {
+    position: relative;
+    z-index: 1;
+}
+
+.wanye-kicker {
+    color: var(--wanye-plum);
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 680;
+    letter-spacing: 0;
+}
+
+.wanye-title {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: fit-content;
+    margin: 12px 0 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--wanye-ink);
+    font: 500 44px/0.98 var(--font-family);
+    cursor: pointer;
+}
+
+.wanye-note {
+    margin: 0;
+    color: var(--wanye-muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.wanye-icon-button,
+.wanye-soft-button {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 8px;
+    border: 1px solid rgba(58, 43, 51, 0.1);
+    background: rgba(255, 253, 253, 0.78);
+    color: var(--wanye-ink);
+    cursor: pointer;
+    box-shadow: 0 14px 30px rgba(50, 38, 44, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.wanye-icon-button {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+}
+
+.wanye-icon-button svg,
+.wanye-consent-mark svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.wanye-title:active,
+.wanye-icon-button:active,
+.wanye-soft-button:active,
+.wanye-card:active {
+    transform: scale(0.98);
+}
+
+.wanye-stage {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 18px 18px 110px;
+}
+
+.wanye-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.wanye-stat {
+    min-height: 92px;
+    border-radius: 8px;
+    border: 1px solid var(--wanye-line);
+    background: rgba(255, 253, 253, 0.54);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.wanye-stat span,
+.wanye-card-meta,
+.wanye-card-flags,
+.wanye-consent-panel p {
+    color: var(--wanye-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.wanye-stat strong {
+    color: var(--wanye-plum);
+    font: 500 24px/1 "Times New Roman", Georgia, serif;
+}
+
+.wanye-consent-panel {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--wanye-line);
+    border-radius: 8px;
+    background: rgba(255, 253, 253, 0.62);
+    padding: 14px;
+}
+
+.wanye-consent-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: var(--wanye-plum);
+    background: linear-gradient(135deg, rgba(201, 152, 168, 0.28), rgba(255, 255, 255, 0.72));
+}
+
+.wanye-consent-panel h2 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 520;
+}
+
+.wanye-consent-panel p {
+    margin: 0;
+}
+
+.wanye-list {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.wanye-card {
+    border-radius: 8px;
+    border: 1px solid var(--wanye-line);
+    background: var(--wanye-paper);
+    padding: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+}
+
+.wanye-card-title {
+    margin: 0 0 6px;
+    color: var(--wanye-ink);
+    font-size: 18px;
+    font-weight: 520;
+}
+
+.wanye-card-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--wanye-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.wanye-card-flags {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.wanye-card-flags span {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(110, 75, 91, 0.16);
+    border-radius: 999px;
+    padding: 0 9px;
+    background: rgba(255, 255, 255, 0.42);
+}
+
+.wanye-delete {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 0;
+    background: rgba(110, 75, 91, 0.08);
+    color: var(--wanye-plum);
+    cursor: pointer;
+}
+
+.wanye-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: grid;
+    place-items: end center;
+    padding: 16px;
+    background: rgba(22, 18, 21, 0.18);
+    backdrop-filter: blur(12px);
+}
+
+.wanye-modal[hidden] {
+    display: none !important;
+}
+
+.wanye-form {
+    width: min(100%, 520px);
+    border-radius: 12px;
+    background: rgba(255, 253, 253, 0.94);
+    border: 1px solid rgba(58, 43, 51, 0.12);
+    padding: 18px;
+    display: grid;
+    gap: 12px;
+    box-shadow: 0 24px 60px rgba(34, 27, 32, 0.18);
+}
+
+.wanye-form h2 {
+    margin: 5px 0 0;
+    font-size: 26px;
+    font-weight: 520;
+}
+
+.wanye-field {
+    display: grid;
+    gap: 7px;
+    color: var(--wanye-muted);
+    font-size: 12px;
+}
+
+.wanye-field input,
+.wanye-field select,
+.wanye-field textarea {
+    width: 100%;
+    border: 1px solid var(--wanye-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.68);
+    color: var(--wanye-ink);
+    padding: 11px 12px;
+    font: 500 14px/1.2 var(--font-family);
+    outline: none;
+}
+
+.wanye-field textarea {
+    resize: none;
+    line-height: 1.45;
+}
+
+.wanye-check-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.wanye-check-row label {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--wanye-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.52);
+    padding: 0 10px;
+    color: var(--wanye-muted);
+    font-size: 12px;
+}
+
+.wanye-form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.wanye-soft-button {
+    min-height: 42px;
+    font: 520 14px/1 var(--font-family);
+}
+
+.wanye-soft-button.primary {
+    background: linear-gradient(135deg, rgba(255, 253, 253, 0.92), rgba(201, 152, 168, 0.34));
+    color: var(--wanye-plum);
+}
+
+@media (max-width: 420px) {
+    .wanye-overview,
+    .wanye-check-row {
+        grid-template-columns: 1fr;
+    }
+}

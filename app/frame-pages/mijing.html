@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>踪迹 - 系统级拟真</title>
+    <style>
+        /* ================= 配色规范：0饱和度灰阶 ================= */
+        :root {
+            /* 锁屏与系统级底色 */
+            --paper-white: #FAFAFA; /* 柔和底白 */
+            --ink-black: #282828;   /* 纯粹墨黑 */
+            --rose-grey: #969696;   /* 中灰次级字 */
+            --rose-light: #DBDBDB;  /* 浅灰辅助线 */
+            
+            /* 桌面新增高级哑光材质 */
+            --widget-bg: #F1F1F1;   /* 组件哑光灰底 */
+            --icon-bg: #FFFFFF;     /* 图标改为纯白材质 */
+            --dock-bg: #ECECEC;     /* Dock栏实体灰底 */
+            --shadow-solid: rgba(40, 40, 40, 0.04); /* 极弱实体阴影 */
+
+            /* 字体栈：衬线体营造杂志感，无衬线体保证极小字的清晰度 */
+            --font-serif: "Songti SC", "STSong", "Times New Roman", Georgia, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 锁定系统级滚动 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--paper-white);
+            color: var(--ink-black);
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        /* ================= 锁屏区样式 ================= */
+        #lock-screen {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            background-color: var(--paper-white);
+            transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .magazine-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 375px;
+            padding-top: 20vh;
+        }
+
+        .avatar {
+            width: 104px; 
+            height: 104px; 
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E7E7E7, #CFCFCF);
+            box-shadow: 0 8px 24px var(--shadow-solid);
+            margin-bottom: 28px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23CFCFCF"/><path d="M50 35a12 12 0 100 24 12 12 0 000-24zm0 28c-14 0-25 7-25 15v4h50v-4c0-8-11-15-25-15z" fill="%23FAFAFA" opacity="0.8"/></svg>');
+        }
+
+        .title-tracking {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            font-style: italic;
+            font-weight: 400;
+            color: var(--ink-black);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle-auth {
+            font-family: var(--font-sans);
+            font-size: 10px;
+            font-weight: 300;
+            color: var(--rose-grey);
+            letter-spacing: 6px;
+            margin-right: -6px;
+            text-transform: uppercase;
+        }
+
+        .passcode-dots {
+            display: flex;
+            gap: 16px;
+            margin-top: 50px;
+            margin-bottom: 46px;
+            height: 6px;
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--rose-light);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .dot.filled {
+            background-color: var(--ink-black);
+            transform: scale(1.2);
+        }
+
+        .dots-error {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            column-gap: 56px;
+            row-gap: 32px;
+            justify-items: center;
+        }
+
+        .key {
+            font-family: var(--font-sans);
+            font-size: 20px;
+            font-weight: 300;
+            color: var(--ink-black);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            border: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .key:active {
+            opacity: 0.3;
+            transform: scale(0.85);
+        }
+
+        .key.empty { pointer-events: none; }
+
+        .key svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--rose-grey);
+            stroke-width: 1.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .face-id-btn {
+            margin-top: 56px;
+            cursor: pointer;
+            color: var(--ink-black);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            border: none;
+        }
+
+        .face-id-btn:active {
+            opacity: 0.4;
+            transform: scale(0.9);
+        }
+
+        .face-id-btn svg {
+            width: 26px;
+            height: 26px;
+            stroke: currentColor;
+            stroke-width: 1.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ================= 桌面区样式 ================= */
+        #home-screen {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            background-color: var(--paper-white);
+        }
+
+        .pages-container {
+            width: 100vw;
+            height: calc(100vh - 120px);
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; 
+            touch-action: pan-x;   
+        }
+        
+        .pages-container::-webkit-scrollbar { display: none; }
+
+        .page {
+            flex: 0 0 100vw;
+            width: 100vw;
+            height: 100%;
+            padding: 20px 24px 0; /* 极致压缩顶部空隙，从50px降至20px */
+            box-sizing: border-box;
+            scroll-snap-align: start;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 84px; 
+            gap: 16px 14px;
+            align-content: start;
+        }
+
+        .w-divider {
+            width: 1px;
+            height: 32px;
+            background-color: var(--rose-light);
+            margin: 0 16px;
+        }
+        .w-flex-row { display: flex; align-items: center; width: 100%; }
+        .w-flex-col { display: flex; flex-direction: column; }
+        .w-mini-text {
+            font-family: var(--font-sans);
+            font-size: 9px;
+            color: var(--rose-grey);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .w-data-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 12px;
+            border-top: 1px solid var(--rose-light);
+            padding-top: 8px;
+        }
+        .w-progress-track {
+            width: 100%;
+            height: 3px;
+            background-color: var(--rose-light);
+            border-radius: 1.5px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+        .w-progress-fill { height: 100%; background-color: var(--ink-black); }
+
+        .widget-4x2 {
+            grid-column: span 4;
+            grid-row: span 2;
+            background-color: var(--widget-bg);
+            border-radius: 24px;
+            box-shadow: 0 6px 16px var(--shadow-solid);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .w-mag-title {
+            font-family: var(--font-serif);
+            font-size: 36px;
+            line-height: 1;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--ink-black);
+        }
+        .w-mag-sub {
+            font-family: var(--font-sans);
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--rose-grey);
+            text-transform: uppercase;
+        }
+
+        .widget-2x2 {
+            grid-column: span 2;
+            grid-row: span 2;
+            background-color: var(--widget-bg);
+            border-radius: 24px;
+            box-shadow: 0 6px 16px var(--shadow-solid);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .w-val {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            font-weight: 300;
+        }
+
+        .app-item {
+            grid-column: span 1;
+            grid-row: span 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+        }
+
+        .app-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px; 
+            background-color: var(--icon-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px var(--shadow-solid);
+            transition: transform 0.15s ease;
+        }
+        .app-icon:active { transform: scale(0.9); }
+
+        .app-icon svg {
+            width: 26px;
+            height: 26px;
+            stroke: var(--ink-black);
+            stroke-width: 1.4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .app-label {
+            font-family: var(--font-sans);
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--ink-black);
+            text-align: center;
+        }
+
+        .pagination-dots {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .p-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--rose-light);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .p-dot.active {
+            background-color: var(--ink-black);
+            transform: scale(1.4);
+        }
+
+        .dock {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100vw - 48px);
+            max-width: 360px;
+            height: 76px;
+            background-color: var(--dock-bg);
+            border-radius: 28px;
+            box-shadow: 0 10px 30px var(--shadow-solid);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .dock .app-item { gap: 0; justify-content: center; }
+        .dock .app-label { display: none; }
+
+        /* ================= 备忘录 APP：先锋展册排版 ================= */
+        #app-memo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--paper-white);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #app-memo.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .memo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px 8px; /* 极致压缩顶部空隙 */
+            background-color: var(--paper-white);
+            flex-shrink: 0;
+        }
+
+        .memo-back {
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .memo-back svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--ink-black);
+            stroke-width: 1;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+        
+        .memo-back:active svg {
+            transform: translateX(-4px);
+        }
+
+        .memo-title-top {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink-black);
+        }
+
+        .memo-flow {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            padding: 0 24px 40px; 
+        }
+        
+        .memo-flow::-webkit-scrollbar { display: none; }
+
+        .m-hero {
+            padding: 24px 0 40px;
+        }
+        
+        .m-hero-title {
+            font-family: var(--font-serif);
+            font-size: 58px; 
+            line-height: 0.9;
+            letter-spacing: -2px;
+            color: var(--ink-black);
+            margin-bottom: 24px;
+            text-transform: lowercase;
+        }
+
+        .m-hero-desc {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--ink-black);
+            font-weight: 300;
+            max-width: 85%;
+        }
+
+        .m-entry {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 12px;
+            padding: 28px 0;
+            border-top: 1px solid var(--rose-light);
+        }
+        
+        .m-entry.focus {
+            border-top: 2px solid var(--ink-black); 
+        }
+
+        .m-entry-num {
+            font-family: var(--font-serif);
+            font-size: 20px;
+            color: var(--ink-black);
+            line-height: 1;
+        }
+
+        .m-entry-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .m-entry-title {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--ink-black);
+            letter-spacing: 0.5px;
+        }
+
+        .m-entry-body {
+            font-family: var(--font-sans);
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--rose-grey);
+            font-weight: 300;
+            text-align: justify;
+        }
+
+        /* ================= 短视频 APP (Matte Protocol 视觉风格) ================= */
+        #app-video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: var(--ink-black); 
+            z-index: 200;
+            display: none;
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #app-video.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .v-back {
+            position: absolute;
+            top: 40px; left: 24px;
+            width: 32px; height: 32px;
+            z-index: 210;
+            display: flex; justify-content: flex-start; align-items: center;
+            cursor: pointer;
+        }
+
+        .v-back svg {
+            width: 24px; height: 24px;
+            stroke: var(--paper-white); 
+            stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+
+        .v-back:active svg {
+            transform: translateX(-4px);
+        }
+
+        .video-feed {
+            width: 100%; height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .video-feed::-webkit-scrollbar { display: none; }
+
+        .video-item {
+            position: relative;
+            width: 100vw; height: 100vh;
+            scroll-snap-align: start;
+            display: flex; justify-content: center; align-items: center;
+            background-color: var(--ink-black);
+            overflow: hidden;
+        }
+
+        .v-player {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .v-overlay {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: 40px 24px 30px; 
+            display: flex; justify-content: space-between; align-items: flex-end;
+            background: linear-gradient(to top, rgba(40,40,40,0.9) 0%, rgba(40,40,40,0) 100%); 
+            pointer-events: none; 
+        }
+
+        .v-info { 
+            display: flex; flex-direction: column; gap: 8px; width: 70%; pointer-events: auto; 
+        }
+        
+        .v-user { 
+            font-family: var(--font-serif); font-size: 16px; color: var(--paper-white); font-style: italic; letter-spacing: 1px;
+        }
+        
+        .v-desc { 
+            font-family: var(--font-sans); font-size: 13px; color: var(--rose-light); line-height: 1.5; font-weight: 300; 
+        }
+
+        .v-actions { 
+            display: flex; flex-direction: column; gap: 28px; pointer-events: auto; align-items: center; margin-bottom: 10px;
+        }
+        
+        .v-btn { 
+            display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; 
+        }
+        
+        .v-btn svg { 
+            width: 28px; height: 28px; stroke: var(--paper-white); stroke-width: 1.2; fill: none; transition: transform 0.2s, fill 0.2s; 
+        }
+        
+        .v-btn:active svg { transform: scale(0.8); }
+        .v-btn.liked svg { fill: var(--paper-white); stroke: var(--paper-white); }
+        .v-btn-text { font-family: var(--font-sans); font-size: 11px; color: var(--paper-white); font-weight: 300;}
+
+        /* --- 视频文本描述动画 (基于滑动监听的延时展示) --- */
+        .v-text-player {
+            width: 80%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 【修改】水平居中 */
+            gap: 20px;
+            padding-bottom: 80px; 
+        }
+        
+        .v-text-line {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            color: var(--paper-white);
+            line-height: 1.6;
+            letter-spacing: 1px;
+            text-align: center; /* 【修改】文本居中 */
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 当 video-item 获得 is-playing 类时，文本按序依次浮现 */
+        .video-item.is-playing .v-text-line:nth-child(1) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+        .video-item.is-playing .v-text-line:nth-child(2) { transition-delay: 1.3s; opacity: 1; transform: translateY(0); }
+        .video-item.is-playing .v-text-line:nth-child(3) { transition-delay: 2.3s; opacity: 1; transform: translateY(0); }
+        .video-item.is-playing .v-text-line:nth-child(4) { transition-delay: 3.3s; opacity: 1; transform: translateY(0); }
+
+
+        /* ================= 购物 APP：购物车界面 (0饱和度灰阶) ================= */
+        #app-shopping {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--paper-white);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #app-shopping.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px 8px;
+            background-color: var(--paper-white);
+            flex-shrink: 0;
+        }
+
+        .shop-back {
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .shop-back svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--ink-black);
+            stroke-width: 1;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+        
+        .shop-back:active svg {
+            transform: translateX(-4px);
+        }
+
+        .shop-title-top {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink-black);
+        }
+
+        .shop-flow {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            padding: 24px 24px 40px; 
+        }
+        
+        .shop-flow::-webkit-scrollbar { display: none; }
+
+        /* 购物车单品结构 */
+        .s-cart-item {
+            border-bottom: 1px solid var(--rose-light);
+            padding-bottom: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .s-shop-name {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            color: var(--ink-black);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .s-shop-name::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background-color: var(--ink-black);
+        }
+
+        .s-product-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .s-product-name {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            color: var(--ink-black);
+            font-weight: 400;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .s-product-price {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            color: var(--ink-black);
+            font-weight: 300;
+        }
+
+        .s-logistics-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--widget-bg);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+
+        .s-logistics-label {
+            font-family: var(--font-sans);
+            font-size: 10px;
+            color: var(--rose-grey);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .s-logistics-status {
+            font-family: var(--font-sans);
+            font-size: 11px;
+            color: var(--ink-black);
+            font-weight: 400;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="magazine-flow">
+            <div class="avatar">
+                <img alt="User Avatar">
+            </div>
+            <div class="title-tracking">正在踪迹</div>
+            <div class="subtitle-auth">身份验证</div>
+
+            <div class="passcode-dots" id="passcode-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <div class="keypad">
+                <div class="key" data-val="1">1</div>
+                <div class="key" data-val="2">2</div>
+                <div class="key" data-val="3">3</div>
+                <div class="key" data-val="4">4</div>
+                <div class="key" data-val="5">5</div>
+                <div class="key" data-val="6">6</div>
+                <div class="key" data-val="7">7</div>
+                <div class="key" data-val="8">8</div>
+                <div class="key" data-val="9">9</div>
+                <div class="key empty"></div>
+                <div class="key" data-val="0">0</div>
+                <div class="key" data-val="del">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"></path>
+                        <line x1="18" y1="9" x2="12" y2="15"></line>
+                        <line x1="12" y1="9" x2="18" y2="15"></line>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="face-id-btn" id="face-id">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="home-screen">
+        <div class="pages-container" id="pages-container">
+            
+            <div class="page" id="page-1">
+                <div class="widget-4x2">
+                    <div class="w-flex-row">
+                        <div class="w-flex-col">
+                            <div class="w-mag-title">27</div>
+                            <div class="w-mag-sub">Monday</div>
+                        </div>
+                        <div class="w-divider"></div>
+                        <div class="w-flex-col" style="flex: 1;">
+                            <div class="w-mini-text" style="margin-bottom: 4px;">Next Schedule</div>
+                            <div style="font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--ink-black); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">System Check</div>
+                            <div class="w-mini-text">10:00 AM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget-2x2">
+                    <div style="position: relative; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-bottom: 2px;">
+                        <svg viewBox="0 0 24 24" style="position: absolute; width: 100%; height: 100%; stroke: var(--rose-light); stroke-width: 1; fill: none; stroke-dasharray: 2 3;">
+                            <circle cx="12" cy="12" r="11"/>
+                        </svg>
+                        <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--ink-black); stroke-width: 1.2; fill: none; position: relative; z-index: 1;">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 7v5l3 3"/>
+                        </svg>
+                    </div>
+                    <div class="w-flex-col" style="align-items: center; gap: 2px;">
+                        <div class="w-val">07:22</div>
+                        <div class="w-mini-text">Local</div>
+                    </div>
+                </div>
+
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                    <div class="app-label">时钟</div>
+                </div>
+                
+                <div class="app-item" id="app-btn-memo">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                    <div class="app-label">备忘录</div>
+                </div>
+                
+                <div class="app-item" id="app-btn-video">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></div>
+                    <div class="app-label">短视频</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+                    <div class="app-label">阅读</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+                    <div class="app-label">音乐</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M17 10c2.8 0 5 1.9 5 4.3 0 2.4-2.2 4.3-5 4.3-.5 0-1-.1-1.5-.3l-2.5 1.2.7-2c-1.1-.8-1.7-1.9-1.7-3.2 0-2.4 2.2-4.3 5-4.3z"/><path d="M9 15c-3.9 0-7-2.6-7-5.9C2 5.8 5.1 3 9 3s7 2.6 7 5.9c0 .7-.1 1.4-.4 2.1"/></svg></div>
+                    <div class="app-label">微信</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="8" x2="15" y2="8"/></svg></div>
+                    <div class="app-label">论坛</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
+                    <div class="app-label">浏览器</div>
+                </div>
+            </div>
+
+            <div class="page" id="page-2">
+                <div class="widget-4x2" style="justify-content: space-between;">
+                    <div class="w-flex-row" style="justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div class="w-flex-col">
+                            <div class="w-mag-title" style="font-size: 22px; margin-bottom: 6px;">SHIELD</div>
+                            <div class="w-mag-sub">Trace Protection</div>
+                        </div>
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: var(--ink-black); stroke-width: 1.5; fill: none;">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="w-data-row">
+                        <div class="w-mini-text">Interceptions: 142</div>
+                        <div class="w-mini-text" style="color: var(--ink-black); font-weight: 500;">ACTIVE</div>
+                    </div>
+                </div>
+
+                <div class="widget-2x2" style="padding: 18px; align-items: flex-start; justify-content: space-between; gap: 0;">
+                    <div class="w-flex-row" style="justify-content: space-between;">
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: var(--ink-black); stroke-width: 1.5; fill: none;">
+                            <rect x="2" y="7" width="16" height="10" rx="2" ry="2"/>
+                            <line x1="22" y1="11" x2="22" y2="13"/>
+                        </svg>
+                        <span style="font-family: var(--font-sans); font-size: 15px; font-weight: 500;">98%</span>
+                    </div>
+                    <div style="width: 100%;">
+                        <div class="w-progress-track">
+                            <div class="w-progress-fill" style="width: 98%;"></div>
+                        </div>
+                        <div class="w-mini-text">Power Left</div>
+                    </div>
+                </div>
+
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><circle cx="14" cy="14" r="3"/><line x1="16.12" y1="16.12" x2="19" y2="19"/></svg></div>
+                    <div class="app-label">查手机</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07M12 6a6 6 0 016 6M6 12a6 6 0 016-6"/></svg></div>
+                    <div class="app-label">暗网</div>
+                </div>
+                <div class="app-item" id="app-btn-shopping">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+                    <div class="app-label">购物</div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><rect x="9" y="14" width="6" height="6" /></svg></div>
+                    <div class="app-label">私密主页</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="pagination-dots" id="desktop-dots">
+            <div class="p-dot active"></div>
+            <div class="p-dot"></div>
+        </div>
+
+        <div class="dock">
+            <div class="app-item">
+                <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+            </div>
+            <div class="app-item">
+                <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            </div>
+            <div class="app-item">
+                <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+            </div>
+            <div class="app-item">
+                <div class="app-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-memo">
+        <div class="memo-header">
+            <div class="memo-back" id="memo-back-btn">
+                <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </div>
+            <div class="memo-title-top">notes.</div>
+            <div style="width: 24px;"></div> 
+        </div>
+
+        <div class="memo-flow">
+            <div class="m-hero">
+                <div class="m-hero-title">void<br>space</div>
+                <div class="m-hero-desc">
+                    The absolute absence of sound is not an empty space, but a canvas.
+                </div>
+            </div>
+
+            <div class="m-entry focus">
+                <div class="m-entry-num">01</div>
+                <div class="m-entry-content">
+                    <div class="m-entry-title">Matte Protocol</div>
+                    <div class="m-entry-body">摒弃了所有的拟物反光与毛玻璃的虚浮，我们最终回归到了纸张的触感。UI 应当是容器，而非主角。</div>
+                </div>
+            </div>
+
+            <div class="m-entry">
+                <div class="m-entry-num">02</div>
+                <div class="m-entry-content">
+                    <div class="m-entry-title">Routine Check</div>
+                    <div class="m-entry-body">All nodes are synchronized. The shadow variables remain strictly bounded within the operational threshold. No glass effects detected.</div>
+                </div>
+            </div>
+            
+            <div class="m-entry">
+                <div class="m-entry-num">03</div>
+                <div class="m-entry-content">
+                    <div class="m-entry-title">Grid Layout Rules</div>
+                    <div class="m-entry-body">Strict 4-column alignment maintained. Component dimensions verified against the underlying structural constraints.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-video">
+        <div class="v-back" id="video-back-btn">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </div>
+        
+        <div class="video-feed">
+            <div class="video-item">
+                <div class="v-player">
+                    <div class="v-text-player">
+                        <div class="v-text-line">摒弃所有的拟物反光。</div>
+                        <div class="v-text-line">抹除毛玻璃的虚浮。</div>
+                        <div class="v-text-line">界面应当成为一种容器。</div>
+                        <div class="v-text-line">我们最终回归纸张的触感。</div>
+                    </div>
+                </div>
+                <div class="v-overlay">
+                    <div class="v-info">
+                        <div class="v-user">@void_architect</div>
+                        <div class="v-desc">Constructing the matte paradigm. 0% saturation achieved.</div>
+                    </div>
+                    <div class="v-actions">
+                        <div class="v-btn v-btn-like">
+                            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span class="v-btn-text">14.2K</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            <span class="v-btn-text">802</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                            <span class="v-btn-text">Share</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-item">
+                <div class="v-player">
+                    <div class="v-text-player">
+                        <div class="v-text-line">频率调制测试开始。</div>
+                        <div class="v-text-line">信号波动已捕获。</div>
+                        <div class="v-text-line">正在过滤冗余的视觉噪点。</div>
+                        <div class="v-text-line">纯粹的数据流正在呈现。</div>
+                    </div>
+                </div>
+                <div class="v-overlay">
+                    <div class="v-info">
+                        <div class="v-user">@signal_lost</div>
+                        <div class="v-desc">Frequency modulation test. Abstract representation of data flow.</div>
+                    </div>
+                    <div class="v-actions">
+                        <div class="v-btn v-btn-like">
+                            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span class="v-btn-text">8.9K</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            <span class="v-btn-text">412</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                            <span class="v-btn-text">Share</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-item">
+                <div class="v-player">
+                    <div class="v-text-player">
+                        <div class="v-text-line">Deep scan mode engaged.</div>
+                        <div class="v-text-line">Analyzing structural logic.</div>
+                        <div class="v-text-line">Bypassing superficial layers.</div>
+                        <div class="v-text-line">The void space is not empty.</div>
+                    </div>
+                </div>
+                <div class="v-overlay">
+                    <div class="v-info">
+                        <div class="v-user">@system_core</div>
+                        <div class="v-desc">Deep scan mode. Visualizing structural logic within the matrix.</div>
+                    </div>
+                    <div class="v-actions">
+                        <div class="v-btn v-btn-like">
+                            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span class="v-btn-text">22.1K</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            <span class="v-btn-text">1.2K</span>
+                        </div>
+                        <div class="v-btn">
+                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                            <span class="v-btn-text">Share</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-shopping">
+        <div class="shop-header">
+            <div class="shop-back" id="shop-back-btn">
+                <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </div>
+            <div class="shop-title-top">cart.</div>
+            <div style="width: 24px;"></div> 
+        </div>
+
+        <div class="shop-flow">
+            <div class="s-cart-item">
+                <div class="s-shop-name">VOID ARCHIVE STORE</div>
+                <div class="s-product-row">
+                    <div class="s-product-name">Standard Matte Canvas - A4</div>
+                    <div class="s-product-price">¥ 128.00</div>
+                </div>
+                <div class="s-logistics-row">
+                    <span class="s-logistics-label">Logistics</span>
+                    <span class="s-logistics-status">In Transit - City Hub</span>
+                </div>
+            </div>
+
+            <div class="s-cart-item">
+                <div class="s-shop-name">MATTE PROTOCOL OFFICIAL</div>
+                <div class="s-product-row">
+                    <div class="s-product-name">Monochrome Keycap Set (Blank)</div>
+                    <div class="s-product-price">¥ 450.00</div>
+                </div>
+                <div class="s-logistics-row">
+                    <span class="s-logistics-label">Logistics</span>
+                    <span class="s-logistics-status">Pending Dispatch</span>
+                </div>
+            </div>
+            
+            <div class="s-cart-item">
+                <div class="s-shop-name">SYSTEM CORE MARKET</div>
+                <div class="s-product-row">
+                    <div class="s-product-name">Physical Data Storage Module</div>
+                    <div class="s-product-price">¥ 899.00</div>
+                </div>
+                <div class="s-logistics-row">
+                    <span class="s-logistics-label">Logistics</span>
+                    <span class="s-logistics-status">Delivered</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 锁屏密码逻辑 =================
+        const keys = document.querySelectorAll('.key');
+        const dots = document.querySelectorAll('.dot');
+        const dotsContainer = document.getElementById('passcode-dots');
+        const faceIdBtn = document.getElementById('face-id');
+        
+        const lockScreen = document.getElementById('lock-screen');
+        const homeScreen = document.getElementById('home-screen');
+        
+        let currentPass = '';
+        const TARGET_PASS = '000000';
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                if (index < currentPass.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+
+            if (currentPass.length === 6) {
+                if (currentPass === TARGET_PASS) {
+                    setTimeout(() => {
+                        lockScreen.style.transform = 'scale(1.05)';
+                        lockScreen.style.opacity = '0';
+                        homeScreen.style.display = 'block';
+                        
+                        requestAnimationFrame(() => {
+                            homeScreen.style.opacity = '1';
+                            homeScreen.style.transform = 'scale(1)';
+                        });
+
+                        setTimeout(() => {
+                            lockScreen.style.display = 'none';
+                        }, 500);
+                    }, 150);
+                } else {
+                    setTimeout(() => {
+                        dotsContainer.classList.add('dots-error');
+                        if (navigator.vibrate) navigator.vibrate(50);
+                        setTimeout(() => {
+                            dotsContainer.classList.remove('dots-error');
+                            currentPass = '';
+                            updateDots();
+                        }, 400);
+                    }, 150);
+                }
+            }
+        }
+
+        keys.forEach(key => {
+            key.addEventListener('pointerdown', function() {
+                const val = this.getAttribute('data-val');
+                if (!val) return;
+
+                if (val === 'del') {
+                    currentPass = currentPass.slice(0, -1);
+                } else {
+                    if (currentPass.length < 6) {
+                        currentPass += val;
+                    }
+                }
+                updateDots();
+            });
+        });
+
+        faceIdBtn.addEventListener('pointerdown', function() {
+            currentPass = '';
+            updateDots();
+            dotsContainer.classList.add('dots-error');
+            setTimeout(() => {
+                dotsContainer.classList.remove('dots-error');
+            }, 400);
+        });
+
+        // ================= 桌面翻页逻辑 =================
+        const pagesContainer = document.getElementById('pages-container');
+        const desktopDots = document.querySelectorAll('#desktop-dots .p-dot');
+
+        pagesContainer.addEventListener('scroll', () => {
+            const pageIndex = Math.round(pagesContainer.scrollLeft / window.innerWidth);
+            desktopDots.forEach((dot, index) => {
+                if (index === pageIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }, { passive: true });
+
+        // ================= 备忘录 APP 交互逻辑 =================
+        const memoBtn = document.getElementById('app-btn-memo');
+        const memoApp = document.getElementById('app-memo');
+        const memoBackBtn = document.getElementById('memo-back-btn');
+
+        memoBtn.addEventListener('pointerdown', () => {
+            memoApp.style.display = 'flex';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    memoApp.classList.add('active');
+                });
+            });
+        });
+
+        memoBackBtn.addEventListener('pointerdown', () => {
+            memoApp.classList.remove('active');
+            setTimeout(() => {
+                memoApp.style.display = 'none';
+            }, 500); 
+        });
+
+        // ================= 短视频 APP 交互逻辑 =================
+        const videoBtn = document.getElementById('app-btn-video');
+        const videoApp = document.getElementById('app-video');
+        const videoBackBtn = document.getElementById('video-back-btn');
+        const likeBtns = document.querySelectorAll('.v-btn-like');
+
+        videoBtn.addEventListener('pointerdown', () => {
+            videoApp.style.display = 'block';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    videoApp.classList.add('active');
+                });
+            });
+        });
+
+        videoBackBtn.addEventListener('pointerdown', () => {
+            videoApp.classList.remove('active');
+            setTimeout(() => {
+                videoApp.style.display = 'none';
+            }, 500); 
+        });
+
+        // 短视频点赞互动
+        likeBtns.forEach(btn => {
+            btn.addEventListener('pointerdown', function() {
+                this.classList.toggle('liked');
+            });
+        });
+
+        // 短视频滚动监听触发文字动画
+        const videoItems = document.querySelectorAll('.video-item');
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-playing');
+                } else {
+                    entry.target.classList.remove('is-playing');
+                }
+            });
+        }, {
+            threshold: 0.5 
+        });
+
+        videoItems.forEach(item => {
+            videoObserver.observe(item);
+        });
+
+        // ================= 购物 APP 交互逻辑 =================
+        const shoppingBtn = document.getElementById('app-btn-shopping');
+        const shoppingApp = document.getElementById('app-shopping');
+        const shopBackBtn = document.getElementById('shop-back-btn');
+
+        shoppingBtn.addEventListener('pointerdown', () => {
+            shoppingApp.style.display = 'flex';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    shoppingApp.classList.add('active');
+                });
+            });
+        });
+
+        shopBackBtn.addEventListener('pointerdown', () => {
+            shoppingApp.classList.remove('active');
+            setTimeout(() => {
+                shoppingApp.style.display = 'none';
+            }, 500); 
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+/* Integrated from Downloads/encounter.html. */
+.encounter-app {
+    position: fixed;
+    inset: 0;
+    z-index: 1320;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+    transition: transform 0.24s ease, opacity 0.18s ease;
+}
+
+.encounter-app.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+/* ================= 基础规范与 CSS 变量 ================= */
+        .encounter-app {
+            --page-bg: #fbfafb; 
+            --accent-rose: #f8f0f3;
+            --ink-main: #211c20;
+            --ink-sub: #6c5c63;
+            --ink-light: #8f7179;
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.15) 100%);
+            --glass-border: 1px solid rgba(139, 104, 116, 0.12);
+            --glass-border-light: 1px solid rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 16px 32px -8px rgba(49, 42, 47, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+            --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            --font-serif: "Times New Roman", Georgia, serif;
+            --blur-val: 42px;
+            --saturate-val: 140%;
+        }
+
+        @font-face {
+            font-family: "Petit Formal Script";
+            src: url("https://test.fukit.cn/autoupload/f/wXA26G1dxk0UJp2Kcw6NzNiO_OyvX7mIgxFBfDMDErs/20260420/wXt4/PetitFormalScript-Regular.ttf") format("truetype");
+            font-weight: 400; font-style: normal; font-display: swap;
+        }
+
+        .encounter-app * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        .encounter-app { 
+            width: 100%; height: 100%; background-color: var(--page-bg);
+            background-image: linear-gradient(150deg, rgba(190, 139, 153, 0.08) 0%, transparent 40%), linear-gradient(180deg, var(--page-bg) 0%, var(--accent-rose) 60%, var(--page-bg) 100%);
+            font-family: var(--font-family); color: var(--ink-main); overflow: hidden;
+        }
+
+        .encounter-app ::-webkit-scrollbar { display: none; }
+
+        /* ================= 顶层组件 ================= */
+        .encounter-app .status-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 48px; display: flex;
+            justify-content: space-between; align-items: center; padding: 0 24px; z-index: 1600;
+            background: linear-gradient(to bottom, rgba(251, 250, 251, 0.9), transparent);
+        }
+        .encounter-app .time { font-size: 15px; font-weight: 500; letter-spacing: 0.5px; color: var(--ink-main); }
+        .encounter-app .status-icons svg { fill: var(--ink-main); stroke: var(--ink-main); }
+        .encounter-app .dynamic-island {
+            position: absolute; left: 50%; transform: translateX(-50%); top: 8px;
+            width: 135px; height: 32px; background-color: #000; border-radius: 16px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+            z-index: 1000; pointer-events: none;
+        }
+        .encounter-app .dynamic-island .sensor { width: 10px; height: 10px; border-radius: 50%; background: #080808; }
+        .encounter-app .dynamic-island .camera { width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 70% 30%, #1c1c1f, #000 60%); }
+        .encounter-app .home-indicator {
+            position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
+            width: 134px; height: 5px; border-radius: 3px; background-color: var(--ink-main);
+            z-index: 1700; cursor: pointer;
+        }
+
+        /* ================= 社区头部栏 ================= */
+        .encounter-app .community-header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 110px;
+            padding: 60px 24px 0; z-index: 1500; background: rgba(251, 250, 251, 0.6);
+            backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val));
+            -webkit-backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val));
+            border-bottom: var(--glass-border); display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 16px;
+        }
+        .encounter-app .header-title-group { display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+        .encounter-app .header-title-group:active { opacity: 0.6; }
+        .encounter-app .header-kicker { font: 500 10px/1 var(--font-family); color: var(--ink-light); letter-spacing: 0.1em; }
+        .encounter-app .header-title { font: 500 28px/1 var(--font-family); color: var(--ink-main); letter-spacing: -0.5px; }
+        .encounter-app .header-actions { display: flex; gap: 16px; align-items: center; }
+        .encounter-app .header-icon {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            border: var(--glass-border); background: var(--glass-bg); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .encounter-app .header-icon:active { transform: scale(0.92); }
+        .encounter-app .header-icon svg { width: 16px; height: 16px; stroke: var(--ink-main); stroke-width: 1.5; fill: none; }
+
+        /* ================= 通用容器 ================= */
+        .encounter-app .page-container {
+            width: 100%; height: 100%; overflow-y: auto; overscroll-behavior: contain;
+            padding: 130px 20px 140px; display: none; flex-direction: column; gap: 24px;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .encounter-app .page-container.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ================= 1. 发现页 (Discover) ================= */
+        .encounter-app .editorial-card { width: 100%; display: flex; flex-direction: column; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid rgba(139, 104, 116, 0.1); }
+        .encounter-app .editorial-card:last-child { border-bottom: none; }
+        .encounter-app .card-cover {
+            width: 100%; height: 320px; border-radius: 20px; border: var(--glass-border-light);
+            background: linear-gradient(to bottom, rgba(230,225,228,0.5), rgba(210,205,210,0.3)); box-shadow: 0 12px 24px -6px rgba(49, 42, 47, 0.06);
+        }
+        .encounter-app .card-meta { display: flex; justify-content: space-between; align-items: center; }
+        .encounter-app .meta-author { display: flex; align-items: center; gap: 8px; }
+        .encounter-app .author-avatar { width: 24px; height: 24px; border-radius: 50%; background: #e0d8dc; border: 1px solid #fff; }
+        .encounter-app .author-name { font-size: 12px; color: var(--ink-sub); font-family: var(--font-serif); }
+        .encounter-app .meta-date { font-size: 10px; color: var(--ink-light); letter-spacing: 0.05em; }
+        .encounter-app .card-content { display: flex; flex-direction: column; gap: 8px; }
+        .encounter-app .card-title { font-size: 20px; font-weight: 500; line-height: 1.3; color: var(--ink-main); }
+        .encounter-app .card-excerpt { font-size: 14px; line-height: 1.6; color: var(--ink-sub); text-align: justify; }
+        .encounter-app .dual-column-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .encounter-app .mini-card {
+            display: flex; flex-direction: column; gap: 10px; background: var(--glass-bg); backdrop-filter: blur(20px);
+            border: var(--glass-border); border-radius: 16px; padding: 10px; box-shadow: var(--glass-shadow);
+        }
+        .encounter-app .mini-cover { width: 100%; height: 140px; border-radius: 10px; background: #ece7e9; }
+        .encounter-app .mini-title { font-size: 13px; font-weight: 500; color: var(--ink-main); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* ================= 2. 热搜页 (Trending) ================= */
+        .encounter-app .trending-list { display: flex; flex-direction: column; gap: 0; }
+        .encounter-app .trending-item {
+            display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px;
+            padding: 20px 0; border-bottom: 1px solid rgba(139, 104, 116, 0.1); cursor: pointer; transition: background 0.2s;
+        }
+        .encounter-app .trending-item:active { opacity: 0.82; }
+        .encounter-app .trend-num { font-family: var(--font-serif); font-size: 24px; color: rgba(139, 104, 116, 0.2); font-weight: 400; text-align: center;}
+        .encounter-app .trending-item:nth-child(-n+3) .trend-num { color: var(--ink-light); }
+        .encounter-app .trend-info { display: flex; flex-direction: column; gap: 4px; }
+        .encounter-app .trend-title { font-size: 16px; font-weight: 500; color: var(--ink-main); line-height: 1.3;}
+        .encounter-app .trend-desc { font-size: 12px; color: var(--ink-sub); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .encounter-app .trend-hot { display: flex; align-items: center; gap: 4px; font-size: 10px; font-family: var(--font-serif); color: #b0465a; }
+        .encounter-app .trend-hot svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+        /* ================= 3. 私信页 (Messages) ================= */
+        .encounter-app .message-list { display: flex; flex-direction: column; gap: 16px; }
+        .encounter-app .message-item {
+            display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 16px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); border: var(--glass-border);
+            border-top: var(--glass-border-light); border-radius: 20px; padding: 14px 16px;
+            box-shadow: 0 8px 24px -8px rgba(49, 42, 47, 0.03); cursor: pointer; transition: transform 0.2s;
+        }
+        .encounter-app .message-item:active { transform: scale(0.98); }
+        .encounter-app .msg-avatar { width: 52px; height: 52px; border-radius: 18px; background: #e0d8dc; border: 2px solid #fff; position: relative;}
+        .encounter-app .msg-online { position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .encounter-app .msg-online::after { content:''; width: 8px; height: 8px; background: #9bcf86; border-radius: 50%; }
+        .encounter-app .msg-body { display: flex; flex-direction: column; gap: 4px; overflow: hidden;}
+        .encounter-app .msg-name { font-size: 15px; font-weight: 500; color: var(--ink-main); }
+        .encounter-app .msg-text { font-size: 13px; color: var(--ink-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .encounter-app .msg-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .encounter-app .msg-time { font-size: 11px; font-family: var(--font-serif); color: var(--ink-light); }
+        .encounter-app .msg-unread { width: 8px; height: 8px; background: #b0465a; border-radius: 50%; box-shadow: 0 2px 4px rgba(176, 70, 90, 0.3); }
+
+        /* ================= 4. 我的页 (Profile) ================= */
+        .encounter-app .profile-header { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 30px; border-bottom: 1px solid rgba(139, 104, 116, 0.1); }
+        .encounter-app .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: #ece7e9; border: 3px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .encounter-app .profile-info { text-align: center; display: flex; flex-direction: column; gap: 6px; }
+        .encounter-app .profile-name { font-size: 22px; font-weight: 500; font-family: var(--font-serif); color: var(--ink-main); }
+        .encounter-app .profile-bio { font-size: 13px; color: var(--ink-sub); font-family: "Petit Formal Script", cursive; }
+        .encounter-app .profile-stats { display: flex; gap: 32px; margin-top: 8px; }
+        .encounter-app .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .encounter-app .stat-num { font-size: 16px; font-weight: 500; font-family: var(--font-serif); color: var(--ink-main); }
+        .encounter-app .stat-label { font-size: 10px; color: var(--ink-light); letter-spacing: 0.05em; }
+        
+        .encounter-app .profile-segment { display: flex; justify-content: center; gap: 24px; padding: 10px 0 20px; }
+        .encounter-app .segment-btn { font-size: 14px; font-weight: 500; color: var(--ink-light); position: relative; padding-bottom: 4px; cursor: pointer; transition: color 0.3s; }
+        .encounter-app .segment-btn.active { color: var(--ink-main); }
+        .encounter-app .segment-btn.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 12px; height: 2px; background: var(--ink-main); border-radius: 1px; }
+
+        .encounter-app .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border-radius: 16px; overflow: hidden;}
+        .encounter-app .grid-item { aspect-ratio: 1; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6); position: relative;}
+        .encounter-app .grid-item::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(230,225,228,0.5), rgba(210,205,210,0.3)); opacity: 0.5;}
+
+        /* ================= 底部导航 Dock ================= */
+        .encounter-app .community-dock {
+            position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 48px); max-width: 400px; height: 68px; border-radius: 34px;
+            background: var(--glass-bg); backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val));
+            -webkit-backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val));
+            border: var(--glass-border); border-top: var(--glass-border-light);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.7);
+            z-index: 1500; display: flex; justify-content: space-around; align-items: center; padding: 0 8px;
+        }
+        .encounter-app .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            width: 60px; height: 52px; justify-content: center; border-radius: 20px;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .encounter-app .nav-item svg { width: 22px; height: 22px; stroke: var(--ink-sub); stroke-width: 1.2; fill: none; transition: all 0.3s; }
+        .encounter-app .nav-label { font-size: 10px; color: var(--ink-sub); transform: scale(0.9); opacity: 0; transition: all 0.3s; position: absolute; bottom: 4px;}
+        .encounter-app .nav-item.active {
+            background: rgba(255, 255, 255, 0.4); box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.5); transform: translateY(-4px);
+        }
+        .encounter-app .nav-item.active svg { stroke: var(--ink-main); stroke-width: 1.5; transform: translateY(-6px); }
+        .encounter-app .nav-item.active .nav-label { opacity: 1; color: var(--ink-main); transform: scale(1) translateY(0); font-weight: 500;}

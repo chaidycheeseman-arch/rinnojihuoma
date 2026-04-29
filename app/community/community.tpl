@@ -1,0 +1,144 @@
+<section class="community-app" id="community-app" aria-label="社区">
+    <header class="community-header">
+        <div class="header-title-group" id="community-header-action" aria-label="返回/刷新">
+            <span class="header-kicker" id="community-header-kicker">DISCOVER</span>
+            <h1 class="header-title" id="community-page-title">发现</h1>
+        </div>
+        <div class="header-actions">
+            <div class="header-icon interactive"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <div class="header-icon interactive"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        </div>
+    </header>
+
+    <main class="page-container active" id="community-view-discover">
+        <div class="community-feed" id="community-feed">
+            <article class="editorial-card">
+                <div class="card-cover"></div>
+                <div class="card-meta">
+                    <div class="meta-author"><div class="author-avatar"></div><span class="author-name">点击编辑昵称</span></div>
+                    <span class="meta-date">APR 21</span>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">暮色中的视觉留白：探讨玻璃态的厚度边界</h2>
+                    <p class="card-excerpt">当我们抛弃厚重的阴影，把透明度压低至 15%，界面便开始有了呼吸感。设计不仅是元素的堆叠，更是对光影的克制与打磨。</p>
+                </div>
+            </article>
+            <div class="dual-column-grid">
+                <article class="mini-card">
+                    <div class="mini-cover"></div><h3 class="mini-title"># 柔和墨色系配色指南</h3>
+                </article>
+                <article class="mini-card">
+                    <div class="mini-cover"></div><h3 class="mini-title"># 交互细节：无按钮导航</h3>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <main class="page-container" id="community-view-trending">
+        <div class="trending-list">
+            <article class="trending-item">
+                <span class="trend-num">01</span>
+                <div class="trend-info">
+                    <h3 class="trend-title">Rinno 1.2 版本更新公告</h3>
+                    <p class="trend-desc">全新信笺系统与极简导航已上线，带来更纯粹的阅读体验。</p>
+                </div>
+                <div class="trend-hot"><svg viewBox="0 0 24 24"><path d="M12 2c0 0-4 4-4 10a4 4 0 0 0 8 0c0-6-4-10-4-10z"/><path d="M12 12c-1.5 0-2.5 1-2.5 2.5S10.5 17 12 17s2.5-1 2.5-2.5S13.5 12 12 12z"/></svg> 8.2k</div>
+            </article>
+            <article class="trending-item">
+                <span class="trend-num">02</span>
+                <div class="trend-info">
+                    <h3 class="trend-title"># 晒出你的私人主页布置</h3>
+                    <p class="trend-desc">分享你的玫瑰灰与透明度美学。</p>
+                </div>
+                <div class="trend-hot"><svg viewBox="0 0 24 24"><path d="M12 2c0 0-4 4-4 10a4 4 0 0 0 8 0c0-6-4-10-4-10z"/></svg> 5.6k</div>
+            </article>
+            <article class="trending-item">
+                <span class="trend-num">03</span>
+                <div class="trend-info">
+                    <h3 class="trend-title">如何调出带温度的柔白底色？</h3>
+                    <p class="trend-desc">设计讨论区精华贴汇总</p>
+                </div>
+            </article>
+            <article class="trending-item">
+                <span class="trend-num">04</span>
+                <div class="trend-info"><h3 class="trend-title">iOS 19 概念版拟态分析</h3><p class="trend-desc">技术分享 / 前端动效</p></div>
+            </article>
+            <article class="trending-item">
+                <span class="trend-num">05</span>
+                <div class="trend-info"><h3 class="trend-title"># 今日推荐书单</h3><p class="trend-desc">文学与诗歌版块</p></div>
+            </article>
+        </div>
+    </main>
+
+    <main class="page-container" id="community-view-messages">
+        <div class="message-list">
+            <article class="message-item">
+                <div class="msg-avatar"><div class="msg-online"></div></div>
+                <div class="msg-body">
+                    <h3 class="msg-name">SiYan</h3>
+                    <p class="msg-text">下午的设计稿看了吗？那边的描边还要再细一点。</p>
+                </div>
+                <div class="msg-meta"><span class="msg-time">12:04</span><div class="msg-unread"></div></div>
+            </article>
+            <article class="message-item">
+                <div class="msg-avatar"></div>
+                <div class="msg-body">
+                    <h3 class="msg-name">Studio.Rinno</h3>
+                    <p class="msg-text">欢迎来到 Rinno 社区，这是你的第一封信笺。</p>
+                </div>
+                <div class="msg-meta"><span class="msg-time">YEST</span></div>
+            </article>
+            <article class="message-item">
+                <div class="msg-avatar"></div>
+                <div class="msg-body">
+                    <h3 class="msg-name">YueHua</h3>
+                    <p class="msg-text">好久不见，最近的改版很丝滑哦 ʚ♡ɞ</p>
+                </div>
+                <div class="msg-meta"><span class="msg-time">FRI</span></div>
+            </article>
+        </div>
+    </main>
+
+    <main class="page-container" id="community-view-profile">
+        <div class="profile-header">
+            <div class="profile-avatar"></div>
+            <div class="profile-info">
+                <h2 class="profile-name">点击编辑昵称</h2>
+                <p class="profile-bio">点击编辑个性签名</p>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item"><span class="stat-num">128</span><span class="stat-label">POSTS</span></div>
+                <div class="stat-item"><span class="stat-num">4.2k</span><span class="stat-label">FOLLOWERS</span></div>
+                <div class="stat-item"><span class="stat-num">15</span><span class="stat-label">FOLLOWING</span></div>
+            </div>
+        </div>
+        <div class="profile-segment">
+            <div class="segment-btn active">Articles</div>
+            <div class="segment-btn">Collections</div>
+        </div>
+        <div class="profile-grid">
+            <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
+            <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
+            <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
+        </div>
+    </main>
+
+    <nav class="community-dock">
+        <div class="nav-item interactive active" data-tab="发现" data-target="community-view-discover" data-kicker="DISCOVER">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span class="nav-label">发现</span>
+        </div>
+        <div class="nav-item interactive" data-tab="热搜" data-target="community-view-trending" data-kicker="TRENDING">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span class="nav-label">热搜</span>
+        </div>
+        <div class="nav-item interactive" data-tab="私信" data-target="community-view-messages" data-kicker="MESSAGES">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span class="nav-label">私信</span>
+        </div>
+        <div class="nav-item interactive" data-tab="我的" data-target="community-view-profile" data-kicker="PROFILE">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="nav-label">我的</span>
+        </div>
+    </nav>
+</section>

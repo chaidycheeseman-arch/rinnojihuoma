@@ -1,0 +1,289 @@
+/* Final bottom safe-area guard: keep controls clear of the home indicator. */
+:root {
+    --rinno-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --rinno-home-indicator-bottom: calc(6px * var(--style-ui-scale-effective, 1));
+    --rinno-dock-bottom-offset: calc(24px * var(--style-ui-scale-effective, 1));
+    --rinno-bottom-clearance-tight: max(28px, calc(var(--rinno-safe-area-bottom) + 16px));
+    --rinno-bottom-clearance: max(38px, calc(var(--rinno-safe-area-bottom) + 22px));
+    --rinno-bottom-clearance-loose: max(46px, calc(var(--rinno-safe-area-bottom) + 30px));
+    --rinno-bottom-scroll-reserve: max(118px, calc(var(--rinno-safe-area-bottom) + 108px));
+    --rinno-bottom-tabbar-offset: max(38px, calc(var(--rinno-safe-area-bottom) + 24px));
+    --rinno-modal-bottom-pad: max(38px, calc(var(--rinno-safe-area-bottom) + 24px));
+    --rinno-app-icon-size: calc(50px * var(--style-ui-scale-effective, 1));
+    --rinno-app-symbol-size: calc(23px * var(--style-ui-scale-effective, 1));
+    --rinno-app-wrapper-width: calc(68px * var(--style-ui-scale-effective, 1));
+    --rinno-app-wrapper-height: calc(72px * var(--style-ui-scale-effective, 1));
+}
+
+.home-indicator {
+    bottom: var(--rinno-home-indicator-bottom) !important;
+}
+
+.dock {
+    bottom: var(--rinno-dock-bottom-offset) !important;
+}
+
+.pagination {
+    bottom: calc(118px * var(--style-ui-scale-effective, 1)) !important;
+}
+
+.search-pill {
+    bottom: calc(135px * var(--style-ui-scale-effective, 1)) !important;
+}
+
+.app-icon {
+    width: var(--rinno-app-icon-size) !important;
+    height: var(--rinno-app-icon-size) !important;
+    border-radius: clamp(14px, calc(16px * var(--style-ui-scale-effective, 1)), 18px) !important;
+}
+
+.app-icon svg {
+    width: var(--rinno-app-symbol-size) !important;
+    height: var(--rinno-app-symbol-size) !important;
+}
+
+.page > .app-wrapper {
+    min-width: var(--rinno-app-wrapper-width) !important;
+}
+
+.app-grid-2x2 {
+    grid-template-columns: repeat(2, minmax(var(--rinno-app-wrapper-width), 1fr)) !important;
+    grid-template-rows: repeat(2, var(--rinno-app-wrapper-height)) !important;
+    grid-auto-rows: var(--rinno-app-wrapper-height) !important;
+    height: calc(158px * var(--style-ui-scale-effective, 1)) !important;
+    min-height: calc(158px * var(--style-ui-scale-effective, 1)) !important;
+}
+
+.app-grid-2x2 .app-wrapper {
+    width: var(--rinno-app-wrapper-width) !important;
+    height: var(--rinno-app-wrapper-height) !important;
+    min-width: var(--rinno-app-wrapper-width) !important;
+}
+
+.free-icon-grid {
+    min-height: calc(82px * var(--style-ui-scale-effective, 1)) !important;
+}
+
+.free-icon-grid.app-grid-2x2 {
+    min-height: calc(158px * var(--style-ui-scale-effective, 1)) !important;
+}
+
+.desktop-component-sheet {
+    padding-bottom: var(--rinno-bottom-clearance-loose) !important;
+}
+
+.desktop-component-list {
+    padding-bottom: var(--rinno-bottom-clearance) !important;
+}
+
+.page {
+    padding-bottom: calc(205px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+    scroll-padding-bottom: calc(205px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+}
+
+body[data-style-page-preset="compact"] .page {
+    padding-bottom: calc(180px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+    scroll-padding-bottom: calc(180px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+}
+
+body[data-style-page-preset="airy"] .page {
+    padding-bottom: calc(228px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+    scroll-padding-bottom: calc(228px * var(--style-ui-scale-effective, 1) + var(--rinno-safe-area-bottom)) !important;
+}
+
+:where(
+    .style-menu,
+    .style-workspace,
+    .style-subpage,
+    .settings-menu,
+    .settings-security-view,
+    .settings-api-view,
+    .settings-debug-view,
+    .settings-storage-view,
+    .letter-main,
+    .prologue-shell,
+    .dossier-stage,
+    .phone-stage,
+    .wanye-stage,
+    .lingguang-stage,
+    .guide-stage
+) {
+    scroll-padding-bottom: var(--rinno-bottom-scroll-reserve) !important;
+}
+
+.style-menu {
+    padding-bottom: calc(96px * var(--style-ui-scale, 1) + var(--rinno-bottom-clearance-tight)) !important;
+}
+
+:where(.style-workspace, .style-subpage) {
+    padding-bottom: calc(84px * var(--style-ui-scale, 1) + var(--rinno-bottom-clearance-tight)) !important;
+}
+
+.settings-menu {
+    padding-bottom: calc(96px + var(--rinno-bottom-clearance-tight)) !important;
+}
+
+:where(.settings-security-view, .settings-api-view, .settings-debug-view, .settings-storage-view) {
+    padding-bottom: calc(36px + var(--rinno-bottom-clearance)) !important;
+}
+
+.letter-main {
+    padding-bottom: calc(96px + var(--rinno-bottom-clearance)) !important;
+}
+
+.prologue-shell {
+    padding-bottom: calc(96px + var(--rinno-bottom-clearance)) !important;
+}
+
+:where(.phone-stage, .wanye-stage, .lingguang-stage, .guide-stage) {
+    padding-bottom: calc(98px + var(--rinno-bottom-clearance)) !important;
+}
+
+.dossier-stage {
+    padding-bottom: calc(104px + var(--rinno-bottom-clearance)) !important;
+}
+
+:where(.community-app, .encounter-app) .home-indicator {
+    bottom: var(--rinno-home-indicator-bottom) !important;
+}
+
+:where(.community-app, .encounter-app) .community-dock {
+    bottom: var(--rinno-dock-bottom-offset) !important;
+}
+
+:where(.community-app, .encounter-app) .page-container {
+    padding-bottom: calc(150px + var(--rinno-bottom-clearance)) !important;
+    scroll-padding-bottom: calc(150px + var(--rinno-bottom-clearance)) !important;
+}
+
+.prologue-fab {
+    bottom: var(--rinno-bottom-clearance-loose) !important;
+}
+
+#private-app .private-tabbar {
+    bottom: var(--rinno-bottom-tabbar-offset) !important;
+}
+
+#private-app .private-pane {
+    padding-bottom: calc(96px + var(--rinno-bottom-clearance-loose)) !important;
+    scroll-padding-bottom: calc(96px + var(--rinno-bottom-clearance-loose)) !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-pane {
+    padding-bottom: calc(128px + var(--rinno-bottom-clearance)) !important;
+    scroll-padding-bottom: calc(128px + var(--rinno-bottom-clearance)) !important;
+}
+
+#private-app .private-contact-chat-content {
+    padding-bottom: calc(122px + var(--rinno-bottom-clearance-tight)) !important;
+    scroll-padding-bottom: calc(122px + var(--rinno-bottom-clearance-tight)) !important;
+}
+
+#private-app .private-contact-chat-composer {
+    padding-bottom: var(--rinno-bottom-clearance-tight) !important;
+}
+
+#private-app .private-quick-composer {
+    bottom: var(--rinno-bottom-clearance) !important;
+}
+
+#private-app .private-moment-composer {
+    bottom: calc(88px + var(--rinno-bottom-clearance)) !important;
+}
+
+#private-app .private-contact-homepage-paper,
+#private-app .private-contact-homepage-pane.active {
+    padding-bottom: var(--rinno-bottom-clearance) !important;
+}
+
+#private-app .private-contact-homepage-links {
+    margin-bottom: var(--rinno-bottom-clearance-loose) !important;
+}
+
+:where(.private-register-screen, .private-login-screen) {
+    padding-bottom: var(--rinno-bottom-clearance) !important;
+}
+
+:where(.private-login-links, .private-register-bottom, .private-login-bottom-actions) {
+    margin-bottom: var(--rinno-bottom-clearance-tight) !important;
+}
+
+:where(
+    .prologue-modal,
+    .api-preset-modal,
+    .private-terms-modal,
+    .private-moment-modal-backdrop,
+    .private-user-preset-modal,
+    .private-settings-modal,
+    .private-contact-account-modal,
+    .private-contact-profile-modal,
+    .private-contact-chat-edit-modal,
+    .private-contact-chat-recall-modal,
+    .private-contact-chat-placeholder-modal,
+    .dossier-modal,
+    .dossier-profile-modal,
+    .dossier-network-modal,
+    .dossier-network-subject-modal,
+    .wanye-modal,
+    .phone-call-sheet
+) {
+    padding-bottom: var(--rinno-modal-bottom-pad) !important;
+}
+
+:where(
+    .prologue-dialog,
+    .api-preset-dialog,
+    .private-terms-dialog,
+    .private-user-preset-dialog,
+    .private-settings-dialog,
+    .private-contact-account-dialog,
+    .private-contact-chat-edit-dialog,
+    .private-contact-chat-recall-dialog,
+    .private-contact-chat-placeholder-dialog,
+    .dossier-editor,
+    .dossier-profile-dialog,
+    .dossier-network-dialog,
+    .dossier-network-subject-dialog,
+    .wanye-form,
+    .phone-call-dialog
+) {
+    max-height: calc(100dvh - var(--rinno-modal-bottom-pad) - 34px) !important;
+}
+
+:where(
+    .dossier-editor-actions,
+    .dossier-network-actions,
+    .dossier-network-modal-actions,
+    .private-contact-chat-edit-actions,
+    .private-contact-chat-recall-actions,
+    .private-contact-chat-placeholder-actions
+) {
+    padding-bottom: var(--rinno-bottom-clearance-tight) !important;
+}
+
+:where(
+    .wanye-form-actions,
+    .security-actions,
+    .security-form-actions,
+    .api-modal-actions,
+    .prologue-form-actions,
+    .private-bottom-actions,
+    .private-verify-actions,
+    .private-profile-actions,
+    .private-settings-account-actions
+) {
+    margin-bottom: var(--rinno-bottom-clearance-tight) !important;
+}
+
+@media (max-width: 430px), (hover: none), (pointer: coarse) {
+    :root {
+        --rinno-bottom-clearance-tight: max(32px, calc(var(--rinno-safe-area-bottom) + 18px));
+        --rinno-bottom-clearance: max(42px, calc(var(--rinno-safe-area-bottom) + 24px));
+        --rinno-bottom-clearance-loose: max(52px, calc(var(--rinno-safe-area-bottom) + 32px));
+        --rinno-bottom-tabbar-offset: max(42px, calc(var(--rinno-safe-area-bottom) + 26px));
+    }
+
+    .desktop-component-panel {
+        max-height: calc(100dvh - var(--rinno-bottom-clearance-loose) - 22px) !important;
+    }
+}

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>回响 - Echo</title>
+    <style>
+        /* ================= 基础规范与色彩体系 ================= */
+        :root {
+            --app-height: 100dvh;
+            --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            --font-serif: "Times New Roman", "Songti SC", Georgia, serif;
+            
+            /* 暖玫瑰灰、柔白、墨色系，不偏黄 */
+            --page-bg: #ecebee;
+            --text-main: #2b2b30;
+            --text-sub: #7a7a85;
+            --style-accent: #d9b7c0;
+            --style-accent-strong: #8d6e7b;
+            --style-accent-soft: #f6eef1;
+            --style-page-surface: #fffbfc;
+            
+            /* 纸质化材质替代玻璃材质 */
+            --rinno-component-surface: linear-gradient(180deg, rgba(255, 251, 252, 0.98), rgba(255, 251, 252, 0.92));
+            --rinno-component-surface-soft: linear-gradient(180deg, rgba(255, 251, 252, 0.92), rgba(255, 251, 252, 0.85));
+            --rinno-component-border: 1px solid rgba(88, 55, 68, 0.08);
+            --rinno-component-shadow: 0 10px 24px rgba(88, 55, 68, 0.05);
+            --rinno-component-shadow-soft: 0 5px 14px rgba(88, 55, 68, 0.03);
+            --rinno-component-highlight: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--style-page-surface);
+            background-image: linear-gradient(180deg, #fffbfc 0%, #ecebee 56%, #fffbfc 100%);
+            font-family: var(--font-family);
+            color: var(--text-main);
+            height: var(--app-height);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        body::before {
+            content: ''; position: fixed; border-radius: 50%; z-index: -1;
+            filter: blur(100px); opacity: 0.6; pointer-events: none;
+            width: 55vw; height: 55vw; background: #dfd8e8; 
+            top: -10vw; left: -10vw;
+        }
+
+        button, input, textarea { font-family: inherit; }
+        
+        [contenteditable="true"] { 
+            outline: none; -webkit-user-select: text; user-select: text; cursor: text; 
+        }
+        [contenteditable="true"]:empty::before { 
+            content: attr(placeholder); color: rgba(136, 102, 115, 0.4); 
+        }
+
+        .interactive { transition: transform 0.15s ease, filter 0.15s ease; cursor: pointer; }
+        .interactive:active { transform: scale(0.96); filter: brightness(0.95); }
+
+        /* ================= 页面主容器 ================= */
+        #app-root {
+            width: 100%;
+            height: 100%;
+        }
+
+        .echo-app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+
+        /* 顶部 Header */
+        .echo-top {
+            padding: calc(56px + env(safe-area-inset-top, 0px)) 24px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-shrink: 0;
+            background: linear-gradient(to bottom, #fffbfc 60%, transparent);
+            z-index: 10;
+        }
+
+        .echo-heading { display: flex; flex-direction: column; gap: 6px; }
+        
+        .echo-kicker {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--style-accent-strong);
+            font-family: var(--font-serif);
+        }
+        
+        .echo-title {
+            font-size: 26px;
+            font-weight: 500;
+            color: var(--text-main);
+            letter-spacing: 2px;
+        }
+        
+        .echo-note {
+            font-size: 12px;
+            color: var(--text-sub);
+            font-family: var(--font-serif);
+        }
+
+        /* 滚动内容区 */
+        .echo-stage {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 20px calc(110px + env(safe-area-inset-bottom, 0px));
+            scrollbar-width: none;
+        }
+        .echo-stage::-webkit-scrollbar { display: none; }
+
+        .echo-page {
+            display: none;
+            flex-direction: column;
+            gap: 32px;
+            animation: fadeIn 0.3s ease;
+        }
+        .echo-page.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 底部导航栏 */
+        .echo-tabs {
+            position: absolute;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 16px;
+            padding: 8px 16px;
+            width: max-content;
+            border-radius: 999px;
+            background: var(--rinno-component-surface);
+            border: var(--rinno-component-border);
+            border-top: var(--rinno-component-highlight);
+            box-shadow: var(--rinno-component-shadow);
+            z-index: 100;
+        }
+
+        .echo-tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border-radius: 999px;
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+        }
+        
+        .echo-tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+        
+        .echo-tab.active {
+            background: var(--style-accent-soft);
+            color: var(--style-accent-strong);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* 公共模块标题 */
+        .echo-section-title {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .echo-section-title h3 {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+        .echo-section-title span {
+            font-size: 10px;
+            color: var(--style-accent-strong);
+            font-family: var(--font-serif);
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .paper-card {
+            background: var(--rinno-component-surface);
+            border: var(--rinno-component-border);
+            border-top: var(--rinno-component-highlight);
+            box-shadow: var(--rinno-component-shadow-soft);
+            border-radius: 20px;
+            padding: 18px;
+        }
+
+        /* ================= 页面 1：发现 (Discover) ================= */
+        .editorial-hero {
+            position: relative;
+            height: 260px;
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px;
+            color: #fff;
+            box-shadow: 0 16px 32px rgba(88,55,68,0.12);
+        }
+        .editorial-hero-bg {
+            position: absolute; inset: 0; z-index: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="%238d6e7b"/><circle cx="100" cy="100" r="180" fill="%23a0838f" opacity="0.4"/><circle cx="300" cy="300" r="220" fill="%23684d58" opacity="0.5"/></svg>') center/cover;
+        }
+        .editorial-hero-overlay {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(to bottom, transparent 30%, rgba(30,25,28,0.85) 100%);
+        }
+        .editorial-hero-content { position: relative; z-index: 2; }
+        .editorial-hero-kicker { font-size: 10px; letter-spacing: 3px; font-family: var(--font-serif); margin-bottom: 8px; display: block; opacity: 0.8; }
+        .editorial-hero-title { font-size: 26px; font-weight: 500; margin-bottom: 8px; letter-spacing: 1px; font-family: var(--font-serif); }
+        .editorial-hero-desc { font-size: 13px; opacity: 0.8; line-height: 1.4; }
+
+        .add-music-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--style-accent-soft);
+            color: var(--style-accent-strong);
+            border: var(--rinno-component-border);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .add-music-btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        .track-list { display: flex; flex-direction: column; gap: 12px; }
+        .track-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px; border-radius: 16px;
+            background: var(--rinno-component-surface-soft);
+            border: var(--rinno-component-border);
+        }
+        .track-cover {
+            width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+            background-size: cover; background-position: center;
+        }
+        .track-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .track-name { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+        .track-artist { font-size: 12px; color: var(--text-sub); font-family: var(--font-serif); }
+        .track-play { 
+            width: 36px; height: 36px; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center;
+            background: var(--style-page-surface); border: var(--rinno-component-border); color: var(--style-accent-strong);
+            box-shadow: 0 4px 10px rgba(88,55,68,0.05);
+        }
+        .track-play svg { width: 14px; height: 14px; fill: currentColor; margin-left: 2px;}
+
+        /* ================= 页面 2：写歌 (Studio) ================= */
+        .desk-paper {
+            background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(141, 110, 123, 0.08) 28px);
+            background-attachment: local;
+            background-position: 0 4px;
+        }
+        .desk-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(88,55,68,0.1); padding-bottom: 16px;}
+        .desk-title-input {
+            font-size: 20px; font-weight: 500; color: var(--text-main); font-family: var(--font-serif);
+        }
+        .desk-status {
+            font-size: 10px; color: var(--style-accent-strong); background: var(--style-accent-soft); padding: 4px 10px; border-radius: 999px; font-family: var(--font-serif);
+            white-space: nowrap; letter-spacing: 1px;
+        }
+        .desk-lyrics {
+            font-size: 14px; line-height: 28px; color: var(--text-sub); min-height: 160px; font-family: var(--font-serif);
+        }
+        .desk-actions {
+            margin-top: 24px; display: flex; gap: 12px;
+        }
+        .btn-primary {
+            flex: 1; padding: 14px; border-radius: 14px; background: var(--style-accent-strong); color: #fff; text-align: center;
+            font-size: 13px; font-weight: 500; border: none; box-shadow: 0 6px 16px rgba(141,110,123,0.25);
+        }
+        .btn-outline {
+            flex: 1; padding: 14px; border-radius: 14px; background: transparent; color: var(--style-accent-strong); text-align: center;
+            font-size: 13px; font-weight: 500; border: 1px solid var(--style-accent-strong);
+        }
+        
+        .published-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .pub-card {
+            background: var(--rinno-component-surface); border: var(--rinno-component-border); border-radius: 20px; padding: 16px 12px;
+            display: flex; flex-direction: column; gap: 10px; box-shadow: var(--rinno-component-shadow-soft);
+        }
+        .pub-vinyl {
+            width: 80%; margin: 0 auto; aspect-ratio: 1; border-radius: 50%; background: #1f1f22; position: relative;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center;
+        }
+        .pub-vinyl::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); }
+        .pub-vinyl::after { content: ''; position: absolute; inset: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); }
+        .pub-center { width: 35%; height: 35%; border-radius: 50%; border: 2px solid #1f1f22; position: relative; z-index: 2;}
+        .pub-title { font-size: 14px; font-weight: 500; text-align: center; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-serif);}
+        .pub-date { font-size: 10px; color: var(--text-sub); text-align: center; font-family: var(--font-serif);}
+
+        /* ================= 页面 3：个人 (Profile) ================= */
+        .profile-header {
+            position: relative;
+            margin-top: -20px;
+            margin-left: -20px;
+            margin-right: -20px;
+            margin-bottom: 56px;
+        }
+        .profile-cover {
+            height: 200px; background: #cfc5cb; position: relative;
+            background-size: cover; background-position: center;
+        }
+        .profile-cover-btn {
+            position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.9); border: none; padding: 8px 14px; border-radius: 999px;
+            font-size: 11px; color: var(--text-main); font-family: var(--font-serif); letter-spacing: 1px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .profile-avatar-wrap {
+            position: absolute; bottom: -42px; left: 24px;
+            width: 84px; height: 84px; border-radius: 50%;
+        }
+        .profile-avatar {
+            width: 100%; height: 100%; border-radius: 50%; background: #e2d5da;
+            background-size: cover; background-position: center; border: none;
+        }
+        .profile-avatar-edit {
+            position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--style-accent-strong);
+            display: flex; justify-content: center; align-items: center; color: #fff; border: 2px solid var(--style-page-surface);
+        }
+        .profile-avatar-edit svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+        
+        .profile-info { padding: 0 4px; display: flex; flex-direction: column; gap: 6px; }
+        .profile-name { font-size: 24px; font-weight: 500; font-family: var(--font-serif);}
+        .profile-id { font-size: 12px; color: var(--text-sub); font-family: var(--font-serif); }
+        .profile-bio { font-size: 13px; color: var(--text-main); line-height: 1.6; margin-top: 8px; padding-bottom: 20px; border-bottom: 1px dashed rgba(88,55,68,0.2); }
+        
+        .profile-stats { display: flex; justify-content: space-around; padding: 20px 0; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .stat-num { font-size: 20px; font-weight: 600; font-family: var(--font-serif); color: var(--text-main); }
+        .stat-label { font-size: 10px; color: var(--style-accent-strong); letter-spacing: 1px; text-transform: uppercase; }
+
+        .settings-list { display: flex; flex-direction: column; gap: 12px; }
+        .settings-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 20px; border-radius: 16px; background: var(--rinno-component-surface-soft);
+            border: var(--rinno-component-border); font-size: 14px; font-weight: 500;
+        }
+        .settings-row svg { width: 16px; height: 16px; stroke: var(--text-sub); fill: none; stroke-width: 2; }
+
+        /* ================= 弹窗样式 (Add Music Modal) ================= */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(30, 25, 28, 0.4);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+        .modal-content {
+            width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 18px;
+            scrollbar-width: none;
+        }
+        .modal-content::-webkit-scrollbar { display: none; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(88,55,68,0.1); padding-bottom: 12px;}
+        .modal-title { font-size: 18px; font-weight: 500; color: var(--text-main); font-family: var(--font-serif); }
+        .modal-close { background: none; border: none; color: var(--text-sub); display: flex; justify-content: center; align-items: center;}
+        .modal-close svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.5; fill: none;}
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 12px; color: var(--text-sub); font-family: var(--font-serif); }
+        .form-input, .form-textarea {
+            width: 100%; padding: 14px; border-radius: 12px;
+            background: var(--style-page-surface);
+            border: var(--rinno-component-border);
+            color: var(--text-main); font-size: 14px;
+            box-shadow: inset 0 2px 4px rgba(88,55,68,0.02);
+        }
+        .form-input:focus, .form-textarea:focus { border-color: var(--style-accent-strong); outline: none; }
+        .form-textarea { min-height: 100px; resize: none; line-height: 1.5; }
+        .form-row { display: flex; gap: 10px; align-items: center; }
+        
+        .file-upload-btn {
+            flex-shrink: 0; padding: 10px 14px; border-radius: 10px; font-size: 13px;
+            background: var(--style-accent-soft); color: var(--style-accent-strong);
+            border: 1px solid rgba(88, 55, 68, 0.1); white-space: nowrap;
+        }
+        
+        .modal-actions { display: flex; gap: 12px; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+    <div id="app-root">
+        <section class="echo-app" id="echo-app">
+            
+            <header class="echo-top">
+                <div class="echo-heading">
+                    <span class="echo-kicker">ECHO MUSIC</span>
+                    <h1 class="echo-title">回响</h1>
+                    <p class="echo-note">声波、韵律与共同写下的歌。</p>
+                </div>
+            </header>
+
+            <main class="echo-stage">
+                
+                <section class="echo-page active" data-echo-page="discover">
+                    <div class="editorial-hero interactive">
+                        <div class="editorial-hero-bg"></div>
+                        <div class="editorial-hero-overlay"></div>
+                        <div class="editorial-hero-content">
+                            <span class="editorial-hero-kicker">EDITORIAL PICK</span>
+                            <h2 class="editorial-hero-title">玫瑰色回声</h2>
+                            <p class="editorial-hero-desc">在安静的午后，适合搭配微雨阅读的轻奢选曲。</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="echo-section-title" style="align-items: center;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <h3>新歌速递</h3>
+                                <span>NEW RELEASES</span>
+                            </div>
+                            <button class="add-music-btn interactive" id="openAddMusicModal">
+                                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                        </div>
+                        <div class="track-list">
+                            <article class="track-item interactive">
+                                <div class="track-cover" style="background-color: #d1c1c7;"></div>
+                                <div class="track-info">
+                                    <div class="track-name">Whisper of the Night</div>
+                                    <div class="track-artist">Studio.Rinno</div>
+                                </div>
+                                <button class="track-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                            </article>
+                            <article class="track-item interactive">
+                                <div class="track-cover" style="background-color: #a6b1ba;"></div>
+                                <div class="track-info">
+                                    <div class="track-name">Leave it Blank</div>
+                                    <div class="track-artist">SiYan & YueHua</div>
+                                </div>
+                                <button class="track-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                            </article>
+                            <article class="track-item interactive">
+                                <div class="track-cover" style="background-color: #cfd5cc;"></div>
+                                <div class="track-info">
+                                    <div class="track-name">Paper Material</div>
+                                    <div class="track-artist">Lies7core</div>
+                                </div>
+                                <button class="track-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="echo-page" data-echo-page="studio">
+                    <div class="studio-desk">
+                        <div class="echo-section-title" style="margin-bottom: -4px;">
+                            <h3>我的写作台</h3>
+                            <span>WORKSPACE</span>
+                        </div>
+                        <div class="paper-card desk-paper">
+                            <div class="desk-header">
+                                <div class="desk-title-input" contenteditable="true" placeholder="未命名草稿">落雨轻声</div>
+                                <span class="desk-status">WIP</span>
+                            </div>
+                            <div class="desk-lyrics" contenteditable="true" placeholder="在这里写下歌词或灵感，文字将被安静保留...">
+                                当光线穿过透明的边界<br>
+                                我把想说的话写在纸页<br>
+                                玫瑰灰的温度刚刚好<br>
+                                不需要刺耳的喧嚣...
+                            </div>
+                            <div class="desk-actions">
+                                <button class="btn-outline interactive">保存草稿</button>
+                                <button class="btn-primary interactive" onclick="alert('已发送邀请信笺！')">邀请 Char 共创</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="echo-section-title">
+                            <h3>已发行</h3>
+                            <span>PUBLISHED</span>
+                        </div>
+                        <div class="published-list">
+                            <article class="pub-card interactive">
+                                <div class="pub-vinyl"><div class="pub-center" style="background-color: #d9b7c0;"></div></div>
+                                <div class="pub-title">透明边界</div>
+                                <div class="pub-date">2026.04.20</div>
+                            </article>
+                            <article class="pub-card interactive">
+                                <div class="pub-vinyl"><div class="pub-center" style="background-color: #a9c8d8;"></div></div>
+                                <div class="pub-title">呼吸感</div>
+                                <div class="pub-date">2026.02.14</div>
+                            </article>
+                            <article class="pub-card interactive">
+                                <div class="pub-vinyl"><div class="pub-center" style="background-color: #b7c9bd;"></div></div>
+                                <div class="pub-title">Paper Texture</div>
+                                <div class="pub-date">2025.11.11</div>
+                            </article>
+                            <article class="pub-card interactive">
+                                <div class="pub-vinyl"><div class="pub-center" style="background-color: #d7cf82;"></div></div>
+                                <div class="pub-title">Olive Green</div>
+                                <div class="pub-date">2025.09.09</div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="echo-page" data-echo-page="profile">
+                    <div class="profile-header">
+                        <div class="profile-cover" id="profile-cover">
+                            <button class="profile-cover-btn interactive" onclick="document.getElementById('cover-input').click()">更换背景</button>
+                            <input type="file" id="cover-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'profile-cover')">
+                        </div>
+                        <div class="profile-avatar-wrap">
+                            <div class="profile-avatar" id="profile-avatar"></div>
+                            <button class="profile-avatar-edit interactive" onclick="document.getElementById('avatar-input').click()">
+                                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                            </button>
+                            <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'profile-avatar')">
+                        </div>
+                    </div>
+
+                    <div class="profile-info">
+                        <div class="profile-name" contenteditable="true" placeholder="输入昵称">RinnoMuse</div>
+                        <div class="profile-id" contenteditable="true" placeholder="输入ID">@rinnomusic</div>
+                        <div class="profile-bio" contenteditable="true" placeholder="写下一句关于音乐的签名">声音是保留情绪的琥珀，记录下所有的不露声色。</div>
+                    </div>
+
+                    <div class="profile-stats paper-card">
+                        <div class="stat-item">
+                            <span class="stat-num" contenteditable="true">24</span>
+                            <span class="stat-label">Published</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" contenteditable="true">1.2K</span>
+                            <span class="stat-label">Followers</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" contenteditable="true">48</span>
+                            <span class="stat-label">Following</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-list">
+                        <div class="settings-row interactive">
+                            <span>音乐偏好分析</span>
+                            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <div class="settings-row interactive">
+                            <span>我的黑胶收藏</span>
+                            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <div class="settings-row interactive">
+                            <span>应用与隐私设置</span>
+                            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <nav class="echo-tabs">
+                <button class="echo-tab interactive active" data-tab-target="discover">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </button>
+                <button class="echo-tab interactive" data-tab-target="studio">
+                    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                </button>
+                <button class="echo-tab interactive" data-tab-target="profile">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+            </nav>
+        </section>
+
+        <div class="modal-overlay" id="addMusicModal">
+            <div class="modal-content paper-card">
+                <div class="modal-header">
+                    <div class="modal-title">收录音乐</div>
+                    <button class="modal-close interactive" id="closeAddMusicModal">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label>歌曲封面</label>
+                    <input type="file" accept="image/*" class="form-input" style="padding: 10px;">
+                </div>
+                
+                <div class="form-group">
+                    <label>歌名</label>
+                    <input type="text" class="form-input" placeholder="输入歌曲名称">
+                </div>
+                
+                <div class="form-group">
+                    <label>歌手名</label>
+                    <input type="text" class="form-input" placeholder="输入歌手名称">
+                </div>
+                
+                <div class="form-group">
+                    <label>音源提取</label>
+                    <div class="form-row">
+                        <input type="text" class="form-input" placeholder="输入音频URL" style="flex:1;">
+                        <span style="font-size: 12px; color: var(--text-sub);">或</span>
+                        <button class="file-upload-btn interactive" onclick="document.getElementById('audioFile').click()">本地文件</button>
+                        <input type="file" id="audioFile" accept="audio/*" style="display:none;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>滚动歌词</label>
+                    <textarea class="form-textarea" placeholder="在此处粘贴歌词文本..."></textarea>
+                    <div class="form-row" style="margin-top: -2px;">
+                        <button class="file-upload-btn interactive" onclick="document.getElementById('lrcFile').click()">上传本地歌词文件 (.lrc / .txt)</button>
+                        <input type="file" id="lrcFile" accept=".lrc,.txt" style="display:none;">
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-outline interactive" id="cancelAddMusic">取消</button>
+                    <button class="btn-primary interactive" id="confirmAddMusic">确认收录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 简单路由控制
+        const tabs = document.querySelectorAll('.echo-tab');
+        const pages = document.querySelectorAll('.echo-page');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const target = tab.getAttribute('data-tab-target');
+                
+                // 更新 tabs 样式
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 更新 pages 显示
+                pages.forEach(p => {
+                    if (p.getAttribute('data-echo-page') === target) {
+                        p.classList.add('active');
+                        p.hidden = false;
+                    } else {
+                        p.classList.remove('active');
+                        p.hidden = true;
+                    }
+                });
+            });
+        });
+
+        // 图片上传展示模拟功能
+        function handleImageUpload(event, targetId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.style.backgroundImage = `url(${e.target.result})`;
+                        targetEl.style.backgroundSize = 'cover';
+                        targetEl.style.backgroundPosition = 'center';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 添加音乐弹窗逻辑
+        const addMusicModal = document.getElementById('addMusicModal');
+        const openAddMusicBtn = document.getElementById('openAddMusicModal');
+        const closeAddMusicBtn = document.getElementById('closeAddMusicModal');
+        const cancelAddMusicBtn = document.getElementById('cancelAddMusic');
+        const confirmAddMusicBtn = document.getElementById('confirmAddMusic');
+
+        if(openAddMusicBtn) {
+            openAddMusicBtn.addEventListener('click', () => {
+                addMusicModal.classList.add('active');
+            });
+        }
+
+        const closeMusicModal = () => {
+            addMusicModal.classList.remove('active');
+        };
+
+        if(closeAddMusicBtn) closeAddMusicBtn.addEventListener('click', closeMusicModal);
+        if(cancelAddMusicBtn) cancelAddMusicBtn.addEventListener('click', closeMusicModal);
+        
+        if(confirmAddMusicBtn) {
+            confirmAddMusicBtn.addEventListener('click', () => {
+                alert('音乐信息已保存！');
+                closeMusicModal();
+            });
+        }
+
+        // 点击蒙版关闭弹窗
+        addMusicModal.addEventListener('click', (e) => {
+            if (e.target === addMusicModal) {
+                closeMusicModal();
+            }
+        });
+    </script>
+</body>
+</html>

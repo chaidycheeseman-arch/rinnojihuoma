@@ -1,0 +1,1383 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>晚契 | DUSK VOW - Rinno</title>
+    <style>
+        /* 
+         * Rinno DUSK VOW App - Editorial & Sensual Edition
+         * 极简杂志风：无圆角，无玻璃，无机械感。
+         * 依靠排版节奏、留白、衬线字体与暗调色彩营造情色与性张力。
+         */
+
+        @font-face {
+            font-family: "Petit Formal Script";
+            src: url("https://test.fukit.cn/autoupload/f/wXA26G1dxk0UJp2Kcw6NzNiO_OyvX7mIgxFBfDMDErs/20260420/wXt4/PetitFormalScript-Regular.ttf") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            /* 极暗的暖黑色，带有一丝体肤的温度 */
+            --mag-bg: #0d0c0c; 
+            /* 羊皮纸/骨白色，阅读感极佳 */
+            --mag-text: #e8e3de; 
+            /* 褪色的暗玫瑰灰，用于次要文本 */
+            --mag-sub: #8c8585; 
+            /* 干涸的酒红/血红色，作为情欲的点缀 */
+            --mag-accent: #7d2529; 
+            /* 极细的分割线 */
+            --mag-line: 1px solid rgba(232, 227, 222, 0.15); 
+            
+            --font-serif: "Songti SC", "STSong", "Times New Roman", Georgia, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--mag-bg);
+            color: var(--mag-text);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden; 
+        }
+
+        /* 手机端容器 */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+            background: var(--mag-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255,255,255,0.03);
+            border-right: 1px solid rgba(255,255,255,0.03);
+        }
+
+        /* 页面切换机制 (淡入淡出) */
+        .page-view {
+            position: absolute;
+            inset: 0;
+            background: var(--mag-bg);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        .page-view::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+        }
+
+        .page-view.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        /* ================= 顶栏 (无胶囊，极简排版) ================= */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            position: sticky;
+            top: 0;
+            background: var(--mag-bg);
+            z-index: 10;
+            border-bottom: var(--mag-line);
+        }
+
+        .header-action {
+            background: none;
+            border: none;
+            color: var(--mag-sub);
+            font-family: var(--font-sans);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.3s ease;
+        }
+
+        .header-action:active {
+            color: var(--mag-text);
+        }
+
+        .header-title {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            letter-spacing: 6px;
+            color: var(--mag-text);
+            font-weight: 300;
+        }
+
+        /* ================= 杂志扉页 ================= */
+        .editorial-hero {
+            padding: 60px 30px 40px;
+            text-align: center;
+        }
+
+        .hero-issue {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--mag-accent);
+            margin-bottom: 24px;
+            font-family: var(--font-sans);
+        }
+
+        .hero-headline {
+            font-family: var(--font-serif);
+            font-size: 46px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            color: var(--mag-text);
+            margin: 0 0 20px 0;
+            text-indent: 12px;
+        }
+
+        .hero-prose {
+            font-family: var(--font-serif);
+            font-size: 13px;
+            line-height: 2.2;
+            color: var(--mag-sub);
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        /* ================= 人物陈列 ================= */
+        .roster {
+            padding: 0 30px 60px;
+        }
+
+        .roster-entry {
+            padding: 50px 0;
+            border-top: var(--mag-line);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 30px;
+        }
+
+        .entry-number {
+            font-family: var(--font-serif);
+            font-size: 42px;
+            line-height: 0.8;
+            color: var(--mag-sub);
+            opacity: 0.3;
+        }
+
+        .entry-labels {
+            display: flex;
+            gap: 16px;
+        }
+
+        .label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--mag-text);
+            text-transform: uppercase;
+        }
+
+        .entry-name {
+            font-family: var(--font-serif);
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+
+        .entry-quote {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--mag-accent);
+            font-style: italic;
+            margin-bottom: 24px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .entry-quote::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 1px;
+            background: var(--mag-accent);
+        }
+
+        .entry-body {
+            font-size: 12px;
+            line-height: 2.2;
+            color: var(--mag-sub);
+            text-align: justify;
+            margin-bottom: 40px;
+        }
+
+        /* 直角框线按钮 */
+        .btn-outline {
+            width: 100%;
+            background: transparent;
+            color: var(--mag-text);
+            border: 1px solid var(--mag-sub);
+            padding: 16px 0;
+            text-align: center;
+            font-family: var(--font-sans);
+            font-size: 10px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:active {
+            background: var(--mag-text);
+            color: var(--mag-bg);
+            border-color: var(--mag-text);
+        }
+
+        /* ================= 剧本选择页 ================= */
+        .position-selector {
+            padding: 10px 30px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pos-label {
+            font-family: var(--font-serif);
+            font-size: 10px;
+            color: var(--mag-sub);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .pos-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pos-btn {
+            background: transparent;
+            border: 1px solid rgba(232, 227, 222, 0.2);
+            color: var(--mag-sub);
+            padding: 6px 12px;
+            font-family: var(--font-sans);
+            font-size: 9px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pos-btn.active {
+            border-color: var(--mag-accent);
+            color: var(--mag-accent);
+            background: rgba(125, 37, 41, 0.05);
+        }
+
+        /* 横向滑动包裹区 - 悬浮效果 */
+        .scenario-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 左右滑动箭头 */
+        .scroll-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 52px;
+            background: rgba(13, 12, 12, 0.9);
+            border: 1px solid rgba(232, 227, 222, 0.2);
+            color: var(--mag-text);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        .scroll-arrow:active {
+            background: var(--mag-text);
+            color: var(--mag-bg);
+            border-color: var(--mag-text);
+        }
+        .scroll-arrow.left {
+            left: 10px;
+        }
+        .scroll-arrow.right {
+            right: 10px;
+        }
+
+        /* 剧本列表区：强制左右留白，卡片居中对齐 */
+        .scenario-list {
+            display: flex;
+            flex-direction: row;
+            gap: 24px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            width: 100%;
+            padding: 20px calc(50% - 135px); /* 居中核心：(总宽50% - 卡片宽度的一半)。假设卡片宽270px */
+        }
+
+        .scenario-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 高＞宽 的长方形剧本卡片 */
+        .scenario-card {
+            width: 270px;
+            height: 420px;
+            flex-shrink: 0;
+            scroll-snap-align: center;
+            border: 1px solid rgba(232, 227, 222, 0.15);
+            background: var(--mag-bg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* 悬浮立体感 */
+            padding: 35px 24px;
+            cursor: pointer;
+            transition: border-color 0.3s, transform 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .scenario-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: transparent;
+            transition: background 0.3s;
+        }
+
+        .scenario-card:active {
+            border-color: var(--mag-accent);
+            transform: scale(0.98);
+        }
+
+        .scenario-card:active::before {
+            background: var(--mag-accent);
+        }
+
+        .scenario-tag {
+            font-size: 9px;
+            color: var(--mag-accent);
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .scenario-title {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            color: var(--mag-text);
+            margin-bottom: 16px;
+            letter-spacing: 2px;
+        }
+
+        /* 描述区防遮挡内部滚动 */
+        .scenario-desc {
+            font-size: 13px;
+            line-height: 1.9;
+            color: var(--mag-sub);
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .scenario-desc::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ================= 房间页 ================= */
+        .room-meta {
+            text-align: center;
+        }
+
+        .room-meta .name {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            letter-spacing: 6px;
+            color: var(--mag-text);
+            margin-bottom: 4px;
+        }
+
+        .room-meta .status {
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--mag-accent);
+        }
+
+        .script-container {
+            flex: 1;
+            padding: 30px 24px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; 
+        }
+
+        .script-sys {
+            text-align: center;
+            font-family: var(--font-serif);
+            font-size: 11px;
+            color: var(--mag-sub);
+            letter-spacing: 2px;
+            margin: 10px 0 30px;
+        }
+
+        /* 角色/用户发言排版 */
+        .dialogue-block {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 95%;
+        }
+
+        .dialogue-block.char {
+            align-self: flex-start;
+        }
+
+        .dialogue-block.user {
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .speaker-name {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--mag-sub);
+            text-transform: uppercase;
+        }
+
+        .char .speaker-name { color: var(--mag-accent); }
+
+        .action-text {
+            font-size: 13px;
+            line-height: 1.9;
+            color: var(--mag-sub);
+            font-style: italic;
+        }
+
+        .speech-text {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            line-height: 2.2;
+            color: var(--mag-text);
+        }
+
+        .user .speech-text {
+            color: rgba(232, 227, 222, 0.7);
+        }
+
+        /* 底部输入框 */
+        .input-footer {
+            padding: 16px 24px calc(24px + env(safe-area-inset-bottom));
+            background: var(--mag-bg);
+            border-top: var(--mag-line);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--mag-sub);
+            border-radius: 0;
+            color: var(--mag-text);
+            font-family: var(--font-serif);
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 8px 0;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-bottom-color: var(--mag-accent);
+        }
+
+        .input-field::placeholder {
+            color: var(--mag-sub);
+            opacity: 0.5;
+            font-style: italic;
+        }
+
+        .btn-send {
+            background: transparent;
+            border: none;
+            color: var(--mag-text);
+            font-family: var(--font-sans);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .btn-send:active {
+            color: var(--mag-accent);
+        }
+
+        /* ================= 结算日志弹窗 (Exit Log & Custom) ================= */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 12, 12, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .log-card {
+            width: 80%; 
+            max-width: 320px; 
+            min-height: 480px; 
+            background: var(--mag-bg);
+            border: 1px solid rgba(232, 227, 222, 0.2);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-title {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--mag-text);
+        }
+
+        .log-sub {
+            font-size: 11px;
+            color: var(--mag-sub);
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .log-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+            border-bottom: 1px dashed rgba(232, 227, 222, 0.15);
+        }
+
+        .log-label {
+            font-family: var(--font-serif);
+            font-size: 15px;
+            color: var(--mag-text);
+        }
+
+        .log-control {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 自定义复选框 */
+        .custom-checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--mag-sub);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+        }
+        .custom-checkbox:checked {
+            background: var(--mag-accent);
+            border-color: var(--mag-accent);
+        }
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1px;
+            width: 4px;
+            height: 10px;
+            border: solid var(--mag-bg);
+            border-width: 0 1px 1px 0;
+            transform: rotate(45deg);
+        }
+
+        /* 计数器 */
+        .counter-btn {
+            background: transparent;
+            border: 1px solid var(--mag-sub);
+            color: var(--mag-text);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .counter-btn:active {
+            background: var(--mag-text);
+            color: var(--mag-bg);
+        }
+        .counter-val {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .log-actions {
+            margin-top: auto; 
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-top: 20px;
+        }
+
+        .btn-solid {
+            width: 100%;
+            background: var(--mag-text);
+            color: var(--mag-bg);
+            border: none;
+            padding: 16px 0;
+            font-family: var(--font-sans);
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .btn-solid:active {
+            background: var(--mag-sub);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ================== 目录页 (Directory) ================== -->
+        <div id="view-directory" class="page-view active">
+            
+            <header class="header-bar">
+                <button class="header-action" onclick="exitWanyeApp()">EXIT</button>
+                <span class="header-title">DUSK VOW</span>
+                <button class="header-action">INDEX</button>
+            </header>
+
+            <section class="editorial-hero">
+                <span class="hero-issue">VOL. II / THE ABYSS</span>
+                <h1 class="hero-headline">晚契</h1>
+                <p class="hero-prose">卸下社会身份的伪装。在这里，疼痛与快感、支配与沦陷，拥有同一个名字。</p>
+            </section>
+
+            <main class="roster">
+                
+                <!-- 角色 1 -->
+                <article class="roster-entry">
+                    <div class="entry-meta">
+                        <span class="entry-number">I.</span>
+                        <div class="entry-labels">
+                            <span class="label">BDSM</span>
+                            <span class="label">Sensory Deprivation</span>
+                        </div>
+                    </div>
+                    <h2 class="entry-name">沈砚</h2>
+                    <p class="entry-quote">“咬紧牙关。在没听见你哭出来之前，我不会停。”</p>
+                    <p class="entry-body">
+                        西装革履之下，藏着绝对的暴虐与支配欲。他从不使用粗鄙的词汇，单凭冰冷的陈述和压在你下颌的力度，就能让你双腿发软。剥夺感官、撕裂底线，他是一场极具耐心、不容拒绝的调教艺术。
+                    </p>
+                    <button class="btn-outline" onclick="openScenarios('shen')">Select Script</button>
+                </article>
+
+                <!-- 角色 2 -->
+                <article class="roster-entry">
+                    <div class="entry-meta">
+                        <span class="entry-number">II.</span>
+                        <div class="entry-labels">
+                            <span class="label">Somnophilia</span>
+                            <span class="label">Breeding</span>
+                        </div>
+                    </div>
+                    <h2 class="entry-name">陆寒</h2>
+                    <p class="entry-quote">“睡得真熟啊。肚子被我射满的时候，你会在梦里发抖吗？”</p>
+                    <p class="entry-body">
+                        他对你有种病态的窥视与侵占欲。在安静的深夜里，当你的意识沉入梦乡、身体最为放松柔软的时候，才是他撕下伪装，粗暴贯穿你、最肆无忌惮弄脏你的时候。
+                    </p>
+                    <button class="btn-outline" onclick="openScenarios('lu')">Select Script</button>
+                </article>
+
+                <!-- 角色 3 -->
+                <article class="roster-entry">
+                    <div class="entry-meta">
+                        <span class="entry-number">III.</span>
+                        <div class="entry-labels">
+                            <span class="label">Brat</span>
+                            <span class="label">Edging & Praise</span>
+                        </div>
+                    </div>
+                    <h2 class="entry-name">江野</h2>
+                    <p class="entry-quote">“就这点力气？有本事彻底干死我，不然我会连本带利咬回来。”</p>
+                    <p class="entry-body">
+                        桀骜不驯的野狗，热衷于在危险边缘反复挑衅你的耐心。他嘴上不饶人，身体却在濒临高潮被你强行堵住射精口、绝望地流出前列腺液时，爆发出最强烈的生理战栗与对夸奖的渴求。
+                    </p>
+                    <button class="btn-outline" onclick="openScenarios('jiang')">Select Script</button>
+                </article>
+
+            </main>
+        </div>
+
+        <!-- ================== 剧本选择页 (Scenarios) ================== -->
+        <div id="view-scenarios" class="page-view">
+            <header class="header-bar">
+                <button class="header-action" onclick="showView('view-directory')">BACK</button>
+                <span class="header-title">SCRIPTS</span>
+                <div style="width: 32px;"></div>
+            </header>
+
+            <section class="editorial-hero" style="padding-top: 30px; padding-bottom: 10px;">
+                <span class="hero-issue" id="scenario-char-role">DOMINATOR</span>
+                <h1 class="hero-headline" id="scenario-char-name" style="font-size: 32px; letter-spacing: 8px;">沈砚</h1>
+                <p class="hero-prose">选择一场沉沦的境遇。</p>
+            </section>
+
+            <!-- 体位选择区 -->
+            <div class="position-selector">
+                <span class="pos-label">POSITION / 体位选择</span>
+                <div class="pos-options">
+                    <button class="pos-btn active" onclick="setPosition('男上位', this)">男上位</button>
+                    <button class="pos-btn" onclick="setPosition('女上位', this)">女上位</button>
+                </div>
+            </div>
+
+            <!-- 横向滑动的剧本列表（带箭头、悬浮居中排版） -->
+            <div class="scenario-wrapper">
+                <button class="scroll-arrow left" onclick="scrollScenarios(-1)">&#10094;</button>
+                <main class="scenario-list" id="scenario-list-container">
+                    <!-- 剧本卡片由 JS 动态生成 -->
+                </main>
+                <button class="scroll-arrow right" onclick="scrollScenarios(1)">&#10095;</button>
+            </div>
+        </div>
+
+        <!-- ================== 房间页 (The Room) ================== -->
+        <div id="view-room" class="page-view">
+            <header class="header-bar">
+                <button class="header-action" onclick="requestExit()">BACK</button>
+                <div class="room-meta">
+                    <div class="name" id="room-name">沈砚</div>
+                    <div class="status" id="room-status">THE ABYSS</div>
+                </div>
+                <button class="header-action">SETTINGS</button>
+            </header>
+
+            <!-- 动态生成的剧本流 -->
+            <div class="script-container" id="chat-flow">
+                <!-- 占位，由 JS 注入内容 -->
+            </div>
+
+            <!-- 输入区 -->
+            <footer class="input-footer">
+                <div class="input-wrapper">
+                    <textarea class="input-field" rows="1" placeholder="Write your reaction..."></textarea>
+                    <button class="btn-send">SEND</button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ================== 结算日志弹窗 (Exit Log) ================== -->
+        <div id="modal-log" class="modal-overlay">
+            <div class="log-card">
+                <h3 class="log-title">INTIMACY LOG</h3>
+                <p class="log-sub">退出前，记录本次沉溺的痕迹。</p>
+
+                <div style="flex: 1;">
+                    <div class="log-row">
+                        <span class="log-label">戴套 (Protection)</span>
+                        <input type="checkbox" class="custom-checkbox" id="log-condom" checked>
+                    </div>
+
+                    <div class="log-row">
+                        <span class="log-label">做爱次数 (Rounds)</span>
+                        <div class="log-control">
+                            <button class="counter-btn" onclick="updateCounter('log-rounds', -1)">-</button>
+                            <span class="counter-val" id="log-rounds">1</span>
+                            <button class="counter-btn" onclick="updateCounter('log-rounds', 1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="log-row">
+                        <span class="log-label">内射次数 (Creampies)</span>
+                        <div class="log-control">
+                            <button class="counter-btn" onclick="updateCounter('log-creampies', -1)">-</button>
+                            <span class="counter-val" id="log-creampies">0</span>
+                            <button class="counter-btn" onclick="updateCounter('log-creampies', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="log-actions">
+                    <button class="btn-solid" onclick="confirmExit(true)">保存并退出</button>
+                    <button class="btn-outline" onclick="confirmExit(false)">跳过并退出</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== 自定义剧本弹窗 (Custom Script) ================== -->
+        <div id="modal-custom" class="modal-overlay">
+            <div class="log-card">
+                <h3 class="log-title">CUSTOM</h3>
+                <p class="log-sub">自行填写真实的渴望。</p>
+
+                <div style="flex: 1; padding-top: 10px;">
+                    <input type="text" id="custom-title" class="input-field" placeholder="剧本名称 (Title)" style="width: 100%; margin-bottom: 24px;">
+                    <input type="text" id="custom-tag" class="input-field" placeholder="标签 (Tag)" style="width: 100%; margin-bottom: 24px;">
+                    <textarea id="custom-desc" class="input-field" rows="3" placeholder="境遇描述 (Description)" style="width: 100%; border-bottom: 1px solid var(--mag-sub);"></textarea>
+                </div>
+
+                <div class="log-actions">
+                    <button class="btn-solid" onclick="confirmCustom()">生成并进入</button>
+                    <button class="btn-outline" onclick="closeCustom()">取消</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // === 极度露骨且充满张力的数据结构 ===
+        const charData = {
+            'shen': {
+                name: '沈砚',
+                role: 'DOM / BDSM',
+                scripts: [
+                    {
+                        id: 's_shen_1',
+                        title: '视觉剥夺与深喉',
+                        tag: 'Sensory Deprivation & Deepthroat',
+                        desc: '黑暗放大了所有的感官。冰冷的器具与粗暴的性器强行塞满口腔，除了吞咽和流泪，你无路可退。',
+                        content: `
+                            <div class="script-sys">—— 视觉剥夺 / 强制深喉 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">黑色的真皮眼罩死死缚住你的视觉。你跪在地毯上，只能感觉到他冰凉的皮鞋尖挑起你的下颌。粗大滚烫的性器直接抽打在你的嘴唇上，带着浓烈的男性麝香味。</div>
+                                <div class="speech-text">张嘴。含进去。</div>
+                            </div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">你因为未知的恐惧而瑟缩，刚张开唇缝，那根粗硕的肉刃就毫不留情地捅了进来，直抵喉咙深处，逼得你眼角瞬间渗出生理性的眼泪。</div>
+                                <div class="speech-text">唔……咳、太深了……哈啊……</div>
+                            </div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">他宽大的手掌死死扣住你的后脑勺，不顾你的干呕，腰胯用力向前一挺，将龟头死死卡在你的食管里研磨。</div>
+                                <div class="speech-text">吞下去。敢吐出来一滴精液，今晚你下面的两张嘴就别想合拢。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_shen_2',
+                        title: '冰块与失控',
+                        tag: 'Temperature Play & Penetration',
+                        desc: '极端的冰冷与他手指的滚烫在花穴深处撕裂理智，直到你哭着求他狠狠肏进来。',
+                        content: `
+                            <div class="script-sys">—— 温度反差 / 深度开拓 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">棱角分明的冰块被他粗长滚烫的手指连根捅进最深处的软肉。子宫口被冰块和指腹同时抵住研磨，强烈的温差刺激逼出一大股淫水。</div>
+                                <div class="speech-text">夹这么紧，爽得流水了？你的身体倒是一直比嘴诚实。</div>
+                            </div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">冰冷的刺激与肠壁痉挛的绞紧感让你失声尖叫，水声在安静的房间里泥泞不堪，你本能地挺起腰去迎合他的手指。</div>
+                                <div class="speech-text">啊……别、太冷了……拿出去……求您肏我……用您的……插进来……</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_shen_3',
+                        title: '绝对服从',
+                        tag: 'Discipline & Obedience',
+                        desc: '每一个动作都需要他的允许，轻微的违背都会换来更加深沉的惩罚。',
+                        content: `
+                            <div class="script-sys">—— 绝对控制 / 行为规训 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">他坐在暗处，指尖夹着未燃尽的雪茄，冰冷的目光审视着跪在地毯上的你。没有直接的触碰，但这股审视的压迫感却让你双腿发软。</div>
+                                <div class="speech-text">我没有说你可以动。膝盖分开，挺直背脊。</div>
+                            </div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">酸痛感让你的身体微微摇晃，但在他压迫感十足的注视下，你只能咬牙保持姿势，甚至不敢大声呼吸，花穴却因为这种极度的羞耻感而逐渐泥泞。</div>
+                                <div class="speech-text">是……主人……我不敢了……</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_shen_4',
+                        title: '呼吸剥夺',
+                        tag: 'Breath Control',
+                        desc: '当空气成为奢侈品，他用最冷酷的方式让你明白谁才掌控着你的生命线。',
+                        content: `
+                            <div class="script-sys">—— 窒息边缘 / 极度支配 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">冰冷的皮质项圈瞬间收紧，粗大的手掌毫不留情地卡住你的咽喉。每一次你试图汲取氧气，他都会将手指收得更紧，直到你眼角飙出生理性的泪水。</div>
+                                <div class="speech-text">窒息感会让你更清醒地记住现在的感觉。你的呼吸，你的生命，甚至你的高潮，全都是我的。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_shen_5',
+                        title: '公开边缘',
+                        tag: 'Public Risk & Humiliation',
+                        desc: '一墙之隔就是人群，而他用最露骨的方式强迫你在极致的恐惧中沦陷。',
+                        content: `
+                            <div class="script-sys">—— 耻度试探 / 暴露危机 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">将你按在落地窗前的玻璃上，冰冷的触感与他从背后强势贯穿的热度形成剧烈反差。门外走廊传来隐约的脚步声，他却变本加厉地重重顶弄。</div>
+                                <div class="speech-text">外面有人走过来了。你敢叫出声，我就立刻打开门，让所有人看看你这副合不拢腿的模样。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_shen_6',
+                        title: '漫长的忍耐',
+                        tag: 'Orgasm Denial & Endurance',
+                        desc: '高潮被残忍地剥夺，濒临崩溃的边缘只有冷漠的等待。',
+                        content: `
+                            <div class="script-sys">—— 高潮控制 / 濒界折磨 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Shen Yan</span>
+                                <div class="action-text">贞操锁冰冷的金属质感死死扣住你最敏感的部位。当快感堆积到顶点即将喷发时，他却残忍地松开了手，任由你不上不下地痛苦挣扎。</div>
+                                <div class="speech-text">没有我的命令，你连高潮的资格都没有。慢慢忍着，直到你学会怎么求我为止。</div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            'lu': {
+                name: '陆寒',
+                role: 'SOMNOPHILIA / BREEDING',
+                scripts: [
+                    {
+                        id: 's_lu_1',
+                        title: '熟睡侵犯与内射',
+                        tag: 'Sleep Intrusion & Creampie',
+                        desc: '在梦魇的边缘，粗硕的性器强行撕开干涩的穴肉，将滚烫的浓精狠狠灌进你的子宫。',
+                        content: `
+                            <div class="script-sys">—— 强制唤醒 / 生殖腔灌溉 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">你陷入深眠，毫无防备。他粗糙的大手强行掰开你柔软的双腿，没有任何前戏，粗大坚硬的肉刃强行劈开干涩紧致的穴肉，连根没入。</div>
+                                <div class="speech-text">睡得真熟啊。被我干进子宫里的时候，你会在梦里发抖吗？</div>
+                            </div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">极度的撕裂感让你在梦中惊醒，却被他沉重的身躯死死压住。龟头残暴地撞开宫口，滚烫的精液一股股凶狠地射进最深处，小腹瞬间被烫得痉挛。</div>
+                                <div class="speech-text">啊啊！痛……肚子要被撑坏了……别射在里面……呜呜……</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_lu_2',
+                        title: '镜前暴露',
+                        tag: 'Mirror Coercion & Exhibitionism',
+                        desc: '被迫看着自己在镜中沦陷的淫靡姿态，被他彻底打上专属的烙印。',
+                        content: `
+                            <div class="script-sys">—— 视觉强制 / 羞耻剥夺 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">他从背后将你死死按在落地镜前，粗大的性器每一次拔出带起猩红的媚肉，又狠狠砸进最深处。他掰过你的脸，强迫你看着镜子里大张着腿、淫水横流的自己。</div>
+                                <div class="speech-text">躲什么？给我睁大眼睛看着。看看你被我操得翻白眼、合不拢腿的骚样。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_lu_3',
+                        title: '幽暗禁锢',
+                        tag: 'Isolation & Obsession',
+                        desc: '无法逃脱的密闭空间里，他病态的视线与占有欲是你唯一的感知来源。',
+                        content: `
+                            <div class="script-sys">—— 幽闭空间 / 强制依恋 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">金属锁链发出细微的碰撞声。他在无光的暗室里将你逼进墙角，沉重的呼吸喷洒在你的颈窝，带着令人窒息的占有欲。</div>
+                                <div class="speech-text">别再想跑了。除了我的怀里，你哪里也去不了。永远烂在这个房间里陪我。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_lu_4',
+                        title: '猎物标记',
+                        tag: 'Marking & Claiming',
+                        desc: '在每一寸肌肤上留下不可磨灭的痕迹，宣告他绝对的所有权。',
+                        content: `
+                            <div class="script-sys">—— 痛觉刻印 / 领地宣告 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">粗暴的啃咬落在你大腿内侧最娇嫩的皮肤上，渗出丝丝血迹。他像是一头护食的野兽，用牙齿和浓重的精液将你从里到外彻底覆盖。</div>
+                                <div class="speech-text">你在发抖？这是被打上我印记的自然反应。以后任何人只要闻到你身上的味道，就知道你已经被我肏透了。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_lu_5',
+                        title: '晨间突袭',
+                        tag: 'Morning Ambush',
+                        desc: '天还没亮，被晨勃折磨的他已经粗暴地撕开了你的睡衣。',
+                        content: `
+                            <div class="script-sys">—— 睡梦剥离 / 晨间欲望 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">意识还未完全清醒，你便感到下半身一凉。粗硬硕大的性器没有任何预警地抵住了穴口，带着强烈的侵略性硬生生挤了进去。</div>
+                                <div class="speech-text">醒了？天还没亮，但你该开始服侍我了。夹紧一点。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_lu_6',
+                        title: '强制共生',
+                        tag: 'Symbiosis & Confinement',
+                        desc: '连排泄和进食都需要依靠他的施舍，你彻底沦为他的一部分。',
+                        content: `
+                            <div class="script-sys">—— 生理剥夺 / 绝对依赖 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Lu Han</span>
+                                <div class="action-text">他将插在你体内的器具拔出，带出一大股浑浊的液体。你虚弱地瘫软在他怀里，连抬动手指的力气都被彻底榨干。</div>
+                                <div class="speech-text">连流水都需要我的批准。你这具身体已经离不开我了，承认吧，你就是一个只能靠吃我的精液活下去的废物。</div>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            'jiang': {
+                name: '江野',
+                role: 'BRAT / EDGING',
+                scripts: [
+                    {
+                        id: 's_jiang_1',
+                        title: '濒临高潮的折磨',
+                        tag: 'Edging & Prostate Milking',
+                        desc: '涨紫的性器被死死卡住根部，在崩溃的边缘，用冷漠的赞赏逼他流下生理性的眼泪。',
+                        content: `
+                            <div class="script-sys">—— 射精控制 / 极致渴求 ——</div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">你一脚踩在他的胸膛上，手指死死勒住他那根涨得紫红、不断滴落前列腺液的粗大性器根部，堵住马眼。另一只手的手指无情地在他的敏感点上狠狠抠挖。</div>
+                                <div class="speech-text">刚才的骨气呢？爽得都在发抖了。没有我的允许，你一滴精液也别想射出来。</div>
+                            </div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Jiang Ye</span>
+                                <div class="action-text">因为极度的快感和憋胀的折磨，他的眼尾泛起糜烂的红。他大口喘息着，眼泪控制不住地溢出，像发情的公狗一样用胯部去蹭你的手心。</div>
+                                <div class="speech-text">哈啊……放开……要坏了……求你……主人，让我射吧……夸夸我……求你夸我乖……</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_jiang_2',
+                        title: '狂犬的逆袭',
+                        tag: 'Power Reversal & Rough Sex',
+                        desc: '被解开束缚的瞬间，他像发疯的野兽将你扑倒，用最粗暴的肏弄夺回主导权。',
+                        content: `
+                            <div class="script-sys">—— 权力反转 / 野蛮交媾 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Jiang Ye</span>
+                                <div class="action-text">束缚带解开的一瞬间，他双眼猩红，像头饿狼般将你狠狠掀翻在床。粗硕滚烫的肉棒根本不顾你的紧涩，蛮横地一插到底。沉甸甸的囊袋疯狂拍打在你的臀肉上，发出响亮的啪啪声。</div>
+                                <div class="speech-text">刚才操纵我的时候不是很得意吗？！叫啊！现在夹得这么紧，不就是欠肏吗！老子今天干死你！</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_jiang_3',
+                        title: '挑衅的代价',
+                        tag: 'Punishment & Surrender',
+                        desc: '不知天高地厚的挑衅，最终只能换来泣不成声的求饶。',
+                        content: `
+                            <div class="script-sys">—— 语言惩戒 / 攻守逆转 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Jiang Ye</span>
+                                <div class="action-text">他一把捏住你的手腕，将你反压在沙发靠背上。毫不怜惜的力道将你死死钳制，眼神中透着危险的笑意。</div>
+                                <div class="speech-text">再骂一句试试？你越是反抗，我就干得越狠，我会让你知道惹毛一头野狗是什么下场。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_jiang_4',
+                        title: '视觉挑逗',
+                        tag: 'Visual Tease & Frustration',
+                        desc: '极致的诱惑与不许触碰的禁令，将他逼至疯狂。',
+                        content: `
+                            <div class="script-sys">—— 视觉折磨 / 触碰禁止 ——</div>
+                            <div class="dialogue-block user">
+                                <span class="speaker-name">You</span>
+                                <div class="action-text">你坐在他的上方，缓慢地褪去衣物，湿润的穴口若有似无地擦过他已经硬得发痛的性器顶端，却在即将插入时恶劣地避开。</div>
+                                <div class="speech-text">看着我，不许闭眼。手绑在后面，想进来？那就自己想办法。</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_jiang_5',
+                        title: '暴雨狂潮',
+                        tag: 'Stormy Night & Reckless',
+                        desc: '雷雨交加的夜晚，掩盖了一切粗暴的索取和绝望的泣音。',
+                        content: `
+                            <div class="script-sys">—— 极端环境 / 肆意掠夺 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Jiang Ye</span>
+                                <div class="action-text">窗外的雷声轰鸣。他像不知疲倦的机器，将你死死抵在冰冷的墙壁上，每一次撞击都伴随着骨血相撞的闷响，快要把你的灵魂都顶碎。</div>
+                                <div class="speech-text">哭大声点！外面的雷声很大，没人听得见你现在的声音到底有多骚！</div>
+                            </div>
+                        `
+                    },
+                    {
+                        id: 's_jiang_6',
+                        title: '猎犬的臣服',
+                        tag: 'Submission & Breaking Point',
+                        desc: '当所有的桀骜被彻底击溃，只剩下对主人的摇尾乞怜。',
+                        content: `
+                            <div class="script-sys">—— 心理击溃 / 绝对臣服 ——</div>
+                            <div class="dialogue-block char">
+                                <span class="speaker-name">Jiang Ye</span>
+                                <div class="action-text">漫长无休止的惩罚终于结束。他像一条被彻底驯服的狗，膝盖磨破了皮，仍然执拗地爬到你的脚边，用鼻尖讨好地蹭着你的脚踝。</div>
+                                <div class="speech-text">我错了……主人……只要您不丢掉我，您想怎么玩我都可以……求您看看我……</div>
+                            </div>
+                        `
+                    }
+                ]
+            }
+        };
+
+        // === 体位控制状态 ===
+        let currentPosition = '男上位';
+
+        function setPosition(pos, btn) {
+            currentPosition = pos;
+            document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // === 剧本横向滚动控制 ===
+        function scrollScenarios(direction) {
+            const container = document.getElementById('scenario-list-container');
+            const card = container.querySelector('.scenario-card');
+            if (card) {
+                // 每次滑动：卡片宽度(270) + 间距gap(24)
+                const scrollAmount = card.offsetWidth + 24; 
+                container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        // === 视图控制 ===
+        function showView(viewId) {
+            document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function exitWanyeApp() {
+            try {
+                const hostWindow = window.parent && window.parent !== window ? window.parent : window;
+                if (typeof hostWindow.closeWanyeApp === 'function') {
+                    hostWindow.closeWanyeApp();
+                    return;
+                }
+            } catch (error) {
+                console.warn('Failed to close Wanye app from frame:', error);
+            }
+            showView('view-directory');
+        }
+
+        // === 剧本选择页 (带横向滑动与自己填写) ===
+        function openScenarios(charKey) {
+            const data = charData[charKey];
+            if (!data) return;
+
+            document.getElementById('scenario-char-name').textContent = data.name;
+            document.getElementById('scenario-char-role').textContent = data.role;
+
+            const container = document.getElementById('scenario-list-container');
+            container.innerHTML = ''; // Clear
+            container.scrollLeft = 0; // 重置滚动位置
+
+            // 渲染预设剧本
+            data.scripts.forEach(script => {
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.innerHTML = `
+                    <span class="scenario-tag">${script.tag}</span>
+                    <h3 class="scenario-title">${script.title}</h3>
+                    <div class="scenario-desc">${script.desc}</div>
+                `;
+                // 点击卡片进入房间
+                card.onclick = () => enterRoom(data.name, script.title, script.content);
+                container.appendChild(card);
+            });
+
+            // 增加"自己填写"卡片
+            const customCard = document.createElement('div');
+            customCard.className = 'scenario-card custom-card';
+            customCard.style.borderColor = 'var(--mag-sub)';
+            customCard.innerHTML = `
+                <span class="scenario-tag">CUSTOM SCRIPT</span>
+                <h3 class="scenario-title">自己填写</h3>
+                <div class="scenario-desc">构建你专属的沉沦境遇，一切细节皆由你掌控。</div>
+                <div style="margin-top: auto; padding-top: 20px; text-align: right; color: var(--mag-accent); font-size: 24px; font-weight: 300;">+</div>
+            `;
+            customCard.onclick = () => openCustomScript(data.name);
+            container.appendChild(customCard);
+
+            showView('view-scenarios');
+        }
+
+        // === 自定义剧本逻辑 ===
+        let currentCustomChar = '';
+
+        function openCustomScript(charName) {
+            currentCustomChar = charName;
+            document.getElementById('custom-title').value = '';
+            document.getElementById('custom-tag').value = '';
+            document.getElementById('custom-desc').value = '';
+            document.getElementById('modal-custom').classList.add('active');
+        }
+
+        function closeCustom() {
+            document.getElementById('modal-custom').classList.remove('active');
+        }
+
+        function confirmCustom() {
+            const title = document.getElementById('custom-title').value.trim() || '未知境遇';
+            const tag = document.getElementById('custom-tag').value.trim() || 'Custom Script';
+            const desc = document.getElementById('custom-desc').value.trim() || '一切由此开始...';
+
+            const contentHtml = `
+                <div class="script-sys">—— ${tag} / 自定义构建 ——</div>
+                <div class="dialogue-block user">
+                    <span class="speaker-name">System</span>
+                    <div class="action-text">${desc}</div>
+                </div>
+            `;
+
+            closeCustom();
+            enterRoom(currentCustomChar, title, contentHtml);
+        }
+
+        // === 房间页 ===
+        function enterRoom(charName, scriptTitle, contentHtml) {
+            document.getElementById('room-name').textContent = charName;
+            // 房名后缀加上选择的体位
+            document.getElementById('room-status').textContent = scriptTitle + ' | ' + currentPosition;
+            
+            const chatFlow = document.getElementById('chat-flow');
+            chatFlow.innerHTML = contentHtml;
+            
+            const textarea = document.querySelector('.input-field');
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
+            showView('view-room');
+        }
+
+        // === 结算与退出 ===
+        const modalLog = document.getElementById('modal-log');
+
+        function requestExit() {
+            // 重置计数器状态
+            document.getElementById('log-condom').checked = false; // 默认无套，增加刺激感
+            document.getElementById('log-rounds').textContent = '1';
+            document.getElementById('log-creampies').textContent = '0';
+            
+            // 显示弹窗
+            modalLog.classList.add('active');
+        }
+
+        function updateCounter(elementId, delta) {
+            const el = document.getElementById(elementId);
+            let val = parseInt(el.textContent);
+            val += delta;
+            if (val < 0) val = 0;
+            if (elementId === 'log-rounds' && val < 1) val = 1; // 做爱次数至少1次
+            el.textContent = val;
+        }
+
+        function confirmExit(save) {
+            if (save) {
+                const condom = document.getElementById('log-condom').checked;
+                const rounds = document.getElementById('log-rounds').textContent;
+                const creampies = document.getElementById('log-creampies').textContent;
+                console.log(`Intimacy Log Saved: Protection=${condom}, Rounds=${rounds}, Creampies=${creampies}`);
+            }
+            // 隐藏弹窗并返回目录页
+            modalLog.classList.remove('active');
+            setTimeout(() => {
+                showView('view-directory');
+            }, 300);
+        }
+
+        // 文本框自适应高度
+        const textarea = document.querySelector('.input-field');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    </script>
+</body>
+</html>

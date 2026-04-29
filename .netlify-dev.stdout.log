@@ -1,0 +1,235 @@
+⬥ Injecting environment variable values for all scopes
+⬥ Injected .env file env vars: RINNO_LICENSE_SECRET, RINNO_ADMIN_KEY, RINNO_FOUNDER_EMAIL, RINNO_FOUNDER_PASSWORD, RINNO_ADMIN_SESSION_TTL_MINUTES, RINNO_AUDIT_LOG_LIMIT, RINNO_ACTIVATION_STORE, RINNO_LOCAL_STORE_PATH
+⬥ No app server detected. Using simple static server
+⬥ Running static server from "Rinno\public"
+⬥ Setting up local dev server
+
+⬥ Static server listening to 3999
+⬥ Loaded function _license
+⬥ Loaded function runtime
+⬥ Loaded function local-issue
+⬥ Loaded function generate-code
+⬥ Loaded function auth
+⬥ Loaded function admin-users
+⬥ Loaded function admin-session
+⬥ Loaded function admin-password
+⬥ Loaded function admin-audit
+
+   ╭─────────────────────── ⬥  ────────────────────────╮
+   │                                                   │
+   │   Local dev server ready: http://localhost:8888   │
+   │                                                   │
+   ╰───────────────────────────────────────────────────╯
+
+Request from ::1: GET /.netlify/functions/admin-session
+Response with status 200 in 25 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 11 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 99 ms.
+Request from ::1: GET /.netlify/functions/admin-users
+Response with status 200 in 4 ms.
+Request from ::1: POST /.netlify/functions/admin-users
+Response with status 200 in 51 ms.
+Request from ::1: POST /.netlify/functions/generate-code
+Response with status 200 in 12 ms.
+Request from ::1: GET /.netlify/functions/admin-audit?limit=20
+Response with status 200 in 4 ms.
+Request from ::1: GET /.netlify/functions/admin-audit?limit=20&format=csv
+Response with status 200 in 3 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 52 ms.
+Request from ::1: POST /.netlify/functions/admin-password
+Response with status 200 in 98 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 49 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 53 ms.
+Request from ::1: GET /.netlify/functions/admin-users
+Response with status 200 in 3 ms.
+Request from ::1: POST /.netlify/functions/admin-users
+Response with status 200 in 57 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 54 ms.
+Request from ::1: POST /.netlify/functions/admin-users
+Response with status 403 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 9 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/admin-session
+Response with status 200 in 57 ms.
+Request from ::1: GET /.netlify/functions/admin-users
+Request from ::1: GET /.netlify/functions/admin-audit?limit=100
+Response with status 200 in 8 ms.
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/generate-code
+Response with status 200 in 16 ms.
+Request from ::1: GET /.netlify/functions/admin-audit?limit=100
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 9 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 10 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 4 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 18 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 9 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 6 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 9 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 3 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 19 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 3 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 12 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 17 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 9 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 4 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 11 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 8 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 2 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 1 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 7 ms.
+Request from ::1: OPTIONS /.netlify/functions/auth
+Response with status 204 in 34 ms.
+Request from ::1: POST /.netlify/functions/auth
+Response with status 200 in 26 ms.

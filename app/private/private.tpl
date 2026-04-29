@@ -1,0 +1,511 @@
+<section class="private-app" id="private-app" aria-label="私叙">
+    <input id="private-avatar-input" name="private_avatar" type="file" accept="image/*" hidden>
+    <input id="private-import-input" name="private_import" type="file" accept="application/json,.json" hidden>
+
+    <section class="private-screen private-register-screen" data-private-screen="register" aria-label="邮箱注册">
+        <div class="private-topbar">
+            <div class="private-topbar-spacer" aria-hidden="true"></div>
+            <h1 class="private-title">邮箱注册</h1>
+            <div aria-hidden="true"></div>
+        </div>
+
+        <form class="private-form private-register-form" id="private-register-form">
+            <div class="private-register-main">
+                <div class="private-register-hero">
+                    <div class="private-register-kicker">PRIVATE ACCOUNT</div>
+                    <button class="private-avatar-frame interactive" id="private-avatar-frame" type="button" aria-label="上传头像">
+                        <svg class="private-camera-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 8h4l2-3h4l2 3h4v11H4z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                    </button>
+                    <p class="private-note">用一封信确认邮箱，把私叙留给真正想慢慢说的话。</p>
+                </div>
+
+                <div class="private-field-stack">
+                    <label class="private-field">
+                        <span>昵称</span>
+                        <input class="private-input" id="private-register-nickname" name="private_nickname" type="text" maxlength="24" autocomplete="username" placeholder="Lies7core">
+                    </label>
+                    <label class="private-field">
+                        <span>邮箱</span>
+                        <input class="private-input" id="private-register-email" name="private_email" type="email" autocomplete="email" placeholder="you@example.com">
+                    </label>
+                    <label class="private-field">
+                        <span>密码</span>
+                        <input class="private-input" id="private-register-password" name="private_password" type="password" autocomplete="new-password" minlength="8" maxlength="12" placeholder="8-12 位">
+                    </label>
+                </div>
+            </div>
+
+            <div class="private-register-bottom">
+                <label class="private-checkbox">
+                    <input id="private-register-agree" name="private_register_agree" type="checkbox">
+                    <span>我已阅读并同意 <button class="private-link-button interactive" id="private-open-terms" type="button">服务协议</button></span>
+                </label>
+                <p class="private-message" id="private-register-message" aria-live="polite"></p>
+                <div class="private-bottom-actions">
+                    <button class="private-action-button primary interactive" type="submit">继续</button>
+                    <button class="private-action-button interactive" id="private-register-login" type="button" hidden>登录已有账号</button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="private-screen private-privacy-screen" data-private-screen="privacy" aria-label="隐私确认">
+        <div class="private-topbar">
+            <div></div>
+            <h1 class="private-title">隐私保护</h1>
+            <div></div>
+        </div>
+
+        <div class="private-article">
+            <div class="private-kicker">PRIVACY</div>
+            <h2>只在本机保存你的私叙入口。</h2>
+            <p>邮箱、昵称、头像、信笺验证状态、最近登录信息，以及你主动导入到私叙里的聊天记录索引，只会保存在当前浏览器本地，用于进入私叙、切换账号、恢复页面状态与找回你已经留在这里的内容。</p>
+            <p>这里不会主动把你的私叙身份资料、聊天记录、验证状态上传到外部服务器。除非你自己配置聊天接口、主动点击导出、主动导入文件，或在信笺页亲自点击寄出，否则页面不会额外替你向外传输这些内容。</p>
+            <h3>你需要知道</h3>
+            <p>如果你清空浏览器缓存、更换浏览器、更换设备、使用无痕模式、重装系统，或手动删除本地数据，私叙中的注册状态、登录状态、验证状态、头像、聊天记录和导入内容都可能一并消失，页面也无法保证替你恢复。</p>
+            <p>如果当前浏览器可以被他人直接打开，对方也可能看到尚未清除的本地私叙数据。所以请只在你能控制的设备上使用，并自行配合设备锁屏、浏览器账号保护和本地文件管理。</p>
+            <h3>关于信笺验证与导入导出</h3>
+            <p>信笺验证只用于完成注册流程确认。页面会把收件人、主题和验证内容预填到信笺页，但是否真正寄出由你自己决定；你返回私叙后，流程才会继续。</p>
+            <p>导出聊天记录时，文件会保存到你的设备目录；导入聊天记录时，内容会合并到当前浏览器里的私叙账号。请自行确认文件来源与保存位置，避免把不属于自己的内容导入或留存在共享设备中。</p>
+            <label class="private-checkbox">
+                <input id="private-privacy-agree" name="private_privacy_agree" type="checkbox">
+                <span>我理解并同意上述隐私说明。</span>
+            </label>
+            <p class="private-message" id="private-privacy-message" aria-live="polite"></p>
+        </div>
+
+        <div class="private-bottom-actions">
+            <button class="private-action-button primary interactive" id="private-privacy-next" type="button">进入信笺验证</button>
+        </div>
+    </section>
+
+    <section class="private-screen private-verify-screen" data-private-screen="verify" aria-label="信笺验证">
+        <div class="private-topbar">
+            <div></div>
+            <h1 class="private-title">信笺验证</h1>
+            <div></div>
+        </div>
+
+        <div class="private-verify-copy">
+            <div class="private-kicker">MAIL LETTER</div>
+            <h2>寄出这封验证信。</h2>
+            <p>收件人 <span id="private-verify-to">Private conversation@520.com</span></p>
+            <p>你的邮箱 <span id="private-verify-email">-</span></p>
+        </div>
+
+        <div class="private-verify-lines">
+            <div class="private-verify-line">
+                <span>信笺内容</span>
+                <strong id="private-verify-content">注册私叙20</strong>
+            </div>
+            <p class="private-verify-instructions">点击发送信笺后，回到私叙完成验证。</p>
+            <p class="private-message" id="private-verify-message" aria-live="polite"></p>
+        </div>
+
+        <div class="private-bottom-actions triple private-verify-actions">
+            <button class="private-action-button interactive" id="private-send-letter" type="button">发送信笺</button>
+            <button class="private-action-button interactive" id="private-sent-letter" type="button" disabled>已发送信笺</button>
+            <button class="private-action-button primary interactive" id="private-verify-next" type="button" disabled>下一步</button>
+        </div>
+    </section>
+
+    <section class="private-screen private-verified-screen" data-private-screen="verified" aria-label="完成注册">
+        <div class="private-topbar">
+            <div></div>
+            <h1 class="private-title">完成注册</h1>
+            <div></div>
+        </div>
+
+        <div class="private-verified-copy">
+            <div class="private-kicker">VERIFIED</div>
+            <div class="private-verified-panel" aria-live="polite">
+                <svg class="private-verify-check" viewBox="0 0 120 120" aria-hidden="true">
+                    <path d="M28 62l21 22 43-52"/>
+                </svg>
+                <div class="private-verified-text">已通过验证</div>
+            </div>
+            <p class="private-verified-note">邮箱信笺验证已经完成，现在进入最后一步，正式完成私叙注册。</p>
+        </div>
+
+        <div class="private-bottom-actions">
+            <button class="private-action-button primary interactive" id="private-finish-register" type="button">完成注册</button>
+        </div>
+    </section>
+
+    <section class="private-screen private-login-screen" data-private-screen="login" aria-label="登入私叙">
+        <form class="private-login-form" id="private-login-form" autocomplete="on">
+        <input id="private-login-username" name="private_login_username" type="email" autocomplete="username" hidden>
+        <div class="private-login-card">
+            <div class="private-login-identity">
+                <div class="private-avatar-frame" id="private-login-avatar" aria-hidden="true">
+                    <svg class="private-camera-icon" viewBox="0 0 24 24">
+                        <path d="M4 8h4l2-3h4l2 3h4v11H4z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </div>
+                <div class="private-login-name" id="private-login-name">昵称</div>
+                <div class="private-login-email" id="private-login-email">邮箱</div>
+            </div>
+            <div class="private-login-fields">
+                <label class="private-field private-login-account-field" id="private-login-account-field" hidden>
+                    <span>账号</span>
+                    <input class="private-input" id="private-login-account-input" name="private_login_account" type="email" autocomplete="username" placeholder="输入账号邮箱">
+                </label>
+                <label class="private-field" id="private-login-field">
+                    <span id="private-login-label">密码</span>
+                    <input class="private-input" id="private-login-input" name="private_login_credential" type="password" autocomplete="current-password" placeholder="输入密码">
+                    <button class="private-inline-button interactive" id="private-code-button" type="button" hidden>点击获取验证码</button>
+                </label>
+                <button class="private-login-switch interactive" id="private-login-toggle" type="button">用信笺验证码登录</button>
+                <p class="private-message" id="private-login-message" aria-live="polite"></p>
+            </div>
+        </div>
+
+        <div class="private-bottom-actions private-login-bottom-actions">
+            <button class="private-action-button primary interactive" id="private-login-submit" type="submit">登录</button>
+            <button class="private-action-button interactive" id="private-login-other" type="button">登录其它账号</button>
+        </div>
+        <div class="private-login-links" aria-label="私叙账号操作">
+            <button class="interactive" id="private-export-records" type="button">导出聊天记录</button>
+            <button class="interactive" id="private-import-records" type="button">导入聊天记录</button>
+            <button class="interactive private-login-register-link" id="private-login-register" type="button">注册</button>
+        </div>
+        </form>
+    </section>
+
+    <section class="private-screen private-chat-screen" data-private-screen="chat" aria-label="私叙">
+        <div class="private-chat-shell">
+            <header class="private-chat-top">
+                <div class="private-chat-heading">
+                    <div class="private-chat-kicker">PRIVATE LINE</div>
+                    <button class="private-chat-title interactive" id="private-chat-title" type="button" aria-label="返回主屏">PRIVATE</button>
+                    <div class="private-chat-issue" id="private-chat-issue">把想说的话留到安静处慢慢展开。</div>
+                </div>
+            </header>
+
+            <div class="private-panel-wrap">
+                <section class="private-pane active" data-private-panel="whisper" aria-label="消息">
+                    <section class="private-whisper-section" aria-label="消息">
+                        <div class="private-whisper-head">
+                            <div>
+                                <div class="private-whisper-kicker">MESSAGES</div>
+                                <h2 class="private-whisper-title">消息</h2>
+                            </div>
+                            <div class="private-whisper-count" id="private-thread-count">0 threads</div>
+                        </div>
+                        <div class="private-thread-list" id="private-thread-list" aria-label="消息列表"></div>
+                    </section>
+                </section>
+
+                <section class="private-pane" data-private-panel="contacts" aria-label="通讯">
+                    <section class="private-contact-titlebar" aria-label="通讯标题">
+                        <div class="private-section-label">CONTACTS</div>
+                        <h2>通讯</h2>
+                    </section>
+
+                    <div class="private-contact-toolbar">
+                        <div class="private-contact-filter" aria-label="联系人分组">
+                            <button class="active interactive" type="button">近席</button>
+                            <button class="interactive" type="button">群像</button>
+                            <button class="interactive" id="private-new-group" type="button" aria-label="添加账号" title="添加账号">+</button>
+                        </div>
+                        <label class="private-message-search" aria-label="搜索联系人">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.5-4.5"/></svg>
+                            <input id="private-message-search-input" name="private_message_search" type="search" placeholder="检索暗号 / 关系札记" autocomplete="off">
+                        </label>
+                    </div>
+
+                    <div class="private-contact-list" id="private-contact-list" aria-label="联系人列表"></div>
+                </section>
+
+                <section class="private-pane" data-private-panel="time" aria-label="朋友圈">
+                    <div class="private-moments-toolbar">
+                        <button class="private-tool-button interactive" id="private-moment-refresh" type="button" aria-label="刷新朋友圈" title="刷新">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M6 18H2v4"/><path d="M18 6h4V2"/></svg>
+                        </button>
+                        <div class="private-moments-title">
+                            <span>MOMENTS</span>
+                            <strong>朋友圈</strong>
+                        </div>
+                        <div class="private-tool-cluster">
+                            <button class="private-tool-button interactive" id="private-moment-camera" type="button" aria-label="发布朋友圈" title="发布朋友圈">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h4l2-3h4l2 3h4v11H4z"/><circle cx="12" cy="13" r="4"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <section class="private-moments-cover" aria-label="拾光封面">
+                        <div class="private-cover-placeholder"></div>
+                    </section>
+
+                    <section class="private-moments-me" aria-label="拾光身份">
+                        <div class="private-moments-avatar" id="private-moments-avatar" aria-hidden="true"></div>
+                        <div class="private-moments-name" id="private-moments-name">我</div>
+                        <div class="private-moments-signature">PRIVATE MOMENTS</div>
+                    </section>
+
+                    <div class="private-moment-modal-backdrop" id="private-moment-modal-backdrop" hidden></div>
+
+                    <div class="private-moment-composer" id="private-moment-composer" role="dialog" aria-modal="true" aria-label="发布朋友圈" hidden>
+                        <div class="private-moment-composer-head">
+                            <div class="private-section-label">POSTCARD</div>
+                            <button class="private-moment-close interactive" id="private-moment-close" type="button" aria-label="关闭发布">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                            </button>
+                        </div>
+                        <div class="private-moment-editor" id="private-moment-editor" contenteditable="true" data-placeholder="把此刻写成一句短句"></div>
+                        <div class="private-moment-actions">
+                            <div class="private-moment-stamp" id="private-moment-stamp-inline">LIVE MOMENT</div>
+                            <button class="private-soft-button primary interactive" id="private-moment-send" type="button">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+                                <span>发布</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="private-moment-feed" id="private-moment-feed" aria-label="拾光动态"></div>
+                </section>
+
+                <section class="private-pane" data-private-panel="monologue" aria-label="我的">
+                    <div class="private-profile-stack">
+                        <section class="private-profile-identity" aria-label="身份">
+                            <div class="private-profile-kicker">身份</div>
+                            <div class="private-profile-name" data-private-profile-field="nickname" contenteditable="true">我</div>
+                            <div class="private-profile-mail" id="private-profile-mail">ID: @ rinno</div>
+                            <button class="private-profile-avatar interactive" id="private-profile-avatar" type="button" aria-label="更换头像"></button>
+                        </section>
+
+                        <section class="private-persona-card private-persona-magazine" aria-label="人格卡片">
+                            <div class="private-persona-mag-head">
+                                <div>
+                                    <div class="private-persona-pill">USER PRESET</div>
+                                    <div class="private-persona-issue">RINNO / PERSONA</div>
+                                </div>
+                                <button class="private-persona-edit interactive" id="private-persona-edit" type="button" aria-label="编辑user预设" title="编辑">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                </button>
+                            </div>
+                            <div class="private-persona-mag-body">
+                                <div class="private-persona-num">01</div>
+                                <div class="private-persona-copy">
+                                    <h3 id="private-persona-preset-name">我</h3>
+                                    <p id="private-persona-preset-setting">把人物设定写在这里。</p>
+                                </div>
+                            </div>
+                            <div class="private-persona-meta">
+                                <span><b>ID</b><em id="private-persona-preset-id">@ rinno</em></span>
+                                <span><b>性别</b><em id="private-persona-preset-gender">未设定</em></span>
+                            </div>
+                        </section>
+
+                        <div class="private-profile-actions" id="private-profile-actions" aria-label="快捷入口">
+                            <button class="private-profile-action interactive" type="button" data-private-entry="预设">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+                                <span>预设</span>
+                            </button>
+                            <button class="private-profile-action interactive" type="button" data-private-entry="收藏">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l3 6 6 1-4.5 4.3 1.1 6.1L12 17.4 6.4 20.4l1.1-6.1L3 10l6-1z"/></svg>
+                                <span>收藏</span>
+                            </button>
+                            <button class="private-profile-action interactive" type="button" data-private-entry="美化">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a9 9 0 1 1 9-9 4 4 0 0 1-4 4h-1.5a1.5 1.5 0 0 0 0 3H17"/><circle cx="7.5" cy="10" r="1"/><circle cx="11" cy="7.5" r="1"/><circle cx="15.5" cy="10" r="1"/></svg>
+                                <span>美化</span>
+                            </button>
+                            <button class="private-profile-action interactive" type="button" data-private-entry="设置">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.05.05a2 2 0 0 1-2.83 2.83l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.08A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.05.05a2 2 0 0 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.08A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.05-.05a2 2 0 0 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.08A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.86-.34l.05-.05a2 2 0 0 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.4 9c.36.62.94 1 1.55 1H21a2 2 0 0 1 0 4h-.08a1.7 1.7 0 0 0-1.52 1z"/></svg>
+                                <span>设置</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="private-pane private-sticker-library-pane" data-private-panel="sticker-library" aria-label="表情包库">
+                    <div class="private-sticker-library">
+                        <aside class="private-sticker-sidebar" aria-label="表情包分组">
+                            <div class="private-sticker-sidebar-head">
+                                <span>STICKERS</span>
+                                <strong>分组</strong>
+                            </div>
+                            <div class="private-sticker-sidebar-line" aria-hidden="true"></div>
+                            <div class="private-sticker-group-list" id="private-sticker-group-list"></div>
+                        </aside>
+
+                        <section class="private-sticker-main" aria-label="表情包列表">
+                            <header class="private-sticker-main-head">
+                                <div class="private-sticker-title-block">
+                                    <span>MEME LIBRARY</span>
+                                    <h2 id="private-sticker-title">表情包库</h2>
+                                </div>
+                                <button class="private-sticker-add-capsule interactive" id="private-sticker-add" type="button" aria-label="添加表情包">
+                                    <span aria-hidden="true">+</span>
+                                    <b>添加</b>
+                                </button>
+                            </header>
+                            <div class="private-sticker-count" id="private-sticker-count">0 stickers</div>
+                            <div class="private-sticker-grid" id="private-sticker-grid" aria-live="polite"></div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+
+            <nav class="private-tabbar" aria-label="私叙页面切换">
+                <button class="private-tab interactive active" type="button" data-private-tab="whisper" aria-label="消息" title="消息"></button>
+                <button class="private-tab interactive" type="button" data-private-tab="contacts" aria-label="通讯" title="通讯"></button>
+                <button class="private-tab interactive" type="button" data-private-tab="time" aria-label="拾光" title="拾光"></button>
+                <button class="private-tab interactive" type="button" data-private-tab="monologue" aria-label="我的" title="我的"></button>
+            </nav>
+        </div>
+
+    </section>
+
+    <div class="private-code-toast" id="private-code-toast" role="status" aria-live="polite" hidden>
+        <div class="private-toast-app-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 8l8 5 8-5"/></svg>
+        </div>
+        <div class="private-toast-text" id="private-code-toast-text">信笺收到验证码 000000</div>
+        <button class="private-toast-copy interactive" id="private-copy-code" type="button">复制</button>
+    </div>
+
+    <div class="api-system-toast private-system-toast" id="private-system-toast" role="status" aria-live="polite" hidden>
+        <span class="api-system-text" id="private-system-toast-text"></span>
+    </div>
+
+    <div class="private-sticker-modal" id="private-sticker-modal" role="dialog" aria-modal="true" aria-labelledby="private-sticker-modal-title" hidden>
+        <form class="private-sticker-dialog" id="private-sticker-form" autocomplete="off">
+            <div class="private-sticker-dialog-head">
+                <div>
+                    <div class="private-section-label">ADD STICKERS</div>
+                    <h2 id="private-sticker-modal-title">添加表情包</h2>
+                </div>
+            </div>
+            <label class="private-sticker-field">
+                <span>批量内容</span>
+                <textarea id="private-sticker-input" rows="8" placeholder="开心猫猫：https://example.com/a.png&#10;求夸小狗 https://example.com/b.gif"></textarea>
+            </label>
+            <p class="private-sticker-format">支持「描述：URL」或「描述 URL」，可一行一条批量粘贴。</p>
+            <div class="private-sticker-dialog-actions">
+                <button class="private-soft-button interactive" id="private-sticker-modal-cancel" type="button">取消</button>
+                <button class="private-soft-button primary interactive" type="submit">保存</button>
+            </div>
+            <p class="private-message private-sticker-message" id="private-sticker-message" aria-live="polite"></p>
+        </form>
+    </div>
+
+    <div class="private-sticker-modal private-sticker-group-modal" id="private-sticker-group-modal" role="dialog" aria-modal="true" aria-labelledby="private-sticker-group-title" hidden>
+        <form class="private-sticker-dialog private-sticker-group-dialog" id="private-sticker-group-form" autocomplete="off">
+            <div class="private-sticker-dialog-head">
+                <div>
+                    <div class="private-section-label">NEW GROUP</div>
+                    <h2 id="private-sticker-group-title">添加分组</h2>
+                </div>
+            </div>
+            <label class="private-sticker-field">
+                <span>分组名称</span>
+                <input id="private-sticker-group-name" type="text" maxlength="18" placeholder="新的分组">
+            </label>
+            <p class="private-sticker-format">新分组会显示在左侧列表中。</p>
+            <div class="private-sticker-dialog-actions">
+                <button class="private-soft-button interactive" id="private-sticker-group-cancel" type="button">取消</button>
+                <button class="private-soft-button primary interactive" type="submit">保存</button>
+            </div>
+            <p class="private-message private-sticker-message" id="private-sticker-group-message" aria-live="polite"></p>
+        </form>
+    </div>
+
+    <div class="private-contact-account-modal" id="private-contact-account-modal" role="dialog" aria-modal="true" aria-labelledby="private-contact-account-title" hidden>
+        <form class="private-contact-account-dialog" id="private-contact-account-form" autocomplete="off">
+            <div class="private-contact-account-head">
+                <div>
+                    <div class="private-section-label">CONTACT ACCOUNT</div>
+                    <h2 id="private-contact-account-title">添加通讯账号</h2>
+                </div>
+            </div>
+            <label class="private-contact-account-search" aria-label="搜索 CHAR 或 NPC 账号">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.5-4.5"/></svg>
+                <input id="private-contact-account-input" type="search" inputmode="numeric" placeholder="粘贴 CHAR / NPC 的账号 ID" autocomplete="off">
+            </label>
+            <div class="private-contact-account-results" id="private-contact-account-results" aria-live="polite"></div>
+        </form>
+    </div>
+
+    <div class="private-terms-modal" id="private-terms-modal" role="dialog" aria-modal="true" aria-labelledby="private-terms-title" hidden>
+        <div class="private-terms-dialog">
+            <div class="private-terms-head">
+                <div class="private-terms-kicker">SERVICE TERMS</div>
+                <h2 class="private-terms-title" id="private-terms-title">私叙服务协议</h2>
+            </div>
+            <div class="private-terms-content">
+                <h3>一、使用方式</h3>
+                <p>私叙是 Rinno 内的本地私密入口，用于保存你选择留下的昵称、邮箱、头像、验证状态、聊天记录与页面偏好。它更接近一个只属于当前浏览器的私人入口，而不是自动替你跨设备同步的云端托管服务。</p>
+                <p>你应确认自己填写、导入、导出的信息由你本人决定使用，并自行保管当前设备、浏览器环境、锁屏密码与导出文件。</p>
+                <h3>二、数据保存与删除</h3>
+                <p>私叙默认把相关资料保存在当前浏览器本地。清空缓存、切换浏览器、重装系统、使用无痕模式或手动删除本地数据后，相关内容都可能无法恢复。</p>
+                <p>如果你主动导出聊天记录，导出文件会离开当前页面并保存到你的设备目录；之后如何备份、分享、转移或删除，由你自己负责。</p>
+                <h3>三、验证与登录</h3>
+                <p>注册时需要阅读协议、确认隐私说明并完成信笺验证。未完成验证时，页面可以保留草稿，但不会视为完整注册。</p>
+                <p>登录其它账号时，请确认该账号属于你本人或已经得到明确授权，避免在公共设备上长期保留登录状态。</p>
+                <h3>四、风险提示</h3>
+                <p>如果你在公共电脑、共享浏览器或他人设备上使用私叙，任何能够直接访问当前浏览器的人，都可能接触到尚未删除的本地数据。请在使用完毕后及时退出、清理并关闭设备保护。</p>
+                <p>继续使用即表示你已理解：私叙提供的是本地私密入口与页面流程，不承诺代替你保管、找回或跨设备同步已经被清除的本地数据。</p>
+            </div>
+            <div class="private-terms-actions">
+                <button class="private-action-button primary interactive" id="private-terms-ok" type="button">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="private-user-preset-modal" id="private-user-preset-modal" role="dialog" aria-modal="true" aria-labelledby="private-user-preset-title" hidden>
+        <form class="private-user-preset-dialog" id="private-user-preset-form" autocomplete="off">
+            <div class="private-user-preset-head">
+                <div>
+                    <div class="private-section-label">USER PRESET</div>
+                    <h2 id="private-user-preset-title">编辑user预设</h2>
+                </div>
+                <button class="private-moment-close interactive" id="private-user-preset-cancel" type="button" aria-label="关闭user预设">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                </button>
+            </div>
+            <label class="private-user-preset-field">
+                <span>姓名</span>
+                <input id="private-user-preset-name" type="text" placeholder="姓名">
+            </label>
+            <label class="private-user-preset-field">
+                <span>ID</span>
+                <input id="private-user-preset-id" type="text" placeholder="@ rinno">
+            </label>
+            <label class="private-user-preset-field">
+                <span>性别</span>
+                <input id="private-user-preset-gender" type="text" placeholder="未设定">
+            </label>
+            <label class="private-user-preset-field">
+                <span>设定</span>
+                <textarea id="private-user-preset-setting" rows="4" placeholder="把人物设定写在这里。"></textarea>
+            </label>
+            <button class="private-soft-button primary interactive" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                <span>保存预设</span>
+            </button>
+        </form>
+    </div>
+
+    <section class="private-settings-modal private-settings-page" id="private-settings-modal" aria-labelledby="private-settings-title" hidden>
+        <header class="private-settings-page-head">
+            <div>
+                <div class="private-section-label">SWITCH ACCOUNT</div>
+                <button class="private-settings-title-button interactive" id="private-settings-close" type="button" aria-label="返回我的页面">
+                    <span id="private-settings-title">切换账号</span>
+                </button>
+                <p>私叙号与 user 预设一一绑定。</p>
+            </div>
+        </header>
+        <main class="private-settings-page-body">
+            <div class="private-settings-account-list" id="private-settings-account-list" aria-label="已注册私叙号"></div>
+        </main>
+        <footer class="private-settings-page-footer">
+            <button class="private-settings-logout interactive" id="private-settings-logout" type="button">退出登录</button>
+        </footer>
+    </section>
+</section>

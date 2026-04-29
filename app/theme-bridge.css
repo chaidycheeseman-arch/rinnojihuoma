@@ -1,0 +1,3948 @@
+/* Global theme bridge: keeps every app depth on the active Style palette. */
+:where(
+    .style-app,
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app,
+    .zhenxuan-app,
+    .phone-app,
+    .assets-app
+) {
+    --rinno-app-ink: var(--text-main);
+    --rinno-app-muted: var(--text-sub);
+    --rinno-app-accent: var(--style-accent);
+    --rinno-app-accent-strong: var(--style-accent-strong);
+    --rinno-app-accent-soft: var(--style-accent-soft);
+    --rinno-app-line: var(--style-line-color);
+    --rinno-app-faint-line: var(--style-faint-line-color);
+    --rinno-app-card: var(--style-card-bg);
+    --rinno-app-soft-card: var(--style-soft-card-bg);
+    --rinno-app-shadow: var(--style-control-shadow);
+    color: var(--rinno-app-ink) !important;
+    background: var(--style-app-bg) !important;
+    font-family: var(--font-family) !important;
+    accent-color: var(--rinno-app-accent-strong);
+}
+
+.community-app,
+.encounter-app {
+    --page-bg: var(--style-page-surface) !important;
+    --accent-rose: var(--style-accent-soft) !important;
+    --ink-main: var(--text-main) !important;
+    --ink-sub: var(--text-sub) !important;
+    --ink-light: var(--style-accent-strong) !important;
+    --glass-bg: var(--style-glass-bg) !important;
+    --glass-border: var(--style-glass-border) !important;
+    --glass-border-light: 1px solid rgba(var(--style-glass-tint-rgb), 0.58) !important;
+    --glass-shadow: var(--style-control-shadow) !important;
+}
+
+.prologue-app {
+    --prologue-ink: var(--text-main) !important;
+    --prologue-muted: var(--text-sub) !important;
+    --prologue-soft: var(--style-accent-strong) !important;
+    --prologue-rose: var(--style-accent) !important;
+    --prologue-blush: var(--style-accent-soft) !important;
+    --prologue-line: var(--style-line-color) !important;
+    --prologue-paper: color-mix(in srgb, var(--style-page-surface) 74%, transparent) !important;
+    --prologue-shadow: var(--style-control-shadow) !important;
+}
+
+.private-app,
+.private-chat-screen {
+    --private-ink: var(--text-main) !important;
+    --private-ink-soft: color-mix(in srgb, var(--text-main) 76%, var(--style-accent-strong)) !important;
+    --private-muted: var(--text-sub) !important;
+    --private-muted-2: color-mix(in srgb, var(--text-sub) 62%, var(--style-accent-soft)) !important;
+    --private-paper: var(--style-page-surface) !important;
+    --private-paper-2: var(--style-accent-soft) !important;
+    --private-card: color-mix(in srgb, var(--style-page-surface) 72%, transparent) !important;
+    --private-line: var(--style-line-color) !important;
+    --private-shadow: rgba(var(--style-shadow-rgb), 0.06) !important;
+    --private-accent: var(--style-accent) !important;
+    --private-accent-deep: var(--style-accent-strong) !important;
+}
+
+.dossier-app {
+    --dossier-ink: var(--text-main) !important;
+    --dossier-ink-soft: color-mix(in srgb, var(--text-main) 78%, var(--style-accent-strong)) !important;
+    --dossier-muted: var(--text-sub) !important;
+    --dossier-muted-soft: color-mix(in srgb, var(--text-sub) 64%, var(--style-accent-soft)) !important;
+    --dossier-rose: var(--style-accent) !important;
+    --dossier-rose-deep: var(--style-accent-strong) !important;
+    --dossier-paper: color-mix(in srgb, var(--style-page-surface) 78%, transparent) !important;
+    --dossier-white: var(--style-page-surface) !important;
+    --dossier-line: var(--style-line-color) !important;
+    --dossier-shadow: var(--style-control-shadow) !important;
+}
+
+:where(
+    .settings-security-view,
+    .settings-api-view,
+    .settings-debug-view,
+    .private-screen,
+    .private-chat-screen,
+    .private-pane,
+    .private-panel-wrap,
+    .letter-main,
+    .prologue-shell,
+    .prologue-view,
+    .community-app .page-container,
+    .encounter-app .page-container,
+    .dossier-shell,
+    .dossier-stage,
+    .dossier-view,
+    .dossier-modal,
+    .dossier-profile-modal
+) {
+    color: var(--text-main) !important;
+    background: transparent;
+}
+
+:where(
+    .style-top,
+    .settings-top,
+    .private-chat-top,
+    .letter-top,
+    .prologue-top,
+    .prologue-subtop,
+    .community-app .community-header,
+    .encounter-app .community-header,
+    .dossier-top,
+    .zhenxuan-top,
+    .phone-top,
+    .dossier-tabs
+) {
+    background: var(--style-app-top-bg) !important;
+    border-color: var(--rinno-app-line, var(--style-line-color)) !important;
+    box-shadow: inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.58) !important;
+}
+
+.style-top::after,
+.settings-top::after,
+.letter-top::after,
+.private-chat-top::after,
+.prologue-subtitle::after,
+.community-app .segment-btn.active::after,
+.encounter-app .segment-btn.active::after,
+.dossier-top::before {
+    background: var(--style-line-color) !important;
+}
+
+.style-menu::after,
+.settings-menu::after,
+.letter-issue-mark,
+.prologue-issue-mark,
+.dossier-top::after {
+    color: color-mix(in srgb, var(--style-accent-strong) 10%, transparent) !important;
+}
+
+:where(
+    .style-app,
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(
+    .style-entry-card,
+    .style-theme-card,
+    .style-phone-card,
+    .style-control-block,
+    .style-toggle-row,
+    .style-status-pill,
+    .style-wallpaper-chip,
+    .style-preset-chip,
+    .settings-menu-item,
+    .security-card,
+    .api-section,
+    .api-field,
+    .api-preset-block,
+    .api-preset-dialog,
+    .api-picker-control,
+    .api-picker-select,
+    .api-popover,
+    .api-segmented,
+    .api-ghost-button,
+    .api-modal-dialog,
+    .debug-console,
+    .debug-output,
+    .debug-card,
+    .private-login-card,
+    .private-register-hero,
+    .private-article,
+    .private-verify-copy,
+    .private-verify-lines,
+    .private-verified-panel,
+    .private-field,
+    .private-input,
+    .private-avatar-frame,
+    .private-whisper-section,
+    .private-thread-card,
+    .private-contact-card,
+    .private-contact-titlebar,
+    .private-profile-field,
+    .private-profile-identity,
+    .private-persona-card,
+    .private-moment-card,
+    .private-moment-composer,
+    .private-moment-editor,
+    .private-contact-hero,
+    .private-contact-toolbar,
+    .private-moments-toolbar,
+    .private-contact-account-dialog,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template-grid,
+    .letter-template,
+    .letter-history-card,
+    .letter-draft-card,
+    .letter-draft-stack,
+    .letter-icon-button,
+    .letter-stamp,
+    .prologue-input,
+    .prologue-textarea,
+    .prologue-dialog,
+    .community-app .mini-card,
+    .community-app .message-item,
+    .community-app .community-dock,
+    .encounter-app .mini-card,
+    .encounter-app .message-item,
+    .encounter-app .community-dock,
+    .dossier-search,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-editor-card,
+    .dossier-editor,
+    .dossier-field,
+    .dossier-avatar-picker,
+    .dossier-avatar-clear,
+    .dossier-node,
+    .dossier-network-board,
+    .dossier-network-tools,
+    .dossier-network-tool,
+    .dossier-network-zoom,
+    .dossier-network-user-card,
+    .dossier-network-node,
+    .dossier-network-dialog,
+    .dossier-network-subject-dialog,
+    .dossier-network-subject-option,
+    .dossier-network-kind,
+    .dossier-profile-dialog,
+    .dossier-toast
+) {
+    border-color: var(--rinno-app-line, var(--style-line-color)) !important;
+    background: var(--rinno-app-card, var(--style-card-bg)) !important;
+    box-shadow: var(--rinno-app-shadow, var(--style-control-shadow)), inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.68) !important;
+}
+
+:where(
+    .style-app,
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(input, textarea, select, .api-input, .security-input, .private-message-search, .dossier-search input) {
+    color: var(--text-main) !important;
+    background: transparent !important;
+    border-color: var(--style-line-color) !important;
+    box-shadow: none !important;
+}
+
+:where(
+    .style-app,
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(input, textarea)::placeholder {
+    color: color-mix(in srgb, var(--text-sub) 74%, transparent) !important;
+}
+
+:where(
+    .style-title,
+    .settings-title,
+    .private-chat-title,
+    .letter-title,
+    .prologue-title,
+    .prologue-subtitle,
+    .community-app .header-title,
+    .encounter-app .header-title,
+    .dossier-title,
+    .style-label,
+    .settings-label,
+    .settings-subpage-title,
+    .security-row-title,
+    .security-status-title,
+    .api-section-title,
+    .api-modal-title,
+    .debug-console-head,
+    .letter-field-value,
+    .letter-subject,
+    .letter-draft-title,
+    .letter-template-name,
+    .private-title,
+    .private-login-name,
+    .private-article h2,
+    .private-verify-copy h2,
+    .private-whisper-title,
+    .private-contact-titlebar h2,
+    .private-moments-title strong,
+    .private-profile-name,
+    .private-contact-title,
+    .private-thread-title,
+    .prologue-section-title,
+    .prologue-group-title,
+    .prologue-entry-title,
+    .dossier-card-title,
+    .dossier-editor h2,
+    .dossier-network-preview-copy strong,
+    .dossier-profile-dialog h2,
+    .dossier-network-modal-head h2
+) {
+    color: var(--text-main) !important;
+}
+
+:where(
+    .style-name,
+    .style-index,
+    .settings-subpage-kicker,
+    .settings-index,
+    .api-section-index,
+    .api-section-badge,
+    .api-label,
+    .api-range-value,
+    .api-modal-kicker,
+    .letter-kicker,
+    .letter-field-label,
+    .letter-section-label,
+    .letter-card-index,
+    .private-chat-kicker,
+    .private-register-kicker,
+    .private-kicker,
+    .private-whisper-kicker,
+    .private-whisper-count,
+    .private-section-label,
+    .private-card-index,
+    .private-moment-name,
+    .community-app .header-kicker,
+    .community-app .trend-num,
+    .encounter-app .header-kicker,
+    .encounter-app .trend-num,
+    .prologue-kicker,
+    .prologue-section-kicker,
+    .prologue-label,
+    .prologue-badge,
+    .prologue-card-index,
+    .dossier-kicker,
+    .dossier-card-kicker,
+    .dossier-chip,
+    .dossier-count,
+    .dossier-editor-kicker,
+    .dossier-network-preview-copy span,
+    .dossier-network-modal-head .dossier-editor-kicker
+),
+.style-menu::before,
+.settings-menu::before {
+    color: var(--style-accent-strong) !important;
+}
+
+:where(
+    .style-note,
+    .style-subtitle,
+    .settings-subtitle,
+    .settings-account,
+    .settings-subpage-note,
+    .security-row-desc,
+    .security-status-text,
+    .security-message,
+    .api-status,
+    .debug-output,
+    .letter-subtitle,
+    .letter-body,
+    .letter-signature,
+    .letter-editorial-copy,
+    .letter-draft-sub,
+    .letter-draft-date,
+    .private-chat-issue,
+    .private-note,
+    .private-message,
+    .private-login-email,
+    .private-article p,
+    .private-verify-copy p,
+    .private-verify-instructions,
+    .private-contact-note,
+    .private-thread-last,
+    .private-moment-meta,
+    .private-profile-mail,
+    .private-moments-signature,
+    .prologue-note,
+    .prologue-group-note,
+    .prologue-group-sub,
+    .prologue-entry-preview,
+    .community-app .card-excerpt,
+    .community-app .trend-desc,
+    .community-app .msg-text,
+    .encounter-app .card-excerpt,
+    .encounter-app .trend-desc,
+    .encounter-app .msg-text,
+    .dossier-issue,
+    .dossier-card-note,
+    .dossier-editor-subline,
+    .dossier-network-preview-copy small,
+    .dossier-network-preview-copy p,
+    .dossier-node small,
+    .dossier-relation-notes span,
+    .dossier-network-node-copy small
+) {
+    color: var(--text-sub) !important;
+}
+
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(
+    button.primary,
+    .primary,
+    .security-action-button.primary,
+    .security-switch.active,
+    .api-modal-button.primary,
+    .api-icon-button,
+    .debug-icon-button,
+    .private-icon-button,
+    .private-inline-button,
+    .private-login-switch,
+    .private-soft-button.primary,
+    .private-action-button.primary,
+    .private-contact-filter button.active,
+    .private-tab.active,
+    .private-settings-login-button,
+    .private-contact-account-add,
+    .letter-send-button,
+    .prologue-fab,
+    .prologue-action-button.primary,
+    .community-app .nav-item.active,
+    .encounter-app .nav-item.active,
+    .dossier-soft-button.primary,
+    .dossier-add-button,
+    .dossier-icon-button,
+    .dossier-tab.active,
+    .dossier-network-kind.active,
+    .dossier-network-subject-option.active,
+    .dossier-network-node.primary,
+    .dossier-node.main
+) {
+    border-color: color-mix(in srgb, var(--style-accent-strong) 26%, rgba(var(--style-glass-tint-rgb), 0.62)) !important;
+    background: var(--style-primary-bg) !important;
+    color: var(--style-primary-text) !important;
+    box-shadow: 0 12px 28px rgba(var(--style-shadow-rgb), 0.07), inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.78) !important;
+}
+
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(button, [role="button"], .nav-item, .segment-btn, .dossier-tab, .private-tab):active {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(svg, path, line, polyline, rect, circle) {
+    stroke: currentColor;
+}
+
+.community-app .nav-item.active svg,
+.encounter-app .nav-item.active svg,
+.dossier-tab.active svg,
+.private-tab.active svg {
+    color: var(--style-primary-text) !important;
+    stroke: currentColor !important;
+}
+
+.private-chat-screen[data-private-current-tab="time"] .private-moments-name {
+    color: var(--private-moments-name-color, var(--text-main)) !important;
+}
+
+.private-chat-screen[data-private-current-tab="time"] .private-moments-signature {
+    color: var(--private-moments-signature-color, color-mix(in srgb, var(--text-sub) 78%, transparent)) !important;
+}
+
+.dossier-network-modal,
+.dossier-network-subject-modal,
+.dossier-modal,
+.dossier-profile-modal,
+.prologue-modal,
+.api-preset-modal,
+.private-contact-account-modal,
+.private-moment-modal-backdrop {
+    background: rgba(var(--style-shadow-rgb), 0.10) !important;
+}
+
+/* Integration pass: list/project items should sit inside the page, not as cards. */
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(
+    .settings-menu-item,
+    .security-card,
+    .api-section,
+    .api-preset-block,
+    .debug-console,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template-grid,
+    .letter-template,
+    .letter-draft-card,
+    .private-whisper-section,
+    .private-thread-card,
+    .private-contact-titlebar,
+    .private-contact-toolbar,
+    .private-contact-card,
+    .private-contact-hero,
+    .private-profile-identity,
+    .private-profile-field,
+    .private-persona-card,
+    .private-moment-card,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .prologue-control-block,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-editor-card,
+    .dossier-node,
+    .dossier-network-board,
+    .dossier-network-tools,
+    .dossier-network-user-card,
+    .dossier-network-node,
+    .dossier-relation-notes article,
+    .community-app .editorial-card,
+    .community-app .mini-card,
+    .community-app .message-item,
+    .encounter-app .editorial-card,
+    .encounter-app .mini-card,
+    .encounter-app .message-item
+) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    border-top-color: transparent !important;
+    border-radius: 0 !important;
+}
+
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .community-app,
+    .encounter-app,
+    .dossier-app
+) :is(
+    .settings-menu-item,
+    .security-card,
+    .api-section,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template,
+    .letter-draft-card,
+    .private-thread-card,
+    .private-contact-card,
+    .private-profile-field,
+    .private-persona-card,
+    .private-moment-card,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-node,
+    .community-app .editorial-card,
+    .community-app .message-item,
+    .encounter-app .editorial-card,
+    .encounter-app .message-item
+) {
+    border-bottom: 1px solid var(--style-faint-line-color) !important;
+}
+
+:where(
+    .settings-app,
+    .private-app,
+    .letter-app,
+    .prologue-app,
+    .dossier-app
+) :is(
+    .settings-menu-item::before,
+    .settings-menu-item::after,
+    .letter-compose-panel::before,
+    .private-thread-card::before,
+    .private-contact-card::before,
+    .private-contact-card::after,
+    .private-profile-field::before,
+    .private-persona-card::before,
+    .dossier-list-card::before,
+    .dossier-detail-card::before
+) {
+    opacity: 0.42 !important;
+}
+
+.letter-compose-panel,
+.letter-template,
+.letter-draft-card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.letter-template-list {
+    gap: 0 !important;
+}
+
+.letter-template {
+    border-left: 0 !important;
+    border-right: 0 !important;
+    margin-right: 12px !important;
+}
+
+.letter-template:last-child {
+    margin-right: 0 !important;
+}
+
+/* Private hard-coded rose-grey theme bridge. */
+.private-app,
+.private-screen,
+.private-chat-screen,
+.private-chat-screen[data-private-current-tab],
+.private-chat-screen[data-private-current-tab="contacts"],
+.private-chat-screen[data-private-current-tab="time"],
+.private-chat-screen[data-private-current-tab="monologue"],
+.private-chat-screen[data-private-current-tab="whisper"] {
+    --private-rose: var(--style-accent) !important;
+    --private-rose-deep: var(--style-accent-strong) !important;
+    --private-contact-ink: var(--text-main) !important;
+    --private-contact-ink-soft: color-mix(in srgb, var(--text-main) 76%, var(--style-accent-strong)) !important;
+    --private-contact-rose: var(--style-accent) !important;
+    --private-contact-rose-deep: var(--style-accent-strong) !important;
+    --private-contact-muted: var(--text-sub) !important;
+    --private-contact-line: var(--style-faint-line-color) !important;
+    color: var(--text-main) !important;
+    background: var(--style-app-bg) !important;
+}
+
+.private-chat-screen::before,
+.private-chat-screen[data-private-current-tab="contacts"] .private-pane,
+.private-chat-screen[data-private-current-tab="whisper"] .private-pane,
+.private-chat-screen:not([data-private-current-tab]) .private-pane {
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.private-chat-top,
+.private-contact-titlebar,
+.private-moments-toolbar,
+.private-contact-toolbar {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.private-register-screen :is(.private-register-hero, .private-field),
+.private-login-screen :is(.private-login-card, .private-field),
+.private-privacy-screen .private-article,
+.private-verify-screen :is(.private-verify-copy, .private-verify-lines),
+.private-verified-screen :is(.private-verified-copy, .private-verified-panel) {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.private-register-screen .private-avatar-frame,
+.private-login-screen .private-avatar-frame {
+    background:
+        radial-gradient(circle at 50% 38%, rgba(var(--style-glass-tint-rgb), 0.9), rgba(var(--style-glass-tint-rgb), 0.32)) !important;
+    box-shadow: inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.82) !important;
+}
+
+.private-contact-filter,
+.private-message-search {
+    background: transparent !important;
+    border-color: var(--style-faint-line-color) !important;
+    box-shadow: none !important;
+}
+
+.private-contact-filter button.active,
+.private-chat-screen[data-private-current-tab="contacts"] .private-contact-filter button.active,
+.private-tab.active {
+    border-color: color-mix(in srgb, var(--style-accent-strong) 24%, transparent) !important;
+    background: color-mix(in srgb, var(--style-accent) 18%, transparent) !important;
+    color: var(--text-main) !important;
+    box-shadow: none !important;
+}
+
+/* Private "Me" header: avatar/name/ID are identity, not an extra container. */
+.private-profile-identity,
+.private-chat-screen[data-private-current-tab="monologue"] .private-profile-identity {
+    min-height: 76px !important;
+    padding: 0 76px 0 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+.private-profile-identity::before,
+.private-profile-identity::after,
+.private-chat-screen[data-private-current-tab="monologue"] .private-profile-identity::before,
+.private-chat-screen[data-private-current-tab="monologue"] .private-profile-identity::after {
+    content: none !important;
+    display: none !important;
+}
+
+.private-profile-avatar,
+.private-chat-screen[data-private-current-tab="monologue"] .private-profile-avatar {
+    border: 0 !important;
+    background-color: color-mix(in srgb, var(--style-accent-soft) 42%, transparent) !important;
+    box-shadow: none !important;
+}
+
+.private-profile-name,
+.private-profile-mail,
+.private-profile-copy {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Private final color pass: remove remaining fixed rose-grey accents. */
+#private-app.private-app,
+#private-app .private-chat-screen,
+#private-app .private-chat-screen[data-private-current-tab],
+#private-app .private-chat-screen[data-private-current-tab="contacts"],
+#private-app .private-chat-screen[data-private-current-tab="time"],
+#private-app .private-chat-screen[data-private-current-tab="monologue"],
+#private-app .private-chat-screen[data-private-current-tab="whisper"] {
+    --private-ink: var(--text-main) !important;
+    --private-ink-soft: color-mix(in srgb, var(--text-main) 76%, var(--style-accent-strong)) !important;
+    --private-muted: var(--text-sub) !important;
+    --private-muted-2: color-mix(in srgb, var(--text-sub) 64%, var(--style-accent-soft)) !important;
+    --private-soft: var(--style-accent-soft) !important;
+    --private-panel: color-mix(in srgb, var(--style-page-surface) 62%, transparent) !important;
+    --private-rose: var(--style-accent-strong) !important;
+    --private-rose-deep: var(--style-accent-strong) !important;
+    --private-accent: var(--style-accent) !important;
+    --private-accent-deep: var(--style-accent-strong) !important;
+    --private-contact-rose: var(--style-accent) !important;
+    --private-contact-rose-deep: var(--style-accent-strong) !important;
+    --private-contact-line: var(--style-faint-line-color) !important;
+}
+
+#private-app :is(
+    .private-chat-kicker,
+    .private-section-label,
+    .private-card-index,
+    .private-profile-kicker,
+    .private-persona-pill,
+    .private-persona-issue,
+    .private-persona-meta b,
+    .private-moments-title span,
+    .private-settings-page-head .private-section-label,
+    .private-contact-titlebar .private-section-label
+) {
+    color: var(--style-accent-strong) !important;
+}
+
+#private-app :is(
+    .private-profile-mail,
+    .private-profile-action-sub,
+    .private-persona-copy p,
+    .private-persona-meta em,
+    .private-contact-subtitle,
+    .private-thread-subtitle
+) {
+    color: var(--text-sub) !important;
+}
+
+#private-app .private-profile-action::before {
+    color: var(--style-accent-strong) !important;
+}
+
+#private-app .private-profile-action::after,
+#private-app .private-contact-card::after,
+#private-app .private-persona-card::before {
+    background: var(--style-faint-line-color) !important;
+    color: transparent !important;
+}
+
+#private-app .private-profile-avatar:not(.has-image),
+#private-app .private-avatar-frame:not(.has-image) {
+    background:
+        linear-gradient(135deg, rgba(var(--style-glass-tint-rgb), 0.74), rgba(var(--style-accent-rgb), 0.16)) !important;
+}
+
+#private-app .private-profile-avatar::after,
+#private-app .private-avatar-frame::after {
+    background:
+        radial-gradient(circle at center 36%, transparent 0 18%, var(--style-accent-strong) 19% 29%, transparent 30%),
+        radial-gradient(circle at center 84%, transparent 0 23%, var(--style-accent-strong) 24% 34%, transparent 35%) !important;
+    opacity: 0.5 !important;
+}
+
+#private-app .private-profile-avatar.has-image::after,
+#private-app .private-avatar-frame.has-image::after {
+    display: none !important;
+}
+
+#private-app .private-tab.active::after {
+    background: var(--style-accent-strong) !important;
+    box-shadow: none !important;
+}
+
+/* Final project-item audit pass: pages and modal options blend into their sheet. */
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .style-menu-item,
+    .style-entry-card,
+    .style-theme-card,
+    .style-phone-card,
+    .style-control-block,
+    .style-toggle-row,
+    .style-wallpaper-chip,
+    .style-preset-chip,
+    .style-status-pill,
+    .settings-menu-item,
+    .security-card,
+    .security-field,
+    .api-section,
+    .api-field,
+    .api-preset-block,
+    .api-preset-row,
+    .api-picker-option,
+    .debug-console,
+    .debug-card,
+    .debug-output,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template-grid,
+    .letter-template,
+    .letter-history-card,
+    .letter-draft-card,
+    .letter-draft-stack,
+    .private-whisper-section,
+    .private-thread-card,
+    .private-contact-card,
+    .private-contact-titlebar,
+    .private-contact-toolbar,
+    .private-contact-account-card,
+    .private-profile-identity,
+    .private-profile-field,
+    .private-persona-card,
+    .private-profile-action,
+    .private-moment-card,
+    .private-settings-account-card,
+    .private-user-preset-field,
+    .private-contact-account-search,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .prologue-control-block,
+    .prologue-field,
+    .community-app .editorial-card,
+    .community-app .mini-card,
+    .community-app .trending-item,
+    .community-app .message-item,
+    .community-app .profile-header,
+    .community-app .stat-item,
+    .community-app .grid-item,
+    .encounter-app .editorial-card,
+    .encounter-app .mini-card,
+    .encounter-app .trending-item,
+    .encounter-app .message-item,
+    .encounter-app .profile-header,
+    .encounter-app .stat-item,
+    .encounter-app .grid-item,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-editor-card,
+    .dossier-field,
+    .dossier-network-preset-field,
+    .dossier-node,
+    .dossier-network-board,
+    .dossier-network-tools,
+    .dossier-network-user-card,
+    .dossier-network-node,
+    .dossier-network-subject-option,
+    .dossier-network-kind,
+    .dossier-relation-notes article
+) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    border-top-color: transparent !important;
+    border-radius: 0 !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .style-menu-item,
+    .style-entry-card,
+    .style-theme-card,
+    .style-phone-card,
+    .style-control-block,
+    .style-toggle-row,
+    .settings-menu-item,
+    .security-card,
+    .api-section,
+    .api-field,
+    .api-preset-row,
+    .api-picker-option,
+    .debug-card,
+    .debug-output,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template,
+    .letter-draft-card,
+    .private-thread-card,
+    .private-contact-card,
+    .private-contact-account-card,
+    .private-profile-field,
+    .private-persona-card,
+    .private-profile-action,
+    .private-moment-card,
+    .private-settings-account-card,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-network-node,
+    .dossier-relation-notes article,
+    .community-app .editorial-card,
+    .community-app .trending-item,
+    .community-app .message-item,
+    .encounter-app .editorial-card,
+    .encounter-app .trending-item,
+    .encounter-app .message-item
+) {
+    border-bottom: 1px solid var(--style-faint-line-color) !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .style-wallpaper-chip.active,
+    .style-preset-chip.active,
+    .api-picker-option.active,
+    .dossier-network-kind.active,
+    .dossier-network-subject-option.active
+) {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--style-accent-strong) !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .style-menu-item,
+    .style-entry-card,
+    .style-theme-card,
+    .style-phone-card,
+    .style-control-block,
+    .style-toggle-row,
+    .style-wallpaper-chip,
+    .style-preset-chip,
+    .style-status-pill,
+    .settings-menu-item,
+    .security-card,
+    .security-field,
+    .api-section,
+    .api-field,
+    .api-preset-block,
+    .api-preset-row,
+    .api-picker-option,
+    .debug-console,
+    .debug-card,
+    .debug-output,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template-grid,
+    .letter-template,
+    .letter-history-card,
+    .letter-draft-card,
+    .letter-draft-stack,
+    .private-whisper-section,
+    .private-thread-card,
+    .private-contact-card,
+    .private-contact-titlebar,
+    .private-contact-toolbar,
+    .private-contact-account-card,
+    .private-profile-identity,
+    .private-profile-field,
+    .private-persona-card,
+    .private-profile-action,
+    .private-moment-card,
+    .private-settings-account-card,
+    .private-user-preset-field,
+    .private-contact-account-search,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .prologue-control-block,
+    .prologue-field,
+    .community-app .editorial-card,
+    .community-app .mini-card,
+    .community-app .trending-item,
+    .community-app .message-item,
+    .community-app .profile-header,
+    .community-app .stat-item,
+    .community-app .grid-item,
+    .encounter-app .editorial-card,
+    .encounter-app .mini-card,
+    .encounter-app .trending-item,
+    .encounter-app .message-item,
+    .encounter-app .profile-header,
+    .encounter-app .stat-item,
+    .encounter-app .grid-item,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-editor-card,
+    .dossier-field,
+    .dossier-network-preset-field,
+    .dossier-node,
+    .dossier-network-board,
+    .dossier-network-tools,
+    .dossier-network-user-card,
+    .dossier-network-node,
+    .dossier-network-subject-option,
+    .dossier-network-kind,
+    .dossier-relation-notes article
+)::before,
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .style-menu-item,
+    .style-entry-card,
+    .style-theme-card,
+    .style-phone-card,
+    .style-control-block,
+    .style-toggle-row,
+    .style-wallpaper-chip,
+    .style-preset-chip,
+    .style-status-pill,
+    .settings-menu-item,
+    .security-card,
+    .security-field,
+    .api-section,
+    .api-field,
+    .api-preset-block,
+    .api-preset-row,
+    .api-picker-option,
+    .debug-console,
+    .debug-card,
+    .debug-output,
+    .letter-compose-panel,
+    .letter-editorial-note,
+    .letter-template-grid,
+    .letter-template,
+    .letter-history-card,
+    .letter-draft-card,
+    .letter-draft-stack,
+    .private-whisper-section,
+    .private-thread-card,
+    .private-contact-card,
+    .private-contact-titlebar,
+    .private-contact-toolbar,
+    .private-contact-account-card,
+    .private-profile-identity,
+    .private-profile-field,
+    .private-persona-card,
+    .private-profile-action,
+    .private-moment-card,
+    .private-settings-account-card,
+    .private-user-preset-field,
+    .private-contact-account-search,
+    .prologue-group-card,
+    .prologue-entry-card,
+    .prologue-control-block,
+    .prologue-field,
+    .community-app .editorial-card,
+    .community-app .mini-card,
+    .community-app .trending-item,
+    .community-app .message-item,
+    .community-app .profile-header,
+    .community-app .stat-item,
+    .community-app .grid-item,
+    .encounter-app .editorial-card,
+    .encounter-app .mini-card,
+    .encounter-app .trending-item,
+    .encounter-app .message-item,
+    .encounter-app .profile-header,
+    .encounter-app .stat-item,
+    .encounter-app .grid-item,
+    .dossier-list-card,
+    .dossier-detail-card,
+    .dossier-editor-card,
+    .dossier-field,
+    .dossier-network-preset-field,
+    .dossier-node,
+    .dossier-network-board,
+    .dossier-network-tools,
+    .dossier-network-user-card,
+    .dossier-network-node,
+    .dossier-network-subject-option,
+    .dossier-network-kind,
+    .dossier-relation-notes article
+)::after {
+    background: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Audit pass: no filled field or title press surfaces anywhere. */
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    input,
+    textarea,
+    select,
+    [contenteditable="true"],
+    .api-input,
+    .api-select,
+    .api-preset-name-input,
+    .security-input,
+    .private-input,
+    .style-code-editor,
+    .style-select,
+    .prologue-input,
+    .prologue-textarea,
+    .dossier-search input,
+    .private-message-search input,
+    .private-contact-account-search input
+),
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    input,
+    textarea,
+    select,
+    [contenteditable="true"],
+    .api-input,
+    .api-select,
+    .api-preset-name-input,
+    .security-input,
+    .private-input,
+    .style-code-editor,
+    .style-select,
+    .prologue-input,
+    .prologue-textarea,
+    .dossier-search input,
+    .private-message-search input,
+    .private-contact-account-search input
+):is(:focus, :focus-visible, :active) {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Final override: debug console keeps code readable after transparent theme passes. */
+#settings-app .debug-console {
+    border-color: color-mix(in srgb, var(--style-accent-strong) 34%, rgba(255, 255, 255, 0.2)) !important;
+    background:
+        linear-gradient(180deg, rgba(27, 24, 29, 0.98), rgba(18, 17, 22, 0.98)) !important;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    border-radius: 7px !important;
+}
+
+#settings-app .debug-console-head {
+    color: rgba(255, 250, 252, 0.96) !important;
+    background: rgba(255, 255, 255, 0.035) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+#settings-app .debug-console-head span {
+    color: rgba(255, 250, 252, 0.96) !important;
+    font-weight: 700 !important;
+}
+
+#settings-app .debug-output {
+    color: rgba(255, 250, 252, 0.95) !important;
+    background: rgba(15, 14, 18, 0.96) !important;
+    border-bottom: 0 !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+#settings-app .debug-line {
+    color: rgba(255, 250, 252, 0.95) !important;
+}
+
+#settings-app .debug-line.error {
+    color: #ff7188 !important;
+}
+
+#settings-app .debug-line.warn {
+    color: #ffd07a !important;
+}
+
+#settings-app .debug-line.ok {
+    color: #8fe6b4 !important;
+}
+
+#settings-app .debug-output::selection {
+    color: #141117 !important;
+    background: rgba(255, 250, 252, 0.84) !important;
+}
+
+/* Final override: all real range inputs use theme rails and slim bar thumbs. */
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 100% !important;
+    height: 22px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    accent-color: var(--rinno-app-accent-strong, var(--style-accent-strong)) !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(90deg, var(--rinno-app-accent, var(--style-accent)), var(--rinno-app-accent-strong, var(--style-accent-strong))) !important;
+    box-shadow: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 6px !important;
+    height: 18px !important;
+    margin-top: -7px !important;
+    border: 1px solid color-mix(in srgb, var(--rinno-app-accent-strong, var(--style-accent-strong)) 58%, transparent) !important;
+    border-radius: 1px !important;
+    background: linear-gradient(180deg, var(--rinno-app-accent-strong, var(--style-accent-strong)), var(--rinno-app-accent, var(--style-accent))) !important;
+    box-shadow: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]::-moz-range-track {
+    height: 4px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(90deg, var(--rinno-app-accent, var(--style-accent)), var(--rinno-app-accent-strong, var(--style-accent-strong))) !important;
+    box-shadow: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]::-moz-range-progress {
+    height: 4px !important;
+    border-radius: 0 !important;
+    background: linear-gradient(90deg, var(--rinno-app-accent, var(--style-accent)), var(--rinno-app-accent-strong, var(--style-accent-strong))) !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]::-moz-range-thumb {
+    width: 6px !important;
+    height: 18px !important;
+    border: 1px solid color-mix(in srgb, var(--rinno-app-accent-strong, var(--style-accent-strong)) 58%, transparent) !important;
+    border-radius: 1px !important;
+    background: linear-gradient(180deg, var(--rinno-app-accent-strong, var(--style-accent-strong)), var(--rinno-app-accent, var(--style-accent))) !important;
+    box-shadow: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) input[type="range"]:is(:active, :focus, :focus-visible) {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    input,
+    textarea,
+    select
+):-webkit-autofill,
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    input,
+    textarea,
+    select
+):-webkit-autofill:hover,
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    input,
+    textarea,
+    select
+):-webkit-autofill:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+    box-shadow: 0 0 0 1000px transparent inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    caret-color: var(--text-main) !important;
+    transition: background-color 999999s ease-out, color 999999s ease-out !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    .api-field,
+    .api-picker-control,
+    .api-picker-select,
+    .security-field,
+    .private-field,
+    .private-message-search,
+    .private-contact-account-search,
+    .private-user-preset-field,
+    .prologue-field,
+    .dossier-search,
+    .dossier-field,
+    .dossier-network-preset-field
+) {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [class*="title"],
+    [class*="heading"]
+):is(:active, :focus, :focus-visible),
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    [class*="card"],
+    [class*="item"],
+    [class*="row"],
+    [role="button"]
+):is(:active, :focus, :focus-visible) :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [class*="title"],
+    [class*="heading"]
+) {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    outline: none !important;
+}
+
+:is(
+    #style-app,
+    #settings-app,
+    #private-app,
+    #letter-app,
+    #prologue-app,
+    #community-app,
+    #encounter-app,
+    #dossier-app
+) :is(
+    [class*="title"],
+    [class*="heading"],
+    [role="button"],
+    .style-menu-item,
+    .settings-menu-item,
+    .community-app .trending-item,
+    .encounter-app .trending-item
+):is(:active, :focus, :focus-visible) {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Absolute last pass for settings debug contrast. */
+#settings-app.settings-app .settings-debug-view .debug-console {
+    background-color: rgba(18, 17, 22, 0.98) !important;
+    background-image: linear-gradient(180deg, rgba(27, 24, 29, 0.98), rgba(18, 17, 22, 0.98)) !important;
+}
+
+#settings-app.settings-app .settings-debug-view .debug-output {
+    background-color: rgba(15, 14, 18, 0.96) !important;
+    background-image: none !important;
+    color: rgba(255, 250, 252, 0.95) !important;
+}
+
+/* Desktop widgets only: remove visible strokes without touching app pages or app icons. */
+.slider-container .new-info-card,
+.slider-container .info-bottom-part,
+.slider-container .chat-bubble,
+.slider-container .new-music-player,
+.slider-container .dreamy-bg,
+.slider-container .rabbit-img-box,
+.slider-container .new-sun-card,
+.slider-container .sun-avatar,
+.slider-container .sun-tag,
+.slider-container .new-dual-avatar,
+.slider-container .name-bubble,
+.slider-container .avatar-circle,
+.slider-container .chat-time-capsule,
+.slider-container .chat-bubble-capsule,
+.slider-container .chat-send-btn,
+.slider-container .chat-img-card,
+.slider-container .chat-input-bar,
+.slider-container .chat-add-btn,
+.search-pill {
+    border-color: transparent !important;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    border-left-color: transparent !important;
+    outline: 0 !important;
+    box-shadow: 0 8px 20px rgba(var(--style-shadow-rgb), 0.045) !important;
+    -webkit-box-shadow: 0 8px 20px rgba(var(--style-shadow-rgb), 0.045) !important;
+}
+
+.slider-container .new-info-card::before,
+.slider-container .new-info-card::after,
+.slider-container .info-bottom-part::before,
+.slider-container .info-bottom-part::after,
+.slider-container .chat-bubble::before,
+.slider-container .chat-bubble::after,
+.slider-container .new-music-player::before,
+.slider-container .new-music-player::after,
+.slider-container .dreamy-bg::before,
+.slider-container .dreamy-bg::after,
+.slider-container .rabbit-img-box::before,
+.slider-container .rabbit-img-box::after,
+.slider-container .new-sun-card::before,
+.slider-container .new-sun-card::after,
+.slider-container .sun-avatar::before,
+.slider-container .sun-avatar::after,
+.slider-container .sun-tag::before,
+.slider-container .sun-tag::after,
+.slider-container .new-dual-avatar::before,
+.slider-container .new-dual-avatar::after,
+.slider-container .name-bubble::before,
+.slider-container .name-bubble::after,
+.slider-container .avatar-circle::before,
+.slider-container .avatar-circle::after,
+.slider-container .chat-time-capsule::before,
+.slider-container .chat-time-capsule::after,
+.slider-container .chat-bubble-capsule::before,
+.slider-container .chat-bubble-capsule::after,
+.slider-container .chat-send-btn::before,
+.slider-container .chat-send-btn::after,
+.slider-container .chat-img-card::before,
+.slider-container .chat-img-card::after,
+.slider-container .chat-input-bar::before,
+.slider-container .chat-input-bar::after,
+.slider-container .chat-add-btn::before,
+.slider-container .chat-add-btn::after,
+.search-pill::before,
+.search-pill::after {
+    border-color: transparent !important;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    border-left-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+/* First desktop profile widget: keep the glass inner stroke and a soft outer outline. */
+.slider-container .page:first-child .new-info-card {
+    border: 1px solid rgba(var(--style-glass-tint-rgb), 0.22) !important;
+    border-top-color: rgba(var(--style-glass-tint-rgb), 0.38) !important;
+    border-left-color: rgba(var(--style-glass-tint-rgb), 0.24) !important;
+    box-shadow: 0 8px 22px rgba(var(--style-shadow-rgb), 0.045) !important;
+    -webkit-box-shadow: 0 8px 22px rgba(var(--style-shadow-rgb), 0.045) !important;
+}
+
+.slider-container .page:first-child .info-bottom-part {
+    border-top: 1px solid rgba(var(--style-glass-tint-rgb), 0.34) !important;
+    border-left: 1px solid rgba(var(--style-glass-tint-rgb), 0.18) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.42),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.12) !important;
+    -webkit-box-shadow:
+        inset 0 1px 0 rgba(var(--style-glass-tint-rgb), 0.42),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.12) !important;
+}
+
+.slider-container .new-dual-avatar {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .name-bubble {
+    border-radius: 12px !important;
+    box-shadow:
+        0 6px 16px rgba(var(--style-shadow-rgb), 0.04),
+        inset 0 1px 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+    -webkit-box-shadow:
+        0 6px 16px rgba(var(--style-shadow-rgb), 0.04),
+        inset 0 1px 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+}
+
+.slider-container .name-bubble::after {
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    border-top-color: rgba(var(--style-glass-tint-rgb), 0.36) !important;
+    filter: drop-shadow(0 3px 5px rgba(var(--style-shadow-rgb), 0.04)) !important;
+}
+
+.slider-container .avatar-circle,
+.slider-container .sun-avatar {
+    border-radius: 50% !important;
+    box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.045),
+        inset 0 2px 4px rgba(var(--style-shadow-rgb), 0.035) !important;
+    -webkit-box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.045),
+        inset 0 2px 4px rgba(var(--style-shadow-rgb), 0.035) !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper,
+.slider-container .page:first-child .avatar-inner,
+.slider-container .rabbit-img-box {
+    border-color: transparent !important;
+    outline: 0 !important;
+    overflow: hidden !important;
+    box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.035),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.48) !important;
+    -webkit-box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.035),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.48) !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper,
+.slider-container .page:first-child .avatar-inner {
+    border-radius: 50% !important;
+}
+
+.slider-container .rabbit-img-box {
+    position: relative !important;
+    border-radius: 14px !important;
+}
+
+.slider-container .rabbit-img-box::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border: 0 !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.62) !important;
+    -webkit-box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.62) !important;
+}
+
+/* Desktop widgets: lift leaf elements, not whole blocks. */
+.slider-container .new-info-card,
+.slider-container .info-bottom-part,
+.slider-container .new-music-player,
+.slider-container .dreamy-bg,
+.slider-container .new-sun-card,
+.slider-container .new-dual-avatar {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .page:first-child .avatar-inner {
+    width: 110px !important;
+    height: 110px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.44) !important;
+    -webkit-box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.44) !important;
+}
+
+.slider-container .avatar-circle {
+    width: 56px !important;
+    height: 56px !important;
+    aspect-ratio: 1 / 1 !important;
+    flex: 0 0 56px !important;
+    border-radius: 999px !important;
+    overflow: hidden !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    border-color: transparent !important;
+    box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.045),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+    -webkit-box-shadow:
+        0 7px 16px rgba(var(--style-shadow-rgb), 0.045),
+        inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+}
+
+.slider-container .sun-avatar {
+    width: 84px !important;
+    height: 84px !important;
+    aspect-ratio: 1 / 1 !important;
+    flex: 0 0 84px !important;
+    border-radius: 999px !important;
+    overflow: hidden !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    border-color: transparent !important;
+}
+
+.slider-container .rabbit-img-box {
+    overflow: hidden !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    border-color: transparent !important;
+    box-shadow: 0 7px 16px rgba(var(--style-shadow-rgb), 0.032) !important;
+    -webkit-box-shadow: 0 7px 16px rgba(var(--style-shadow-rgb), 0.032) !important;
+}
+
+.slider-container .rabbit-img-box::after {
+    box-shadow: inset 0 0 0 2px rgba(var(--style-glass-tint-rgb), 0.78) !important;
+    -webkit-box-shadow: inset 0 0 0 2px rgba(var(--style-glass-tint-rgb), 0.78) !important;
+}
+
+.slider-container .page:first-child .new-info-card {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .avatar-circle {
+    border: 0 !important;
+    clip-path: circle(50% at 50% 50%) !important;
+    filter: drop-shadow(0 7px 12px rgba(var(--style-shadow-rgb), 0.04)) !important;
+    box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+    -webkit-box-shadow: inset 0 0 0 1px rgba(var(--style-glass-tint-rgb), 0.42) !important;
+}
+
+.slider-container .sun-avatar {
+    border: 0 !important;
+    clip-path: circle(50% at 50% 50%) !important;
+    filter: drop-shadow(0 7px 12px rgba(var(--style-shadow-rgb), 0.04)) !important;
+}
+
+.slider-container .page:first-child .avatar-inner {
+    border: 0 !important;
+    clip-path: circle(50% at 50% 50%) !important;
+    filter: none !important;
+}
+
+.slider-container .rabbit-img-box {
+    border: 0 !important;
+    outline: 0 !important;
+    background-clip: border-box !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .rabbit-img-box::before,
+.slider-container .rabbit-img-box::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+/* Desktop round avatars: no drawn ring, only a light outer lift. */
+.slider-container .page:first-child .avatar-overlap-wrapper {
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    filter: none !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper::before,
+.slider-container .page:first-child .avatar-overlap-wrapper::after,
+.slider-container .page:first-child .avatar-inner::before,
+.slider-container .page:first-child .avatar-inner::after,
+.slider-container .sun-avatar::before,
+.slider-container .sun-avatar::after,
+.slider-container .avatar-circle::before,
+.slider-container .avatar-circle::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .page:first-child .avatar-inner,
+.slider-container .sun-avatar,
+.slider-container .avatar-circle {
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 999px !important;
+    overflow: hidden !important;
+    clip-path: circle(50% at 50% 50%) !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    filter: drop-shadow(0 7px 12px rgba(var(--style-shadow-rgb), 0.07)) !important;
+}
+
+.slider-container .page:first-child .avatar-inner {
+    background-size: cover !important;
+}
+
+/* Make the selected circular avatars visibly lifted, without adding a ring. */
+.slider-container .page:first-child .avatar-overlap-wrapper {
+    overflow: visible !important;
+    border-radius: 999px !important;
+    box-shadow:
+        0 12px 22px -8px rgba(var(--style-shadow-rgb), 0.24),
+        0 4px 10px -6px rgba(var(--style-shadow-rgb), 0.18) !important;
+    -webkit-box-shadow:
+        0 12px 22px -8px rgba(var(--style-shadow-rgb), 0.24),
+        0 4px 10px -6px rgba(var(--style-shadow-rgb), 0.18) !important;
+}
+
+.slider-container .page:first-child .avatar-inner,
+.slider-container .sun-avatar,
+.slider-container .avatar-circle {
+    clip-path: none !important;
+    box-shadow:
+        0 12px 22px -8px rgba(var(--style-shadow-rgb), 0.24),
+        0 4px 10px -6px rgba(var(--style-shadow-rgb), 0.18) !important;
+    -webkit-box-shadow:
+        0 12px 22px -8px rgba(var(--style-shadow-rgb), 0.24),
+        0 4px 10px -6px rgba(var(--style-shadow-rgb), 0.18) !important;
+    filter: none !important;
+}
+
+/* Right overlay thumbnail: centered cover image, no frame or shadow. */
+.slider-container .rabbit-img-box[data-edit-id="dream_card_image"] {
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    background-color: transparent !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    filter: none !important;
+}
+
+.slider-container .rabbit-img-box[data-edit-id="dream_card_image"]::before,
+.slider-container .rabbit-img-box[data-edit-id="dream_card_image"]::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    filter: none !important;
+}
+
+:where([data-edit-type="image"]) {
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+}
+
+#slider [data-edit-type="image"][data-edit-id],
+#app-root [data-edit-type="image"][data-edit-id],
+.style-cover-thumb {
+    background-color: transparent !important;
+}
+
+.style-cover-thumb {
+    background-color: #fff !important;
+    background-image: none;
+}
+
+#slider .badge-grid-widget .badge-pin-art:not(.rinno-has-custom-image),
+#slider .love-note-widget .love-note-avatar:not(.rinno-has-custom-image),
+#slider .vinyl-disc-widget .vinyl-disc-photo:not(.rinno-has-custom-image),
+#slider .capsule-list-widget .capsule-list-pill span:not(.rinno-has-custom-image),
+#slider .weather-polaroid-widget .weather-polaroid-photo:not(.rinno-has-custom-image),
+#slider .snow-heart-widget .snow-heart-photo:not(.rinno-has-custom-image),
+#slider .camera-disc-widget .camera-disc-body:not(.rinno-has-custom-image),
+#slider .camera-disc-widget .camera-disc-photo:not(.rinno-has-custom-image),
+#slider .mood-bento-widget .mood-bento-orb:not(.rinno-has-custom-image),
+#slider .profile-receipt-widget .profile-receipt-card-avatar:not(.rinno-has-custom-image),
+#slider .profile-receipt-widget .profile-receipt-avatar:not(.rinno-has-custom-image),
+#slider .moment-gallery-widget .moment-gallery-avatar:not(.rinno-has-custom-image),
+#slider .moment-gallery-widget .moment-gallery-photo:not(.rinno-has-custom-image) {
+    background: #fff !important;
+    background-image: none !important;
+}
+
+/* Header reset: keep Style top flat, while other editorial tops stay transparent. */
+.style-top {
+    background: var(--style-app-top-bg) !important;
+    box-shadow: none !important;
+}
+
+.prologue-top,
+.prologue-subtop,
+.private-chat-screen[data-private-current-tab="whisper"] .private-chat-top,
+.private-chat-screen:not([data-private-current-tab]) .private-chat-top {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+body [role="button"]:not(#rinno-button-outline-keep) {
+    outline: 0 !important;
+}
+
+body [role="button"]:not(#rinno-button-outline-keep):active {
+    outline: 0 !important;
+}
+
+/* Final button pass: no outer outline; pressed state is translucent gray. */
+body :is(
+    button,
+    [class*="button"],
+    [class*="-btn"],
+    .interactive-key,
+    .desktop-component-action,
+    .desktop-component-delete,
+    .segment-btn,
+    .phone-key,
+    .key
+):not(#rinno-button-outline-keep) {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+/* EOF contact homepage authority: must stay after all earlier contact-homepage imports. */
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"],
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active,
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    background: #fffdfd !important;
+}
+
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    min-height: 100dvh !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover {
+    flex: 0 0 clamp(154px, 23dvh, 198px) !important;
+    min-height: clamp(154px, 23dvh, 198px) !important;
+    background: #fffdfd !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover.has-custom-cover {
+    background: var(--private-contact-homepage-cover-image) center center / cover no-repeat !important;
+}
+
+#private-app .private-contact-homepage-cover::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: -1px !important;
+    height: 76px !important;
+    pointer-events: none !important;
+    background: linear-gradient(180deg, rgba(255, 253, 253, 0), rgba(255, 253, 253, 0.72) 62%, #fffdfd 100%) !important;
+}
+
+#private-app .private-contact-homepage-close,
+#private-app .private-contact-homepage-edit {
+    position: absolute !important;
+    top: calc(54px + env(safe-area-inset-top, 0px)) !important;
+    z-index: 6 !important;
+    width: auto !important;
+    min-width: 40px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    padding: 0 7px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    border: 0.6px solid rgba(0, 0, 0, 0.58) !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    font: 400 10px/1 var(--font-family) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+#private-app .private-contact-homepage-close {
+    left: max(12px, env(safe-area-inset-left, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-edit {
+    right: max(12px, env(safe-area-inset-right, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-close svg,
+#private-app .private-contact-homepage-edit svg {
+    display: none !important;
+}
+
+#private-app .private-contact-homepage-close:active,
+#private-app .private-contact-homepage-edit:active,
+#private-app .private-contact-homepage-tabs button:active,
+#private-app .private-contact-homepage-links button:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#private-app .private-contact-homepage-head {
+    margin: -38px auto 0 !important;
+    padding: 0 22px 14px !important;
+    gap: 8px !important;
+}
+
+#private-app .private-contact-homepage-avatar {
+    width: 82px !important;
+    height: 82px !important;
+    border: 1px solid rgba(0, 0, 0, 0.18) !important;
+    border-radius: 50% !important;
+    background: #fffdfd !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 22px !important;
+}
+
+#private-app .private-contact-homepage-avatar img {
+    border-radius: 50% !important;
+}
+
+#private-app .private-contact-homepage-head h2 {
+    color: #101010 !important;
+    font-size: clamp(19px, 5vw, 25px) !important;
+    line-height: 1.12 !important;
+}
+
+#private-app .private-contact-homepage-tabs {
+    width: min(100%, 340px) !important;
+    margin: 0 auto 18px !important;
+    padding: 0 20px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+#private-app .private-contact-homepage-tabs button {
+    height: 28px !important;
+    color: #101010 !important;
+    background: transparent !important;
+    font-size: 11px !important;
+    line-height: 28px !important;
+    font-weight: 400 !important;
+}
+
+#private-app .private-contact-homepage-tabs button.active::after {
+    width: 26px !important;
+    height: 1px !important;
+    background: #101010 !important;
+}
+
+#private-app .private-contact-homepage-flow {
+    width: min(100%, 640px) !important;
+    padding: 0 24px 24px !important;
+    gap: 14px !important;
+}
+
+#private-app .private-contact-homepage-flow p {
+    color: #101010 !important;
+    font-size: 13px !important;
+    line-height: 1.84 !important;
+}
+
+#private-app .private-contact-homepage-links {
+    width: min(100%, 640px) !important;
+    margin: auto auto calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 20px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-links button {
+    min-height: 48px !important;
+    padding: 0 2px !important;
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) 16px !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 12px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.11) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    text-align: left !important;
+}
+
+#private-app .private-contact-homepage-links span,
+#private-app .private-contact-homepage-links i {
+    width: 22px !important;
+    height: 22px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+
+#private-app .private-contact-homepage-links i {
+    justify-self: end !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+#private-app .private-contact-homepage-links svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.05 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+#private-app .private-contact-homepage-links i svg {
+    width: 13px !important;
+    height: 13px !important;
+    stroke-width: 1 !important;
+}
+
+#private-app .private-contact-homepage-links b {
+    color: #101010 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+}
+
+@media (max-width: 430px) {
+    #private-app .private-contact-homepage-cover {
+        flex-basis: 164px !important;
+        min-height: 164px !important;
+    }
+
+    #private-app .private-contact-homepage-head {
+        margin-top: -34px !important;
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+
+    #private-app .private-contact-homepage-avatar {
+        width: 74px !important;
+        height: 74px !important;
+    }
+
+    #private-app .private-contact-homepage-flow,
+    #private-app .private-contact-homepage-links {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+}
+
+/* Absolute contact-homepage override. Keep this at EOF so older import patches cannot re-expand it. */
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"],
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active,
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    background: #fffdfd !important;
+}
+
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    min-height: 100dvh !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover {
+    flex: 0 0 clamp(154px, 23dvh, 198px) !important;
+    min-height: clamp(154px, 23dvh, 198px) !important;
+    background: #fffdfd !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover.has-custom-cover {
+    background: var(--private-contact-homepage-cover-image) center center / cover no-repeat !important;
+}
+
+#private-app .private-contact-homepage-cover::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: -1px !important;
+    height: 76px !important;
+    pointer-events: none !important;
+    background: linear-gradient(180deg, rgba(255, 253, 253, 0), rgba(255, 253, 253, 0.72) 62%, #fffdfd 100%) !important;
+}
+
+#private-app .private-contact-homepage-close,
+#private-app .private-contact-homepage-edit {
+    position: absolute !important;
+    top: calc(54px + env(safe-area-inset-top, 0px)) !important;
+    z-index: 6 !important;
+    width: auto !important;
+    min-width: 40px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    padding: 0 7px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    border: 0.6px solid rgba(0, 0, 0, 0.58) !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    font: 400 10px/1 var(--font-family) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+#private-app .private-contact-homepage-close {
+    left: max(12px, env(safe-area-inset-left, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-edit {
+    right: max(12px, env(safe-area-inset-right, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-close svg,
+#private-app .private-contact-homepage-edit svg {
+    display: none !important;
+}
+
+#private-app .private-contact-homepage-close:active,
+#private-app .private-contact-homepage-edit:active,
+#private-app .private-contact-homepage-tabs button:active,
+#private-app .private-contact-homepage-links button:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#private-app .private-contact-homepage-head {
+    margin: -38px auto 0 !important;
+    padding: 0 22px 14px !important;
+    gap: 8px !important;
+}
+
+#private-app .private-contact-homepage-avatar {
+    width: 82px !important;
+    height: 82px !important;
+    border: 1px solid rgba(0, 0, 0, 0.18) !important;
+    border-radius: 50% !important;
+    background: #fffdfd !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 22px !important;
+}
+
+#private-app .private-contact-homepage-avatar img {
+    border-radius: 50% !important;
+}
+
+#private-app .private-contact-homepage-head h2 {
+    color: #101010 !important;
+    font-size: clamp(19px, 5vw, 25px) !important;
+    line-height: 1.12 !important;
+}
+
+#private-app .private-contact-homepage-tabs {
+    width: min(100%, 340px) !important;
+    margin: 0 auto 18px !important;
+    padding: 0 20px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+#private-app .private-contact-homepage-tabs button {
+    height: 28px !important;
+    color: #101010 !important;
+    background: transparent !important;
+    font-size: 11px !important;
+    line-height: 28px !important;
+    font-weight: 400 !important;
+}
+
+#private-app .private-contact-homepage-tabs button.active::after {
+    width: 26px !important;
+    height: 1px !important;
+    background: #101010 !important;
+}
+
+#private-app .private-contact-homepage-flow {
+    width: min(100%, 640px) !important;
+    padding: 0 24px 24px !important;
+    gap: 14px !important;
+}
+
+#private-app .private-contact-homepage-flow p {
+    color: #101010 !important;
+    font-size: 13px !important;
+    line-height: 1.84 !important;
+}
+
+#private-app .private-contact-homepage-links {
+    width: min(100%, 640px) !important;
+    margin: auto auto calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 20px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-links button {
+    min-height: 48px !important;
+    padding: 0 2px !important;
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) 16px !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 12px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.11) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    text-align: left !important;
+}
+
+#private-app .private-contact-homepage-links span,
+#private-app .private-contact-homepage-links i {
+    width: 22px !important;
+    height: 22px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+
+#private-app .private-contact-homepage-links i {
+    justify-self: end !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+#private-app .private-contact-homepage-links svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.05 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+#private-app .private-contact-homepage-links i svg {
+    width: 13px !important;
+    height: 13px !important;
+    stroke-width: 1 !important;
+}
+
+#private-app .private-contact-homepage-links b {
+    color: #101010 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+}
+
+@media (max-width: 430px) {
+    #private-app .private-contact-homepage-cover {
+        flex-basis: 164px !important;
+        min-height: 164px !important;
+    }
+
+    #private-app .private-contact-homepage-head {
+        margin-top: -34px !important;
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+
+    #private-app .private-contact-homepage-avatar {
+        width: 74px !important;
+        height: 74px !important;
+    }
+
+    #private-app .private-contact-homepage-flow,
+    #private-app .private-contact-homepage-links {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+}
+
+/* Contact homepage final pass: smaller cover, image-to-content fade, text controls, SVG line actions. */
+html,
+body,
+body * {
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+body :is(
+    button,
+    [role="button"],
+    a,
+    summary,
+    label,
+    .interactive,
+    .interactive-key,
+    [data-open-app]
+):focus,
+body :is(
+    button,
+    [role="button"],
+    a,
+    summary,
+    label,
+    .interactive,
+    .interactive-key,
+    [data-open-app]
+):focus-visible {
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+body :is(
+    button,
+    [role="button"],
+    a,
+    summary,
+    label,
+    .interactive,
+    .interactive-key,
+    [data-open-app]
+):active {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"],
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active,
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    background: #fffdfd !important;
+}
+
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    min-height: 100dvh !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover {
+    flex: 0 0 clamp(154px, 23dvh, 198px) !important;
+    min-height: clamp(154px, 23dvh, 198px) !important;
+    background: #fffdfd !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-cover.has-custom-cover {
+    background: var(--private-contact-homepage-cover-image) center center / cover no-repeat !important;
+}
+
+#private-app .private-contact-homepage-cover::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: -1px !important;
+    height: 76px !important;
+    pointer-events: none !important;
+    background: linear-gradient(180deg, rgba(255, 253, 253, 0), rgba(255, 253, 253, 0.72) 62%, #fffdfd 100%) !important;
+}
+
+#private-app .private-contact-homepage-close,
+#private-app .private-contact-homepage-edit {
+    position: absolute !important;
+    top: calc(54px + env(safe-area-inset-top, 0px)) !important;
+    z-index: 6 !important;
+    width: auto !important;
+    min-width: 40px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    padding: 0 7px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    border: 0.6px solid rgba(0, 0, 0, 0.58) !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    font: 400 10px/1 var(--font-family) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+#private-app .private-contact-homepage-close {
+    left: max(12px, env(safe-area-inset-left, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-edit {
+    right: max(12px, env(safe-area-inset-right, 0px)) !important;
+}
+
+#private-app .private-contact-homepage-close svg,
+#private-app .private-contact-homepage-edit svg {
+    display: none !important;
+}
+
+#private-app .private-contact-homepage-close:active,
+#private-app .private-contact-homepage-edit:active,
+#private-app .private-contact-homepage-tabs button:active,
+#private-app .private-contact-homepage-links button:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#private-app .private-contact-homepage-head {
+    margin: -38px auto 0 !important;
+    padding: 0 22px 14px !important;
+    gap: 8px !important;
+}
+
+#private-app .private-contact-homepage-avatar {
+    width: 82px !important;
+    height: 82px !important;
+    border: 1px solid rgba(0, 0, 0, 0.18) !important;
+    border-radius: 50% !important;
+    background: #fffdfd !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 22px !important;
+}
+
+#private-app .private-contact-homepage-avatar img {
+    border-radius: 50% !important;
+}
+
+#private-app .private-contact-homepage-head h2 {
+    color: #101010 !important;
+    font-size: clamp(19px, 5vw, 25px) !important;
+    line-height: 1.12 !important;
+}
+
+#private-app .private-contact-homepage-tabs {
+    width: min(100%, 340px) !important;
+    margin: 0 auto 18px !important;
+    padding: 0 20px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+#private-app .private-contact-homepage-tabs button {
+    height: 28px !important;
+    color: #101010 !important;
+    background: transparent !important;
+    font-size: 11px !important;
+    line-height: 28px !important;
+    font-weight: 400 !important;
+}
+
+#private-app .private-contact-homepage-tabs button.active::after {
+    width: 26px !important;
+    height: 1px !important;
+    background: #101010 !important;
+}
+
+#private-app .private-contact-homepage-flow {
+    width: min(100%, 640px) !important;
+    padding: 0 24px 24px !important;
+    gap: 14px !important;
+}
+
+#private-app .private-contact-homepage-flow p {
+    color: #101010 !important;
+    font-size: 13px !important;
+    line-height: 1.84 !important;
+}
+
+#private-app .private-contact-homepage-links {
+    width: min(100%, 640px) !important;
+    margin: auto auto calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 20px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-contact-homepage-links button {
+    min-height: 48px !important;
+    padding: 0 2px !important;
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) 16px !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 12px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.11) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    text-align: left !important;
+}
+
+#private-app .private-contact-homepage-links span,
+#private-app .private-contact-homepage-links i {
+    width: 22px !important;
+    height: 22px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #101010 !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+
+#private-app .private-contact-homepage-links i {
+    justify-self: end !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+#private-app .private-contact-homepage-links svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.05 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+#private-app .private-contact-homepage-links i svg {
+    width: 13px !important;
+    height: 13px !important;
+    stroke-width: 1 !important;
+}
+
+#private-app .private-contact-homepage-links b {
+    color: #101010 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+}
+
+@media (max-width: 430px) {
+    #private-app .private-contact-homepage-cover {
+        flex-basis: 164px !important;
+        min-height: 164px !important;
+    }
+
+    #private-app .private-contact-homepage-head {
+        margin-top: -34px !important;
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+
+    #private-app .private-contact-homepage-avatar {
+        width: 74px !important;
+        height: 74px !important;
+    }
+
+    #private-app .private-contact-homepage-flow,
+    #private-app .private-contact-homepage-links {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+}
+
+/* Private contacts mirror the dossier preview card: title rail plus image button. */
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, 144px) !important;
+    justify-content: start !important;
+    justify-items: start !important;
+    align-items: start !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 760px !important;
+    margin: 0 auto !important;
+    padding: 6px 0 18px !important;
+    counter-reset: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card:nth-child(even),
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card:nth-child(3n) {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 134px !important;
+    grid-template-rows: 31px 95px !important;
+    width: 144px !important;
+    min-width: 144px !important;
+    max-width: 144px !important;
+    height: 136px !important;
+    min-height: 136px !important;
+    max-height: 136px !important;
+    aspect-ratio: auto !important;
+    gap: 0 !important;
+    align-self: start !important;
+    padding: 5px !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card:hover,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card:focus-visible {
+    border: 0 !important;
+    box-shadow: 0 0 0 1px rgba(58, 49, 55, 0.04) !important;
+    transform: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card::before,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-card::after {
+    content: none !important;
+    display: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-rail {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    z-index: 4 !important;
+    height: 31px !important;
+    pointer-events: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-title {
+    position: absolute !important;
+    left: 28px !important;
+    right: 28px !important;
+    top: 3px !important;
+    display: block !important;
+    height: 24px !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #211d20 !important;
+    box-shadow: none !important;
+    font: 700 13px/24px var(--font-family) !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    pointer-events: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-arrow,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-edit {
+    position: absolute !important;
+    top: 10px !important;
+    z-index: 5 !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    height: 16px !important;
+    min-height: 16px !important;
+    max-height: 16px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: rgba(33, 29, 32, 0.92) !important;
+    box-shadow: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-arrow {
+    left: 10px !important;
+    pointer-events: auto !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-edit {
+    right: 10px !important;
+    pointer-events: auto !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-arrow svg,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-edit svg {
+    display: block !important;
+    width: 10px !important;
+    min-width: 10px !important;
+    max-width: 10px !important;
+    height: 10px !important;
+    min-height: 10px !important;
+    max-height: 10px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 2.7 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-face,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-face:hover,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-face:focus-visible,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-face:active {
+    position: static !important;
+    grid-row: 2 !important;
+    grid-column: 1 !important;
+    display: block !important;
+    align-self: center !important;
+    justify-self: center !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 102px !important;
+    min-height: 102px !important;
+    max-height: 102px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-avatar {
+    display: grid !important;
+    place-items: center !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 102px !important;
+    min-height: 102px !important;
+    max-height: 102px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: rgba(247, 244, 246, 0.86) !important;
+    color: var(--private-contact-rose-deep, #83636d) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    font-weight: 760 !important;
+    box-sizing: border-box !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-avatar.has-image {
+    color: transparent !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-avatar img {
+    display: block !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 102px !important;
+    min-height: 102px !important;
+    max-height: 102px !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-copy,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-sub,
+#private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-note {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+}
+
+.private-contact-profile-modal.dossier-profile-modal {
+    z-index: 1850 !important;
+}
+
+.private-contact-profile-modal .dossier-profile-dialog {
+    width: min(92vw, 420px) !important;
+}
+
+.private-contact-homepage-paper {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: 0 22px 64px rgba(34, 29, 33, 0.14) !important;
+}
+
+.private-contact-homepage-cover {
+    position: relative !important;
+    flex: 0 0 174px !important;
+    min-height: 174px !important;
+    background:
+        linear-gradient(180deg, rgba(20, 20, 20, 0.06), rgba(255, 255, 255, 0.72)),
+        repeating-linear-gradient(90deg, rgba(55, 55, 58, 0.18) 0 1px, transparent 1px 82px),
+        repeating-linear-gradient(0deg, rgba(55, 55, 58, 0.1) 0 1px, transparent 1px 64px),
+        #dfe0e1 !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    overflow: visible !important;
+}
+
+.private-contact-homepage-close {
+    position: absolute !important;
+    left: 14px !important;
+    top: 14px !important;
+    width: 34px !important;
+    height: 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.72) !important;
+    color: #211d20 !important;
+    box-shadow: none !important;
+}
+
+.private-contact-homepage-close svg {
+    width: 16px !important;
+    height: 16px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 2.2 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+.private-contact-homepage-head {
+    position: relative !important;
+    display: grid !important;
+    justify-items: center !important;
+    gap: 12px !important;
+    padding: 0 24px 22px !important;
+    margin-top: -58px !important;
+    text-align: center !important;
+    z-index: 2 !important;
+}
+
+.private-contact-homepage-avatar {
+    width: 104px !important;
+    height: 104px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 0 !important;
+    border-radius: 28px !important;
+    overflow: hidden !important;
+    background: rgba(247, 244, 246, 0.98) !important;
+    color: #333 !important;
+    font-size: 28px !important;
+    font-weight: 760 !important;
+    box-shadow: 0 10px 28px rgba(34, 29, 33, 0.08) !important;
+}
+
+.private-contact-homepage-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+}
+
+.private-contact-homepage-head h2 {
+    margin: 0 !important;
+    color: #373238 !important;
+    font-size: 20px !important;
+    line-height: 1.15 !important;
+    font-weight: 520 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere !important;
+}
+
+.private-contact-homepage-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: end !important;
+    width: min(100%, 260px) !important;
+    margin: 0 auto 26px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.private-contact-homepage-tabs button {
+    position: relative !important;
+    min-width: 0 !important;
+    height: 30px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #514b52 !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    line-height: 30px !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+}
+
+.private-contact-homepage-tabs button.active::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 50% !important;
+    bottom: 0 !important;
+    width: 34px !important;
+    height: 1px !important;
+    background: #2f2b30 !important;
+    transform: translateX(-50%) !important;
+}
+
+.private-contact-homepage-flow {
+    width: min(100%, 282px) !important;
+    margin: 0 auto !important;
+    padding: 0 0 34px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 24px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.private-contact-homepage-flow p {
+    margin: 0 !important;
+    color: #333038 !important;
+    font-size: 13px !important;
+    line-height: 2.05 !important;
+    font-weight: 430 !important;
+    text-align: center !important;
+    overflow-wrap: anywhere !important;
+    white-space: pre-wrap !important;
+}
+
+.private-contact-homepage-notes {
+    position: absolute !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    color: #111 !important;
+    font-size: 26px !important;
+    line-height: 1 !important;
+}
+
+.private-contact-homepage-notes span {
+    position: absolute !important;
+}
+
+.private-contact-homepage-notes span:nth-child(1) { left: 20px !important; top: 28px !important; font-size: 34px !important; }
+.private-contact-homepage-notes span:nth-child(2) { right: 98px !important; top: 42px !important; }
+.private-contact-homepage-notes span:nth-child(3) { left: 68px !important; top: 82px !important; }
+.private-contact-homepage-notes span:nth-child(4) { right: 58px !important; top: 70px !important; }
+
+.private-contact-homepage-toast {
+    position: absolute !important;
+    left: calc(50% + 38px) !important;
+    top: 54px !important;
+    padding: 8px 11px !important;
+    border-radius: 5px !important;
+    background: rgba(19, 19, 21, 0.92) !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+.private-contact-homepage-links {
+    width: min(100%, 314px) !important;
+    margin: auto auto 26px !important;
+    padding: 10px 0 0 !important;
+    display: grid !important;
+    gap: 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.private-contact-homepage-links button {
+    min-height: 44px !important;
+    display: grid !important;
+    grid-template-columns: 28px minmax(0, 1fr) 18px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 2px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid rgba(48, 43, 50, 0.05) !important;
+    background: transparent !important;
+    color: #3a343b !important;
+    box-shadow: none !important;
+    text-align: left !important;
+}
+
+.private-contact-homepage-links span {
+    display: grid !important;
+    place-items: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    border: 1px solid rgba(48, 43, 50, 0.08) !important;
+    border-radius: 3px !important;
+    font-size: 10px !important;
+    color: #343039 !important;
+}
+
+.private-contact-homepage-links b {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    font-weight: 420 !important;
+}
+
+.private-contact-homepage-links i {
+    font-style: normal !important;
+    text-align: right !important;
+    color: rgba(48, 43, 50, 0.55) !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] {
+    background: #fff !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-chat-shell {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-chat-top,
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-tabbar {
+    display: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-panel-wrap {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-pane {
+    display: none !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    background: #fff !important;
+}
+
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    width: 100% !important;
+    max-width: 390px !important;
+    min-height: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+}
+
+/* Contact homepage: full-bleed role page, round avatar, editable gradient cover. */
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"],
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active {
+    background: #fffdfd !important;
+}
+
+#private-app .private-chat-screen[data-private-current-tab="contact-homepage"] .private-contact-homepage-pane.active {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+}
+
+#private-app .private-contact-homepage-pane .private-contact-homepage-paper {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    background:
+        linear-gradient(180deg, rgba(255, 253, 254, 0.98), rgba(246, 241, 244, 0.82) 56%, #fffdfd 100%) !important;
+    box-shadow: none !important;
+}
+
+.private-contact-homepage-cover {
+    position: relative !important;
+    width: 100% !important;
+    flex: 0 0 clamp(224px, 34dvh, 318px) !important;
+    min-height: clamp(224px, 34dvh, 318px) !important;
+    cursor: pointer !important;
+    background:
+        radial-gradient(ellipse 86% 78% at 18% 10%, rgba(var(--style-accent-rgb, 217, 183, 192), 0.54) 0 36%, transparent 74%),
+        radial-gradient(ellipse 72% 64% at 88% 16%, rgba(var(--style-accent-soft-rgb, 246, 238, 241), 0.84) 0 42%, transparent 78%),
+        linear-gradient(135deg, #f8f3f6 0%, #d8e3df 54%, #b98998 100%) !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    overflow: visible !important;
+}
+
+.private-contact-homepage-cover.has-custom-cover {
+    background:
+        linear-gradient(180deg, rgba(20, 18, 22, 0.06), rgba(20, 18, 22, 0.18)),
+        var(--private-contact-homepage-cover-image) center center / cover no-repeat,
+        linear-gradient(135deg, #f8f3f6 0%, #d8e3df 54%, #b98998 100%) !important;
+}
+
+.private-contact-homepage-cover:focus-visible {
+    outline: 2px solid rgba(33, 28, 32, 0.34) !important;
+    outline-offset: -4px !important;
+}
+
+.private-contact-homepage-notes,
+.private-contact-homepage-toast {
+    display: none !important;
+}
+
+.private-contact-homepage-close {
+    left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    top: calc(16px + env(safe-area-inset-top, 0px)) !important;
+    z-index: 4 !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 253, 254, 0.76) !important;
+    color: #211c20 !important;
+    backdrop-filter: blur(16px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+}
+
+.private-contact-homepage-head {
+    width: min(100%, 760px) !important;
+    margin: -58px auto 0 !important;
+    padding: 0 24px 20px !important;
+    gap: 12px !important;
+}
+
+.private-contact-homepage-avatar {
+    width: 108px !important;
+    height: 108px !important;
+    border: 4px solid rgba(255, 253, 254, 0.94) !important;
+    border-radius: 50% !important;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(33, 28, 32, 0.22) 0 19%, transparent 20%),
+        radial-gradient(circle at 50% 102%, rgba(33, 28, 32, 0.18) 0 33%, transparent 34%),
+        rgba(255, 253, 254, 0.92) !important;
+    color: #2a2428 !important;
+    box-shadow: 0 16px 34px rgba(55, 38, 47, 0.14) !important;
+}
+
+.private-contact-homepage-avatar img {
+    border-radius: 50% !important;
+}
+
+.private-contact-homepage-head h2 {
+    color: #211c20 !important;
+    font-size: clamp(20px, 3.4vw, 28px) !important;
+    line-height: 1.12 !important;
+}
+
+.private-contact-homepage-tabs {
+    width: min(100%, 430px) !important;
+    margin: 0 auto 22px !important;
+    padding: 0 24px !important;
+}
+
+.private-contact-homepage-flow {
+    width: min(100%, 680px) !important;
+    flex: 0 0 auto !important;
+    margin: 0 auto !important;
+    padding: 0 28px 28px !important;
+    gap: 18px !important;
+}
+
+.private-contact-homepage-flow p {
+    text-align: left !important;
+    line-height: 1.86 !important;
+}
+
+.private-contact-homepage-links {
+    width: min(100%, 680px) !important;
+    margin: 0 auto calc(34px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 24px !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+.private-contact-homepage-links button {
+    min-width: 0 !important;
+    min-height: 84px !important;
+    padding: 14px 10px !important;
+    display: grid !important;
+    place-items: center !important;
+    gap: 8px !important;
+    border: 1px solid rgba(73, 55, 63, 0.1) !important;
+    border-radius: 8px !important;
+    background: rgba(255, 253, 254, 0.72) !important;
+    color: #211c20 !important;
+    box-shadow: 0 10px 24px rgba(55, 38, 47, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.78) !important;
+    text-align: center !important;
+}
+
+.private-contact-homepage-links span {
+    display: grid !important;
+    place-items: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background:
+        linear-gradient(135deg, #211c20, rgba(33, 28, 32, 0.84)) !important;
+    color: #fffdfd !important;
+    font-size: 14px !important;
+}
+
+.private-contact-homepage-links b {
+    display: block !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    color: #211c20 !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    font-weight: 500 !important;
+}
+
+.private-contact-homepage-links i {
+    color: rgba(48, 43, 50, 0.55) !important;
+    font-style: normal !important;
+}
+
+@media (max-width: 430px) {
+    .private-contact-homepage-cover {
+        flex-basis: 228px !important;
+        min-height: 228px !important;
+    }
+
+    .private-contact-homepage-head,
+    .private-contact-homepage-flow {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .private-contact-homepage-links {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+}
+
+@media (max-width: 460px) {
+    #private-app .private-chat-screen[data-private-current-tab="contacts"] .private-contact-list {
+        grid-template-columns: repeat(auto-fill, 144px) !important;
+        gap: 12px !important;
+    }
+}
+
+/* Dossier contact preview must stay after bridge resets. */
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, 144px) !important;
+    justify-content: start !important;
+    justify-items: start !important;
+    align-items: start !important;
+    gap: 14px !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card,
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card:nth-child(even),
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card:nth-child(even),
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card:nth-child(3n),
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card:nth-child(3n),
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card.active,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card.active {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 134px !important;
+    grid-template-rows: 31px 95px !important;
+    width: 144px !important;
+    min-width: 144px !important;
+    max-width: 144px !important;
+    height: 136px !important;
+    min-height: 136px !important;
+    max-height: 136px !important;
+    aspect-ratio: auto !important;
+    gap: 0 !important;
+    padding: 5px !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card::before,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card::before {
+    content: attr(data-dossier-storage-title) !important;
+    position: absolute !important;
+    left: 28px !important;
+    right: 28px !important;
+    top: 3px !important;
+    z-index: 3 !important;
+    display: block !important;
+    height: 24px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #211d20 !important;
+    box-shadow: none !important;
+    font: 700 13px/24px var(--font-family) !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-list-card.dossier-storage-card::after,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list-card.dossier-storage-card::after {
+    content: none !important;
+    display: none !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-card-arrow,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-card-arrow {
+    position: absolute !important;
+    top: 10px !important;
+    z-index: 4 !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    height: 16px !important;
+    min-height: 16px !important;
+    max-height: 16px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: rgba(33, 29, 32, 0.92) !important;
+    box-shadow: none !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-card-arrow-left,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-card-arrow-left {
+    left: 10px !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-card-arrow-right,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-card-arrow-right {
+    right: 10px !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-card-arrow svg,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-card-arrow svg {
+    display: block !important;
+    width: 10px !important;
+    height: 10px !important;
+    stroke-width: 2.6 !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-storage-face,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-storage-face,
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-storage-face.interactive,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-storage-face.interactive {
+    position: static !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: block !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 95px !important;
+    min-height: 95px !important;
+    max-height: 95px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-storage-avatar,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-storage-avatar {
+    display: block !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 95px !important;
+    min-height: 95px !important;
+    max-height: 95px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: rgba(247, 244, 246, 0.86) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+#dossier-app .dossier-view[data-dossier-view="char"] .dossier-storage-avatar img,
+#dossier-app .dossier-view[data-dossier-view="npc"] .dossier-storage-avatar img {
+    display: block !important;
+    width: 134px !important;
+    min-width: 134px !important;
+    max-width: 134px !important;
+    height: 95px !important;
+    min-height: 95px !important;
+    max-height: 95px !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+}
+
+@media (max-width: 460px) {
+    #dossier-app .dossier-view[data-dossier-view="char"] .dossier-list,
+    #dossier-app .dossier-view[data-dossier-view="npc"] .dossier-list {
+        grid-template-columns: repeat(auto-fill, 144px) !important;
+        gap: 12px !important;
+    }
+}
+
+body :is(
+    button,
+    [class*="button"],
+    [class*="-btn"],
+    .interactive-key,
+    .desktop-component-action,
+    .desktop-component-delete,
+    .segment-btn,
+    .phone-key,
+    .key
+):not(#rinno-button-outline-keep):focus,
+body :is(
+    button,
+    [class*="button"],
+    [class*="-btn"],
+    .interactive-key,
+    .desktop-component-action,
+    .desktop-component-delete,
+    .segment-btn,
+    .phone-key,
+    .key
+):not(#rinno-button-outline-keep):focus-visible {
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+body :is(
+    button,
+    [class*="button"],
+    [class*="-btn"],
+    .interactive-key,
+    .desktop-component-action,
+    .desktop-component-delete,
+    .segment-btn,
+    .phone-key,
+    .key
+):not(#rinno-button-outline-keep):active {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+/* 2026-04-24 dual-avatar bubbles: keep the glass body and remove the add-on tail. */
+.slider-container .name-bubble {
+    overflow: hidden !important;
+    backdrop-filter: blur(25px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(140%) !important;
+}
+
+.slider-container .name-bubble::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    filter: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    pointer-events: none !important;
+}
+
+/* 2026-04-24: restore the first homepage profile card to the base component styling. */
+.slider-container .page:first-child .new-info-card {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: var(--glass-bg) !important;
+    -webkit-backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val)) !important;
+    backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val)) !important;
+    border: var(--glass-border) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.38) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--glass-shadow) !important;
+    -webkit-box-shadow: var(--glass-shadow) !important;
+}
+
+.slider-container .page:first-child .info-header-bg {
+    width: 100% !important;
+    height: 185px !important;
+    position: relative !important;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 20px), rgba(0, 0, 0, 0.58) calc(100% - 10px), rgba(0, 0, 0, 0.18) calc(100% - 4px), transparent 100%) !important;
+    mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 20px), rgba(0, 0, 0, 0.58) calc(100% - 10px), rgba(0, 0, 0, 0.18) calc(100% - 4px), transparent 100%) !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+}
+
+.slider-container .page:first-child .info-header-bg::after {
+    content: none !important;
+    display: none !important;
+}
+
+.slider-container .page:first-child .info-bottom-part {
+    width: 100% !important;
+    min-height: 175px !important;
+    position: relative !important;
+    z-index: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-bottom: 24px !important;
+    margin-top: -28px !important;
+    border-top: 0 !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 28px 28px 0 0 !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04) 58%, rgba(255, 255, 255, 0.015)) !important;
+    -webkit-backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val)) !important;
+    backdrop-filter: blur(var(--blur-val)) saturate(var(--saturate-val)) !important;
+    box-shadow: 0 -4px 14px rgba(255, 255, 255, 0.08), var(--glass-shadow) !important;
+    -webkit-box-shadow: 0 -4px 14px rgba(255, 255, 255, 0.08), var(--glass-shadow) !important;
+}
+
+.slider-container .page:first-child .info-bottom-part::before {
+    content: none !important;
+    display: none !important;
+}
+
+.slider-container .page:first-child .info-bottom-part > * {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper {
+    margin-top: -55px !important;
+    z-index: 2 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    overflow: visible !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    -webkit-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    filter: none !important;
+}
+
+.slider-container .page:first-child .avatar-overlap-wrapper::before,
+.slider-container .page:first-child .avatar-overlap-wrapper::after,
+.slider-container .page:first-child .avatar-inner::before,
+.slider-container .page:first-child .avatar-inner::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+}
+
+.slider-container .page:first-child .avatar-inner {
+    width: 110px !important;
+    height: 110px !important;
+    aspect-ratio: 1 / 1 !important;
+    border: none !important;
+    outline: 0 !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    clip-path: none !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    -webkit-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    filter: none !important;
+}
+
+/* 2026-04-24 desktop chat/avatar surface reset: plain white capsules, no glass. */
+.slider-container .chat-bubble,
+.slider-container .chat-time-capsule,
+.slider-container .chat-bubble-capsule,
+.slider-container .chat-input-bar,
+.slider-container .chat-send-btn,
+.slider-container .name-bubble,
+.slider-container .new-sun-card .sun-tag {
+    background: #ffffff !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+.slider-container .chat-bubble,
+.slider-container .chat-time-capsule,
+.slider-container .chat-bubble-capsule,
+.slider-container .chat-input-bar,
+.slider-container .name-bubble,
+.slider-container .new-sun-card .sun-tag {
+    border-radius: 999px !important;
+}
+
+.slider-container .chat-img-card {
+    width: 100px !important;
+    height: 100px !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 18px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    overflow: hidden !important;
+}
+
+.slider-container .name-bubble {
+    color: var(--text-main) !important;
+    -webkit-text-stroke: 0 transparent !important;
+}
+
+.slider-container .name-bubble::before,
+.slider-container .name-bubble::after,
+.slider-container .new-sun-card .sun-tag::before,
+.slider-container .new-sun-card .sun-tag::after,
+.slider-container .chat-bubble::before,
+.slider-container .chat-bubble::after,
+.slider-container .chat-time-capsule::before,
+.slider-container .chat-time-capsule::after,
+.slider-container .chat-bubble-capsule::before,
+.slider-container .chat-bubble-capsule::after,
+.slider-container .chat-input-bar::before,
+.slider-container .chat-input-bar::after,
+.slider-container .chat-img-card::before,
+.slider-container .chat-img-card::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    filter: none !important;
+}

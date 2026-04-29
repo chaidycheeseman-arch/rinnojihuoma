@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="referrer" content="no-referrer">
+    <title>Rinno Issuer Console</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v20260428-app-refresh-1.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v20260428-app-refresh-1.png">
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3eee8;
+            --panel: rgba(255, 251, 247, 0.94);
+            --panel-strong: rgba(255, 248, 241, 0.98);
+            --line: rgba(108, 83, 70, 0.14);
+            --text: #2c241f;
+            --subtle: rgba(76, 60, 52, 0.72);
+            --accent: #6c5346;
+            --accent-strong: #3b2d25;
+            --danger: #b84d4f;
+            --success: #2d7a5d;
+            --shadow: 0 20px 60px rgba(57, 39, 29, 0.12);
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-sm: 14px;
+            --font-sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 38%),
+                linear-gradient(180deg, #f8f2ed 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: var(--font-sans);
+        }
+
+        body {
+            padding: 32px 18px 48px;
+        }
+
+        .issuer-shell {
+            width: min(1160px, 100%);
+            margin: 0 auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .issuer-hero,
+        .issuer-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+        }
+
+        .issuer-hero {
+            padding: 28px 24px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .issuer-card {
+            padding: 22px;
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .issuer-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .issuer-kicker,
+        .issuer-card-kicker,
+        .issuer-label,
+        .issuer-button,
+        .issuer-chip {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .issuer-kicker,
+        .issuer-card-kicker {
+            color: var(--subtle);
+        }
+
+        .issuer-title {
+            margin: 0;
+            font-size: clamp(30px, 7vw, 52px);
+            line-height: 0.96;
+            letter-spacing: -0.05em;
+        }
+
+        .issuer-copy,
+        .issuer-caption,
+        .issuer-feedback,
+        .issuer-empty,
+        .issuer-item-meta {
+            color: var(--subtle);
+            line-height: 1.65;
+        }
+
+        .issuer-fieldset {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .issuer-label {
+            display: grid;
+            gap: 8px;
+            color: var(--accent);
+        }
+
+        .issuer-input,
+        .issuer-output {
+            width: 100%;
+            border: 1px solid rgba(108, 83, 70, 0.16);
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--text);
+            font: inherit;
+            padding: 14px 16px;
+            min-height: 48px;
+        }
+
+        .issuer-input,
+        .issuer-output,
+        .issuer-item-code {
+            font-family: var(--font-mono);
+            letter-spacing: 0.04em;
+        }
+
+        .issuer-input:focus,
+        .issuer-output:focus {
+            outline: none;
+            border-color: rgba(108, 83, 70, 0.48);
+            box-shadow: 0 0 0 4px rgba(108, 83, 70, 0.12);
+        }
+
+        .issuer-output[readonly] {
+            opacity: 0.96;
+        }
+
+        .issuer-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .issuer-button {
+            border: 1px solid rgba(108, 83, 70, 0.14);
+            border-radius: 999px;
+            min-height: 46px;
+            padding: 0 18px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--accent-strong);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .issuer-button:hover,
+        .issuer-button:focus-visible {
+            outline: none;
+            transform: translateY(-1px);
+            border-color: rgba(108, 83, 70, 0.3);
+            box-shadow: 0 10px 28px rgba(57, 39, 29, 0.08);
+        }
+
+        .issuer-button:disabled {
+            cursor: wait;
+            opacity: 0.62;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .issuer-button.primary {
+            background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+            color: #fff8f2;
+        }
+
+        .issuer-button.subtle {
+            background: rgba(255, 255, 255, 0.58);
+        }
+
+        .issuer-feedback[data-tone="error"] {
+            color: var(--danger);
+        }
+
+        .issuer-feedback[data-tone="success"] {
+            color: var(--success);
+        }
+
+        .issuer-feedback[data-tone="muted"] {
+            color: var(--subtle);
+        }
+
+        .issuer-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .issuer-chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(108, 83, 70, 0.14);
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--accent);
+        }
+
+        .issuer-panel[hidden] {
+            display: none;
+        }
+
+        .issuer-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .issuer-item {
+            display: grid;
+            gap: 6px;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(108, 83, 70, 0.1);
+        }
+
+        .issuer-side-list {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 8px;
+            color: var(--subtle);
+            line-height: 1.6;
+        }
+
+        .issuer-inline {
+            display: inline-flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .issuer-session-summary {
+            display: grid;
+            gap: 6px;
+        }
+
+        @media (min-width: 920px) {
+            .issuer-grid.two {
+                grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+                align-items: start;
+            }
+
+            .issuer-grid.three {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                align-items: start;
+            }
+
+            .issuer-fieldset {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .issuer-label.full {
+                grid-column: 1 / -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="issuer-shell">
+        <section class="issuer-hero">
+            <span class="issuer-kicker">Rinno Controlled Issuer</span>
+            <h1 class="issuer-title">受控发码后台</h1>
+            <p class="issuer-copy">这里专门负责把设备码签发成激活码，不负责用户登录。管理员需要先登录后台，再进行签发、管理账号、修改密码和导出审计。</p>
+        </section>
+
+        <section class="issuer-grid two">
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Administrator Session</span>
+                <div class="issuer-chip-row">
+                    <span class="issuer-chip" id="issuer-session-chip">未登录</span>
+                </div>
+
+                <div class="issuer-panel" id="issuer-login-panel">
+                    <div class="issuer-fieldset">
+                        <label class="issuer-label" for="issuer-admin-email">
+                            管理员邮箱
+                            <input class="issuer-input" id="issuer-admin-email" type="email" autocomplete="username" placeholder="输入管理员邮箱">
+                        </label>
+                        <label class="issuer-label" for="issuer-admin-password">
+                            管理员密码
+                            <input class="issuer-input" id="issuer-admin-password" type="password" autocomplete="current-password" placeholder="输入管理员密码">
+                        </label>
+                    </div>
+                    <div class="issuer-actions">
+                        <button class="issuer-button primary" id="issuer-login" type="button">登录后台</button>
+                    </div>
+                </div>
+
+                <div class="issuer-panel" id="issuer-session-panel" hidden>
+                    <div class="issuer-session-summary">
+                        <strong id="issuer-current-email">-</strong>
+                        <span class="issuer-caption" id="issuer-current-role">-</span>
+                    </div>
+                    <div class="issuer-actions">
+                        <button class="issuer-button subtle" id="issuer-logout" type="button">退出后台</button>
+                    </div>
+                </div>
+
+                <p class="issuer-feedback" id="issuer-session-feedback" aria-live="polite"></p>
+            </section>
+
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Issue Result</span>
+                <p class="issuer-caption">签发成功后，这里会显示设备码、签发时间和最新生成的激活码。</p>
+                <div class="issuer-chip-row" id="issuer-result-meta"></div>
+                <label class="issuer-label" for="issuer-result-code">
+                    已签发激活码
+                    <input class="issuer-output" id="issuer-result-code" type="text" readonly placeholder="签发成功后会显示在这里">
+                </label>
+                <div class="issuer-actions">
+                    <button class="issuer-button" id="issuer-copy" type="button">复制激活码</button>
+                </div>
+                <p class="issuer-feedback" id="issuer-issue-feedback" aria-live="polite"></p>
+            </section>
+        </section>
+
+        <section class="issuer-grid two">
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Issue Activation Code</span>
+                <div class="issuer-panel" id="issuer-issue-panel" hidden>
+                    <div class="issuer-fieldset">
+                        <label class="issuer-label" for="issuer-device-code">
+                            设备码
+                            <input class="issuer-input" id="issuer-device-code" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="12 位设备码">
+                        </label>
+                        <label class="issuer-label" for="issuer-note">
+                            备注
+                            <input class="issuer-input" id="issuer-note" type="text" autocomplete="off" spellcheck="false" placeholder="可选：用户名或渠道备注">
+                        </label>
+                    </div>
+                    <div class="issuer-actions">
+                        <button class="issuer-button primary" id="issuer-submit" type="button">签发激活码</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">How To Use</span>
+                <ol class="issuer-side-list">
+                    <li>让用户在正式站点复制设备码。</li>
+                    <li>管理员登录本后台，输入设备码并签发激活码。</li>
+                    <li>把激活码发送给用户，用户回正式站点完成登录。</li>
+                </ol>
+            </section>
+        </section>
+
+        <section class="issuer-grid two">
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Create Administrator</span>
+                <div class="issuer-panel" id="issuer-admin-create-panel" hidden>
+                    <div class="issuer-fieldset">
+                        <label class="issuer-label" for="issuer-new-admin-email">
+                            新管理员邮箱
+                            <input class="issuer-input" id="issuer-new-admin-email" type="email" autocomplete="off" placeholder="输入新管理员邮箱">
+                        </label>
+                        <label class="issuer-label" for="issuer-new-admin-name">
+                            显示名称
+                            <input class="issuer-input" id="issuer-new-admin-name" type="text" autocomplete="off" placeholder="可选：显示名称">
+                        </label>
+                        <label class="issuer-label full" for="issuer-new-admin-password">
+                            初始密码
+                            <input class="issuer-input" id="issuer-new-admin-password" type="password" autocomplete="new-password" placeholder="为新管理员设置初始密码">
+                        </label>
+                    </div>
+                    <div class="issuer-actions">
+                        <button class="issuer-button primary" id="issuer-create-admin" type="button">新增管理员</button>
+                    </div>
+                </div>
+                <p class="issuer-feedback" id="issuer-admin-feedback" aria-live="polite"></p>
+                <p class="issuer-caption" id="issuer-admin-panel-note">只有创始人账号可以新增管理员。</p>
+            </section>
+
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Change Password</span>
+                <div class="issuer-panel" id="issuer-password-panel" hidden>
+                    <div class="issuer-fieldset">
+                        <label class="issuer-label" for="issuer-current-password">
+                            当前密码
+                            <input class="issuer-input" id="issuer-current-password" type="password" autocomplete="current-password" placeholder="输入当前密码">
+                        </label>
+                        <label class="issuer-label" for="issuer-next-password">
+                            新密码
+                            <input class="issuer-input" id="issuer-next-password" type="password" autocomplete="new-password" placeholder="输入新密码">
+                        </label>
+                        <label class="issuer-label full" for="issuer-confirm-password">
+                            确认新密码
+                            <input class="issuer-input" id="issuer-confirm-password" type="password" autocomplete="new-password" placeholder="再次输入新密码">
+                        </label>
+                    </div>
+                    <div class="issuer-actions">
+                        <button class="issuer-button primary" id="issuer-change-password" type="button">修改密码</button>
+                    </div>
+                </div>
+                <p class="issuer-feedback" id="issuer-password-feedback" aria-live="polite"></p>
+            </section>
+        </section>
+
+        <section class="issuer-grid two">
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Administrator List</span>
+                <p class="issuer-empty" id="issuer-admin-empty">当前还没有管理员列表。</p>
+                <ul class="issuer-list" id="issuer-admin-list"></ul>
+            </section>
+
+            <section class="issuer-card">
+                <span class="issuer-card-kicker">Issue Audit</span>
+                <div class="issuer-actions">
+                    <button class="issuer-button subtle" id="issuer-refresh-audit" type="button">刷新审计</button>
+                    <button class="issuer-button subtle" id="issuer-export-json" type="button">导出 JSON</button>
+                    <button class="issuer-button subtle" id="issuer-export-csv" type="button">导出 CSV</button>
+                </div>
+                <p class="issuer-feedback" id="issuer-audit-feedback" aria-live="polite"></p>
+                <p class="issuer-empty" id="issuer-audit-empty">当前还没有审计记录。</p>
+                <ul class="issuer-list" id="issuer-audit-list"></ul>
+            </section>
+        </section>
+    </main>
+
+    <script src="script.js?v=20260429-controlled-issuer-3"></script>
+</body>
+</html>

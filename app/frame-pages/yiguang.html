@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>翊光 YIGUANG - Artist Portal</title>
+    <style>
+        /* ================= 严格色彩与排版系统 ================= */
+        :root {
+            /* 杜绝偏黄，只保留清透冷白、柔玫瑰灰与墨色 */
+            --bg-page: #FCFAFB;          /* 极浅的柔白，微透玫瑰灰底蕴 */
+            --bg-surface: #FFFFFF;       /* 纯白实体组件层 */
+            --bg-dim: #F7F4F5;           /* 极弱的背景区分色 */
+            
+            --text-ink: #181516;         /* 极深的墨色，用于重标题 */
+            --text-main: #2C2629;        /* 常规阅读文本 */
+            --text-sub: #8B7E84;         /* 玫瑰灰辅助文本 */
+            --text-faint: #C9BCC1;       /* 弱提示与图标 */
+            
+            --accent-rose: #C6ABB5;      /* 暖玫瑰灰 (Dusty Rose) */
+            --accent-dark: #816A73;      /* 较深的玫瑰灰 */
+            
+            --line-color: #EFE9EB;       /* 实体分割线 */
+            
+            /* 实体弥散阴影，彻底弃用 Backdrop Filter */
+            --shadow-soft: 0 10px 30px rgba(80, 60, 70, 0.04);
+            --shadow-card: 0 4px 16px rgba(80, 60, 70, 0.06);
+            --shadow-float: 0 8px 24px rgba(28, 22, 25, 0.2);
+
+            /* 字体：杂志感衬线体与现代无衬线组合 */
+            --font-serif: "Times New Roman", "Songti SC", STSong, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+            
+            --nav-height: 84px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden; 
+        }
+
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            background: var(--bg-page);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
+        }
+
+        /* 内容区，直接从屏幕顶部留出安全区域起排 */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding-top: calc(30px + env(safe-area-inset-top));
+        }
+        .content-area::-webkit-scrollbar { display: none; }
+
+        /* 页面切换 */
+        .page-view {
+            display: none;
+            /* 缩减底部 padding，因为导航栏已改入 Flex 文档流，不再悬浮遮挡 */
+            padding-bottom: 40px;
+            animation: fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .page-view.active { display: block; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ================= 通用头部排版 (中文在上，英文在下) ================= */
+        .page-header {
+            padding: 0 24px 30px;
+        }
+        .page-title {
+            font-family: var(--font-serif);
+            font-size: 36px;
+            color: var(--text-ink);
+            line-height: 1.1;
+            font-weight: 400;
+            margin-bottom: 6px; 
+        }
+        .page-subtitle {
+            font-family: var(--font-serif);
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+        }
+
+        /* 底部实体导航 - 彻底解决滑动位移问题 */
+        .bottom-nav {
+            width: 100%;
+            flex-shrink: 0; /* 固定高度，不被挤压 */
+            height: var(--nav-height);
+            background: var(--bg-surface);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 14px;
+            box-shadow: 0 -4px 24px rgba(100, 80, 90, 0.04);
+            border-top: 1px solid var(--line-color);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-faint); font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: color 0.3s ease;
+        }
+        .nav-item.active {
+            color: var(--text-ink); font-weight: 500;
+        }
+        .nav-icon {
+            width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6;
+        }
+
+        /* ================= 1. 通告池 (Casting Pool) ================= */
+        .casting-card {
+            background: var(--bg-surface);
+            margin: 0 24px 24px;
+            border-radius: 4px;
+            border: 1px solid var(--line-color);
+            box-shadow: var(--shadow-soft);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .casting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .casting-tag {
+            background: var(--bg-page);
+            border: 1px solid var(--line-color);
+            padding: 4px 8px;
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--accent-dark);
+            border-radius: 2px;
+        }
+        .casting-reward {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            color: var(--text-ink);
+            font-weight: 600;
+        }
+        .casting-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-ink);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .casting-reqs {
+            background: var(--bg-dim);
+            padding: 12px;
+            border-radius: 2px;
+            margin-bottom: 16px;
+        }
+        .req-title {
+            font-size: 10px;
+            color: var(--accent-dark);
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .req-list {
+            list-style: none;
+        }
+        .req-list li {
+            font-size: 12px;
+            color: var(--text-main);
+            position: relative;
+            padding-left: 10px;
+            margin-bottom: 4px;
+        }
+        .req-list li::before {
+            content: '·';
+            position: absolute;
+            left: 0;
+            color: var(--accent-rose);
+            font-weight: bold;
+        }
+        .casting-action {
+            width: 100%;
+            background: var(--text-ink);
+            color: #FFF;
+            border: none;
+            padding: 12px 0;
+            font-size: 13px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: opacity 0.2s;
+        }
+        .casting-action:active { opacity: 0.8; }
+        .casting-action.submitted {
+            background: var(--bg-page);
+            color: var(--text-sub);
+            border: 1px solid var(--line-color);
+            pointer-events: none;
+        }
+
+        /* ================= 2. 行程 (Schedule) ================= */
+        .timeline {
+            padding: 0 24px; position: relative;
+        }
+        .timeline::before {
+            content: ''; position: absolute; left: 24px; top: 10px; bottom: 0; width: 1px; background: var(--line-color);
+        }
+        .timeline-item {
+            position: relative; padding-left: 32px; margin-bottom: 40px;
+        }
+        .timeline-dot {
+            position: absolute; left: -4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg-page); border: 2px solid var(--text-ink);
+        }
+        .timeline-item.past .timeline-dot {
+            border-color: var(--text-faint); background: var(--text-faint);
+        }
+        .timeline-date {
+            font-family: var(--font-serif); font-size: 14px; font-weight: bold; margin-bottom: 4px;
+        }
+        .timeline-item.past .timeline-date { color: var(--text-faint); }
+        
+        .timeline-card {
+            background: var(--bg-surface); padding: 20px; margin-top: 12px; border-radius: 4px; border: 1px solid var(--line-color); box-shadow: var(--shadow-card);
+        }
+        .timeline-type {
+            font-size: 9px; color: var(--accent-dark); letter-spacing: 1px; margin-bottom: 6px;
+        }
+        .timeline-title {
+            font-size: 15px; font-weight: 500; margin-bottom: 8px; color: var(--text-ink);
+        }
+        .timeline-loc {
+            font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 6px;
+        }
+        .timeline-loc::before {
+            content: ''; display: block; width: 4px; height: 4px; background: var(--accent-rose); border-radius: 50%;
+        }
+
+        /* ================= 3. 星圈 (Fan Feed / Community) ================= */
+        .artist-post-box {
+            margin: 0 24px 30px;
+            background: var(--bg-surface);
+            border: 1px solid var(--line-color);
+            border-radius: 4px;
+            padding: 16px;
+            box-shadow: var(--shadow-soft);
+        }
+        .post-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            color: var(--text-ink);
+            background: transparent;
+            font-family: var(--font-sans);
+        }
+        .post-input::placeholder { color: var(--text-faint); }
+        .post-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line-color);
+        }
+        .post-icons svg { width: 20px; height: 20px; stroke: var(--text-sub); fill: none; margin-right: 12px; cursor: pointer; }
+        .post-btn {
+            background: var(--text-ink);
+            color: #FFF;
+            border: none;
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .feed-card {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--line-color);
+            border-bottom: 1px solid var(--line-color);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+        }
+        .feed-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+        }
+        .feed-avatar {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--line-color);
+        }
+        .feed-avatar.official { background: linear-gradient(135deg, var(--accent-rose), var(--accent-dark)); }
+        .feed-name {
+            font-size: 14px; font-weight: 500; color: var(--text-ink); display: flex; align-items: center; gap: 6px;
+        }
+        .official-badge {
+            background: var(--text-ink); color: #FFF; font-size: 8px; padding: 2px 6px; border-radius: 2px; letter-spacing: 1px;
+        }
+        .feed-time {
+            font-size: 10px; color: var(--text-sub); font-family: var(--font-serif);
+        }
+        .feed-text {
+            font-size: 14px; color: var(--text-main); margin-bottom: 12px; line-height: 1.6;
+        }
+        .feed-image {
+            width: 100%; height: 200px; background: var(--bg-dim); border-radius: 4px; margin-bottom: 12px;
+        }
+
+        /* ================= 4. 专属 (Exclusive / Profile) ================= */
+
+        /* 实体高定黑卡 */
+        .vip-card {
+            margin: 0 24px 32px;
+            background: linear-gradient(135deg, #272124, #141112);
+            border-radius: 8px;
+            padding: 24px; 
+            color: #F8F5F6;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(28, 22, 25, 0.15);
+            text-align: left; 
+        }
+        .vip-card::after {
+            content: 'YIGUANG';
+            position: absolute; 
+            right: -15px; 
+            bottom: -25px; 
+            font-family: var(--font-serif); 
+            font-size: 72px; 
+            color: rgba(255,255,255,0.03); 
+            pointer-events: none;
+        }
+
+        .vip-profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            gap: 16px;
+            margin-bottom: 20px; 
+            position: relative;
+            z-index: 1;
+        }
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-rose), var(--text-faint));
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: var(--shadow-float);
+            flex-shrink: 0;
+        }
+        .profile-text-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; 
+            min-width: 0;
+        }
+        .profile-name {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            color: #FFFFFF;
+            font-weight: 500;
+            margin-bottom: 2px;
+            white-space: nowrap;
+        }
+        .profile-bio {
+            font-size: 11px;
+            color: rgba(248, 245, 246, 0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vip-level {
+            font-family: var(--font-serif); font-size: 10px; letter-spacing: 3px; color: var(--accent-rose); margin-bottom: 8px; text-transform: uppercase; position: relative; z-index: 1;
+        }
+        .vip-uid {
+            font-family: var(--font-serif); font-size: 20px; letter-spacing: 2px; margin-bottom: 12px; font-weight: 400; position: relative; z-index: 1;
+        }
+
+        /* 底部风评与数据统计外包装 */
+        .vip-bottom-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 风评按钮 */
+        .reputation-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #EFE9EB;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-family: var(--font-sans);
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+            outline: none;
+        }
+        .reputation-btn:active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .reputation-btn svg {
+            width: 13px;
+            height: 13px;
+            stroke: var(--accent-rose);
+        }
+
+        .vip-stats {
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 24px; 
+            font-size: 10px; 
+            color: rgba(248, 245, 246, 0.5); 
+            letter-spacing: 1px; 
+        }
+        .vip-stats div {
+            text-align: right; 
+        }
+        .vip-stats strong {
+            display: block; color: #FFFFFF; font-size: 14px; font-family: var(--font-serif); margin-bottom: 2px; font-weight: 400; text-align: right; 
+        }
+
+        /* Flex 菜单列表 */
+        .exclusive-menu {
+            padding: 0 24px;
+        }
+        .menu-item {
+            display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--line-color); cursor: pointer;
+        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-left {
+            display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;
+        }
+        .menu-title {
+            font-size: 15px; color: var(--text-ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .menu-sub {
+            font-family: var(--font-serif); font-size: 11px; color: var(--text-sub); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .menu-arrow {
+            flex-shrink: 0; font-size: 22px; color: var(--text-faint); margin-left: 16px; line-height: 1; font-family: var(--font-serif);
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <!-- 滚动区域 -->
+    <main class="content-area">
+        
+        <!-- 1. 通告池 (Casting Pool) -->
+        <div id="view-casting" class="page-view active">
+            <div class="page-header">
+                <h1 class="page-title">通告库</h1>
+                <div class="page-subtitle">GIGS & CASTING</div>
+            </div>
+
+            <!-- 通告卡片 1 -->
+            <div class="casting-card">
+                <div class="casting-header">
+                    <span class="casting-tag">DRAMA / 影视试戏</span>
+                    <span class="casting-reward">S+ 级项目</span>
+                </div>
+                <h2 class="casting-title">古装权谋大剧《长歌行》女二号</h2>
+                <div class="casting-reqs">
+                    <div class="req-title">REQUIREMENTS</div>
+                    <ul class="req-list">
+                        <li>要求：当红小花 / 演技扎实优先</li>
+                        <li>档期：2026年12月 - 2027年3月 (需闭关)</li>
+                        <li>备注：需配合前期15天武术训练。</li>
+                    </ul>
+                </div>
+                <button class="casting-action">投递意向</button>
+            </div>
+
+            <!-- 通告卡片 2 -->
+            <div class="casting-card">
+                <div class="casting-header">
+                    <span class="casting-tag">COMMERCIAL / 商业代言</span>
+                    <span class="casting-reward">全球线</span>
+                </div>
+                <h2 class="casting-title">BVLGARI 亚太区品牌大使</h2>
+                <div class="casting-reqs">
+                    <div class="req-title">REQUIREMENTS</div>
+                    <ul class="req-list">
+                        <li>要求：一线艺人 / 极强时尚表现力</li>
+                        <li>配合：每年2支全球TVC，4场线下大秀站台</li>
+                        <li>排他：竞品珠宝品牌需到期解约。</li>
+                    </ul>
+                </div>
+                <button class="casting-action submitted">已由经纪人接洽</button>
+            </div>
+
+            <!-- 通告卡片 3 -->
+            <div class="casting-card">
+                <div class="casting-header">
+                    <span class="casting-tag">VARIETY / 综艺飞行</span>
+                    <span class="casting-reward">常驻/飞行</span>
+                </div>
+                <h2 class="casting-title">慢综艺《山野之间》第三季</h2>
+                <div class="casting-reqs">
+                    <div class="req-title">REQUIREMENTS</div>
+                    <ul class="req-list">
+                        <li>要求：性格随和，有生活气息</li>
+                        <li>档期：本月下旬连续录制5天</li>
+                    </ul>
+                </div>
+                <button class="casting-action">确认接取</button>
+            </div>
+        </div>
+
+        <!-- 2. 行程 (Schedule) -->
+        <div id="view-schedule" class="page-view">
+            <div class="page-header">
+                <h1 class="page-title">行程安排</h1>
+                <div class="page-subtitle">NOVEMBER SCHEDULE</div>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">NOV 12</div>
+                    <div class="timeline-card">
+                        <div class="timeline-type">BRAND EVENT</div>
+                        <h3 class="timeline-title">宝格丽限时体验店开幕派对</h3>
+                        <div class="timeline-loc">Shanghai, Xuhui District</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">NOV 18 - 25</div>
+                    <div class="timeline-card">
+                        <div class="timeline-type">FILMING</div>
+                        <h3 class="timeline-title">悬疑网剧《寒枝》外景拍摄</h3>
+                        <div class="timeline-loc">Hengdian World Studios</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">NOV 28</div>
+                    <div class="timeline-card">
+                        <div class="timeline-type">MAGAZINE</div>
+                        <h3 class="timeline-title">《VOGUE》闭年刊双封拍摄</h3>
+                        <div class="timeline-loc">Beijing, Studio 3</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item past">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">OCT 30</div>
+                    <div class="timeline-card" style="opacity: 0.6; box-shadow: none;">
+                        <div class="timeline-type">MUSIC</div>
+                        <h3 class="timeline-title">单曲《沉水》录音杀青</h3>
+                        <div class="timeline-loc">Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 星圈 (Fan Feed) -->
+        <div id="view-feed" class="page-view">
+            <div class="page-header" style="padding-bottom: 10px;">
+                <h1 class="page-title">星圈动态</h1>
+                <div class="page-subtitle">FAN COMMUNITY FEED</div>
+            </div>
+
+            <!-- 艺人本人发布框 -->
+            <div class="artist-post-box">
+                <textarea class="post-input" rows="2" placeholder="和支持你的粉丝们分享这一刻..."></textarea>
+                <div class="post-tools">
+                    <div class="post-icons">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <button class="post-btn">发 布</button>
+                </div>
+            </div>
+
+            <!-- 艺人官方动态 -->
+            <div class="feed-card">
+                <div class="feed-header">
+                    <div class="feed-avatar official"></div>
+                    <div>
+                        <div class="feed-name">林晚星 <span class="official-badge">ARTIST</span></div>
+                        <div class="feed-time">10 MINS AGO</div>
+                    </div>
+                </div>
+                <div class="feed-text">
+                    早场戏杀青啦，看到了大家送来的应援餐车，奶茶很暖心。今天也会好好努力的！🎬✨
+                </div>
+                <div class="feed-image" style="background: linear-gradient(135deg, #D5C6CB, #EAE3E5);"></div>
+            </div>
+
+            <!-- 粉丝动态 -->
+            <div class="feed-card">
+                <div class="feed-header">
+                    <div class="feed-avatar" style="background: #EFE9EB;"></div>
+                    <div>
+                        <div class="feed-name">晚星的专属小熊</div>
+                        <div class="feed-time">1 HOUR AGO</div>
+                    </div>
+                </div>
+                <div class="feed-text">
+                    #林晚星如梦令路透# 今天的古装造型太仙了！！生图直出都这么能打，期待播出！呜呜呜老婆多喝热水注意保暖！
+                </div>
+            </div>
+            
+            <div class="feed-card">
+                <div class="feed-header">
+                    <div class="feed-avatar" style="background: #DFCDD2;"></div>
+                    <div>
+                        <div class="feed-name">星光散落的轨道</div>
+                        <div class="feed-time">3 HOURS AGO</div>
+                    </div>
+                </div>
+                <div class="feed-text">
+                    超话日常打卡！距离《沉水》音源上线还有最后3天，大家冲鸭！🔥🔥
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 专属 (Exclusive / Profile) -->
+        <div id="view-profile" class="page-view">
+            <div class="page-header">
+                <h1 class="page-title">后台专属</h1>
+                <div class="page-subtitle">ARTIST BACKSTAGE PORTAL</div>
+            </div>
+
+            <!-- 实体黑卡 - 艺人版 -->
+            <div class="vip-card">
+                
+                <div class="vip-profile-header">
+                    <div class="profile-avatar"></div>
+                    <div class="profile-text-group">
+                        <h2 class="profile-name">林晚星</h2>
+                        <p class="profile-bio">在喧嚣中隐身，在角色里重生。</p>
+                    </div>
+                </div>
+
+                <div class="vip-level">ARTIST PROFILE</div>
+                <div class="vip-uid">当红花旦</div>
+                
+                <!-- 黑卡底部区域（新增左侧按钮结构） -->
+                <div class="vip-bottom-wrap">
+                    <!-- 左下角：风评按钮 -->
+                    <button class="reputation-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        大众风评
+                    </button>
+
+                    <!-- 右下角：数据统计区右对齐 -->
+                    <div class="vip-stats">
+                        <div>
+                            <strong>1,280</strong>
+                            出道天数
+                        </div>
+                        <div>
+                            <strong>一线</strong>
+                            咖位等级
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 精准菜单布局 -->
+            <div class="exclusive-menu">
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <span class="menu-title">我的通告库</span>
+                        <span class="menu-sub">My Gigs & Contracts</span>
+                    </div>
+                    <span class="menu-arrow">›</span>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <span class="menu-title">数据与舆情看板</span>
+                        <span class="menu-sub">Data & PR Dashboard</span>
+                    </div>
+                    <span class="menu-arrow">›</span>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <span class="menu-title">财务与结算中心</span>
+                        <span class="menu-sub">Finance & Settlement</span>
+                    </div>
+                    <span class="menu-arrow">›</span>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <span class="menu-title">团队联络本</span>
+                        <span class="menu-sub">Agency Contacts</span>
+                    </div>
+                    <span class="menu-arrow">›</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+        <a class="nav-item active" data-target="view-casting">
+            <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><path d="M13 8h4"></path><path d="M13 12h4"></path></svg>
+            <span>通告</span>
+        </a>
+        <a class="nav-item" data-target="view-schedule">
+            <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>行程</span>
+        </a>
+        <a class="nav-item" data-target="view-feed">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>星圈</span>
+        </a>
+        <a class="nav-item" data-target="view-profile">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>专属</span>
+        </a>
+    </nav>
+</div>
+
+<script>
+    const navItems = document.querySelectorAll('.nav-item');
+    const pageViews = document.querySelectorAll('.page-view');
+    const contentArea = document.querySelector('.content-area');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // 重置状态
+            navItems.forEach(nav => nav.classList.remove('active'));
+            pageViews.forEach(view => view.classList.remove('active'));
+
+            // 激活当前
+            this.classList.add('active');
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            // 切换页面时回到顶部
+            contentArea.scrollTop = 0;
+        });
+    });
+</script>
+</body>
+</html>

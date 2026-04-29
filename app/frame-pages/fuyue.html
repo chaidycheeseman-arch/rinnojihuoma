@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>私叙 - 线下赴约</title>
+    <style>
+        :root {
+            --bg-soft-white: #FCFAFA;
+            --text-ink: #1A1819;
+            --text-ink-light: #524E50;
+            --accent-rose-gray: #D6CDD0;
+            --accent-rose-light: #F4F0F1;
+            --border-color: #E2DCDD;
+            --font-main: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            --font-serif: Georgia, "Times New Roman", serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-soft-white);
+            color: var(--text-ink);
+            font-family: var(--font-main);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .page {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: none;
+            background-color: var(--bg-soft-white);
+            position: relative;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* --- 邀约页面样式 --- */
+        .header-invitation {
+            padding: 60px 28px 30px;
+            text-align: left;
+        }
+
+        .header-title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 6px;
+            margin-bottom: 8px;
+        }
+
+        .header-en {
+            font-family: var(--font-serif);
+            font-size: 11px;
+            letter-spacing: 5px;
+            color: var(--text-ink-light);
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .hero-section {
+            padding: 0 28px;
+            margin-bottom: 40px;
+        }
+
+        .hero-image-placeholder {
+            width: 100%;
+            height: 450px;
+            background-color: var(--accent-rose-gray);
+            display: flex;
+            align-items: flex-end;
+            padding: 30px;
+            position: relative;
+        }
+
+        .hero-label {
+            color: var(--bg-soft-white);
+            font-size: 10px;
+            letter-spacing: 3px;
+            font-family: var(--font-serif);
+        }
+
+        .info-section {
+            padding: 0 28px 120px;
+        }
+
+        .status-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--text-ink);
+            padding-bottom: 12px;
+            margin-bottom: 30px;
+        }
+
+        .status-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text-ink-light);
+            text-transform: uppercase;
+        }
+
+        .details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-label {
+            font-family: var(--font-serif);
+            font-size: 10px;
+            color: var(--accent-rose-gray);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .detail-value {
+            font-size: 17px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .action-bar-invitation {
+            position: fixed;
+            bottom: 0;
+            max-width: 500px;
+            width: 100%;
+            padding: 24px 28px 40px;
+            display: flex;
+            gap: 12px;
+            background: linear-gradient(to top, var(--bg-soft-white) 80%, transparent);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 0;
+            border: none;
+            font-size: 13px;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-ink-light);
+        }
+
+        .btn-solid {
+            background: var(--text-ink);
+            color: var(--bg-soft-white);
+        }
+
+        /* --- 线下聊天页面样式 (轻奢出版物排版) --- */
+        .chat-header {
+            padding: 50px 24px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: rgba(252, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .btn-back {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            color: var(--text-ink);
+            position: relative;
+        }
+        
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 24px;
+            right: 24px;
+            height: 1px;
+            background-color: var(--border-color);
+        }
+
+        .header-tools {
+            display: flex;
+            gap: 20px;
+        }
+
+        .tool-icon {
+            font-family: var(--font-serif);
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: var(--text-ink-light);
+            cursor: pointer;
+        }
+
+        .chat-scroll-area {
+            padding: 50px 24px 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 70px;
+        }
+
+        .ts-center {
+            text-align: center;
+            font-family: var(--font-serif);
+            font-size: 10px;
+            color: var(--accent-rose-gray);
+            letter-spacing: 4px;
+            margin-bottom: -10px;
+        }
+
+        .msg-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .speaker-label {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .speaker-label::before,
+        .speaker-label::after {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 1px;
+            background-color: var(--accent-rose-gray);
+        }
+
+        .speaker-name {
+            font-family: var(--font-serif);
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--text-ink-light);
+            text-transform: uppercase;
+        }
+
+        .msg-text-content {
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            line-height: 2.2;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--text-ink);
+        }
+
+        .chat-input-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 28px 40px;
+            background: linear-gradient(to top, var(--bg-soft-white) 85%, rgba(252, 250, 250, 0));
+        }
+
+        .input-box-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+
+        .long-textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--text-ink);
+            outline: none;
+            resize: none;
+            min-height: 30px;
+            font-family: var(--font-main);
+            line-height: 2;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .long-textarea::placeholder {
+            color: var(--accent-rose-gray);
+            font-family: var(--font-serif);
+            letter-spacing: 2px;
+            font-style: italic;
+        }
+
+        .input-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .small-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 24px;
+            font-size: 10px;
+            font-family: var(--font-serif);
+            letter-spacing: 3px;
+            color: var(--text-ink-light);
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-send-active {
+            background: var(--text-ink);
+            color: var(--bg-soft-white);
+            border-color: var(--text-ink);
+        }
+
+        /* --- 极致排版：直角画册风 音乐面板 --- */
+        .music-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(252, 250, 250, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .music-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* 实体直角面板，精密切割感 */
+        .player-panel {
+            width: 320px;
+            background-color: var(--bg-soft-white);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 15px 40px rgba(26, 24, 25, 0.06);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(15px);
+            transition: transform 0.4s ease;
+        }
+
+        .music-overlay.active .player-panel {
+            transform: translateY(0);
+        }
+
+        /* 封面：绝对的正方形，纯粹的留白与灰色调 */
+        .panel-cover {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: var(--accent-rose-light);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .panel-cover span {
+            font-family: var(--font-serif);
+            font-size: 10px;
+            letter-spacing: 6px;
+            color: var(--accent-rose-gray);
+        }
+
+        /* 曲目信息：衬线体与无衬线体的优雅对比 */
+        .track-title {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            font-style: italic;
+            color: var(--text-ink);
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .track-artist {
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-ink-light);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* 进度条：极细线条 */
+        .panel-progress {
+            width: 100%;
+            margin-bottom: 32px;
+        }
+
+        .progress-track {
+            height: 1px;
+            background-color: var(--border-color);
+            width: 100%;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 35%;
+            background-color: var(--text-ink);
+        }
+
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-serif);
+            font-size: 9px;
+            color: var(--text-ink-light);
+            letter-spacing: 1px;
+        }
+
+        /* 控制按钮：极简纯文字排布 */
+        .panel-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 36px;
+            margin-bottom: 32px;
+        }
+
+        .ctrl-action {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text-ink-light);
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .ctrl-play {
+            color: var(--text-ink);
+            border-bottom: 1px solid var(--text-ink);
+            padding-bottom: 2px;
+        }
+
+        /* 列表按钮：底部低调呈现 */
+        .panel-footer {
+            text-align: center;
+        }
+
+        .btn-list {
+            font-family: var(--font-serif);
+            font-size: 9px;
+            letter-spacing: 4px;
+            color: var(--text-ink-light);
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 邀约页面 -->
+    <div id="page-inv" class="page active">
+        <div class="header-invitation">
+            <div class="header-title">赴约</div>
+            <div class="header-en">Rendezvous Invitation</div>
+        </div>
+        
+        <div class="hero-section">
+            <div class="hero-image-placeholder">
+                <div class="hero-label">GALLERY / NO.01</div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="status-line">
+                <div class="status-tag">PRIVATE EVENT</div>
+                <div class="status-tag" id="status-indicator" style="color: var(--accent-rose-gray);">PENDING</div>
+            </div>
+
+            <div class="details-list">
+                <div class="detail-item">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">白沙艺术中心 · B2 沉浸展厅</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Schedule</div>
+                    <div class="detail-value">十月二十四日 / 下午三时</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar-invitation">
+            <button class="btn btn-outline" id="btn-decline">婉拒</button>
+            <button class="btn btn-solid" id="go-chat">确认赴约</button>
+        </div>
+    </div>
+
+    <!-- 聊天页面 -->
+    <div id="page-chat" class="page">
+        <div class="chat-header">
+            <div class="btn-back" id="back-inv">BACK</div>
+            <div class="header-tools">
+                <span class="tool-icon" id="btn-music">MUSIC</span>
+                <span class="tool-icon">SETTINGS</span>
+            </div>
+        </div>
+
+        <div class="chat-scroll-area" id="msg-container">
+            <div class="ts-center">OCT 24, 15:02</div>
+
+            <div class="msg-block">
+                <div class="speaker-label">
+                    <span class="speaker-name">He</span>
+                </div>
+                <div class="msg-text-content">
+                    这里的暖玫瑰灰色调让时间流逝得非常缓慢，我们大可以不必急着走向出口，慢慢看完这最后一段走廊。在这种不被打扰的线下叙事中，每一处留白似乎都在等待某种共鸣。
+                </div>
+            </div>
+
+            <div class="msg-block">
+                <div class="speaker-label">
+                    <span class="speaker-name">Me</span>
+                </div>
+                <div class="msg-text-content">
+                    我更倾向于这种长篇累牍的倾听与回应。在数字屏幕之外的对谈总是带有某种颗粒感，这才是这场邀约真正的价值所在。
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-bar">
+            <div class="input-box-container">
+                <textarea class="long-textarea" placeholder="撰写回信..." rows="1"></textarea>
+                <div class="input-actions">
+                    <button class="small-btn" id="btn-refresh">Refresh</button>
+                    <button class="small-btn btn-send-active" id="send-msg">Deliver</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 画册排版风：居中面板播放器 -->
+    <div class="music-overlay" id="music-overlay">
+        <div class="player-panel">
+            
+            <div class="panel-cover">
+                <span>TRACK 01</span>
+            </div>
+            
+            <div class="track-title">Clair de Lune</div>
+            <div class="track-artist">Claude Debussy</div>
+            
+            <div class="panel-progress">
+                <div class="progress-track">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-time">
+                    <span>01:42</span>
+                    <span>05:05</span>
+                </div>
+            </div>
+            
+            <div class="panel-controls">
+                <span class="ctrl-action">PREV</span>
+                <span class="ctrl-action ctrl-play">PAUSE</span>
+                <span class="ctrl-action">NEXT</span>
+            </div>
+            
+            <div class="panel-footer">
+                <span class="btn-list">PLAYLIST</span>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pageInv = document.getElementById('page-inv');
+            const pageChat = document.getElementById('page-chat');
+            const btnGo = document.getElementById('go-chat');
+            const btnDecline = document.getElementById('btn-decline');
+            const btnBack = document.getElementById('back-inv');
+            const statusIndicator = document.getElementById('status-indicator');
+            
+            const sendBtn = document.getElementById('send-msg');
+            const refreshBtn = document.getElementById('btn-refresh');
+            const input = document.querySelector('.long-textarea');
+            const container = document.getElementById('msg-container');
+
+            const btnMusic = document.getElementById('btn-music');
+            const musicOverlay = document.getElementById('music-overlay');
+
+            // 婉拒逻辑
+            btnDecline.addEventListener('click', () => {
+                btnDecline.innerText = '已婉拒';
+                btnDecline.style.backgroundColor = 'var(--border-color)';
+                btnDecline.style.color = 'var(--text-ink-light)';
+                btnGo.style.display = 'none';
+                statusIndicator.innerText = 'DECLINED';
+                statusIndicator.style.color = 'var(--text-ink)';
+            });
+
+            // 确认赴约逻辑
+            btnGo.addEventListener('click', () => {
+                btnGo.innerText = '已确认';
+                btnGo.style.backgroundColor = 'var(--accent-rose-gray)';
+                btnGo.style.color = 'var(--text-ink)';
+                btnDecline.style.display = 'none';
+                statusIndicator.innerText = 'ACCEPTED';
+                statusIndicator.style.color = 'var(--text-ink)';
+                
+                setTimeout(() => {
+                    pageInv.classList.remove('active');
+                    pageChat.classList.add('active');
+                    window.scrollTo(0, 0);
+                }, 400);
+            });
+
+            // 返回邀约页面
+            btnBack.addEventListener('click', () => {
+                pageChat.classList.remove('active');
+                pageInv.classList.add('active');
+            });
+
+            // 刷新逻辑
+            refreshBtn.addEventListener('click', () => {
+                location.reload();
+            });
+
+            // 动态高度文本框
+            input.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // 发送逻辑
+            sendBtn.addEventListener('click', () => {
+                const val = input.value.trim();
+                if(val) {
+                    const block = document.createElement('div');
+                    block.className = 'msg-block';
+                    block.innerHTML = `
+                        <div class="speaker-label">
+                            <span class="speaker-name">Me</span>
+                        </div>
+                        <div class="msg-text-content">${val}</div>
+                    `;
+                    container.appendChild(block);
+                    input.value = '';
+                    input.style.height = 'auto';
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+            });
+
+            // 打开音乐面板
+            btnMusic.addEventListener('click', () => {
+                musicOverlay.classList.add('active');
+            });
+
+            // 点击遮罩层的空白处即可关闭（精确判断：只有点击 overlay 本身才会触发关闭）
+            musicOverlay.addEventListener('click', (e) => {
+                if (e.target === musicOverlay) {
+                    musicOverlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
