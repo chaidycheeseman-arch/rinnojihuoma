@@ -204,10 +204,6 @@
         <div id="activation-gate-inner">
             <div id="activation-panel">
                 <span id="activation-kicker">RINNO ACCESS</span>
-                <div id="activation-tab-row" role="tablist" aria-label="登录方式">
-                    <button id="activation-tab-login" class="activation-tab is-active" type="button" role="tab" aria-selected="true">账号登录</button>
-                    <button id="activation-tab-register" class="activation-tab" type="button" role="tab" aria-selected="false">首次注册</button>
-                </div>
                 <h1 id="activation-title">账号登录</h1>
                 <p id="activation-copy">已经注册过的用户，直接输入账号密码登录。首次注册需要激活码。</p>
 
@@ -220,6 +216,10 @@
                         <span class="activation-field-label">PASSWORD</span>
                         <input id="activation-password-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="输入账号密码">
                     </label>
+                    <div class="activation-switch-row">
+                        <span class="activation-switch-copy">没有账号？</span>
+                        <button id="activation-switch-to-register" class="activation-switch-button" type="button">首次注册</button>
+                    </div>
                 </div>
 
                 <div id="activation-register-form" class="activation-form" role="group" aria-label="首次注册" hidden>
@@ -243,6 +243,10 @@
                         <span class="activation-field-label">ACTIVATION KEY</span>
                         <input id="activation-register-code-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="输入管理员签发的激活码">
                     </label>
+                    <div class="activation-switch-row">
+                        <span class="activation-switch-copy">已经注册过？</span>
+                        <button id="activation-switch-to-login" class="activation-switch-button" type="button">返回登录</button>
+                    </div>
                 </div>
 
                 <p id="activation-feedback" aria-live="polite"></p>
