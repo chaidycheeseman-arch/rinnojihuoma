@@ -1,16 +1,25 @@
 (() => {
-    const AUTH_ENDPOINT = '/.netlify/functions/auth';
-    const LOCAL_ISSUE_ENDPOINT = '/.netlify/functions/local-issue';
-    const LOCAL_LICENSE_ADMIN_ENDPOINT = '/.netlify/functions/local-license-admin';
-    const ACTIVATION_CODE_STORAGE_KEY = 'rinno_activation_code_v1';
-    const DEVICE_CODE_STORAGE_KEY = 'rinno_device_code_v1';
+    const AUTH_ENDPOINT = window.__rinnoResolveLicenseApiUrl('/.netlify/functions/user-auth');
+    const DEVICE_CODE_ENDPOINT = window.__rinnoResolveLicenseApiUrl('/.netlify/functions/device-code');
+    const ACTIVATION_CODE_STORAGE_KEY = 'rinno_activation_code_v3';
+    const ACCOUNT_ID_STORAGE_KEY = 'rinno_user_account_v1';
+    const DEVICE_CODE_STORAGE_KEY = 'rinno_device_code_v2';
+    const LEGACY_ACTIVATION_CODE_STORAGE_KEYS = ['rinno_activation_code_v1', 'rinno_activation_code_v2'];
+    const LEGACY_DEVICE_CODE_STORAGE_KEYS = ['rinno_device_code_v1'];
+    const DEVICE_CODE_LENGTH = 16;
+    const DEVICE_CODE_GROUP_LENGTH = 4;
+    const DEVICE_CODE_PLACEHOLDER = 'XXXX-XXXX-XXXX-XXXX';
+    const ACCOUNT_ID_MAX_LENGTH = 80;
+    const PASSWORD_MIN_LENGTH = 6;
+    const PASSWORD_MAX_LENGTH = 48;
     const HEARTBEAT_INTERVAL_MS = 45000;
     const REQUEST_TIMEOUT_MS = 12000;
     const state = {
         deviceCode: '',
-        lastKnownCode: '',
         heartbeatTimer: 0,
-        busy: false
+        busy: false,
+        currentMode: 'required',
+        tab: 'login'
     };
     let dom = null;
 
@@ -45,45 +54,122 @@
     }
 
     function normalizeDeviceCode(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, DEVICE_CODE_LENGTH);
     }
 
-    function hashFingerprint(input, seed) {
-        let hash = seed >>> 0;
-        for (let index = 0; index < input.length; index += 1) {
-            hash ^= input.charCodeAt(index);
-            hash = Math.imul(hash, 16777619);
-        }
-        return (hash >>> 0).toString(36).toUpperCase().padStart(8, '0');
+    function normalizeAccountId(value) {
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '')
+            .slice(0, ACCOUNT_ID_MAX_LENGTH);
     }
 
-    function buildDeviceFingerprint() {
-        const screenInfo = window.screen || {};
-        const timezone = (Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || '';
-        return [
-            navigator.userAgent || '',
-            navigator.language || '',
-            navigator.platform || '',
-            navigator.vendor || '',
-            String(navigator.hardwareConcurrency || 0),
-            String(navigator.deviceMemory || 0),
-            String(navigator.maxTouchPoints || 0),
-            `${screenInfo.width || 0}x${screenInfo.height || 0}`,
-            `${screenInfo.availWidth || 0}x${screenInfo.availHeight || 0}`,
-            String(screenInfo.colorDepth || 0),
-            String(window.devicePixelRatio || 1),
-            timezone
-        ].join('|');
+    function isCurrentDeviceCode(value) {
+        return normalizeDeviceCode(value).length === DEVICE_CODE_LENGTH;
     }
 
-    function generateDeviceCode() {
+    function formatDeviceCode(value) {
+        const normalized = normalizeDeviceCode(value);
+        if (!normalized) return '';
+        return (normalized.match(new RegExp(`.{1,${DEVICE_CODE_GROUP_LENGTH}}`, 'g')) || [normalized]).join('-');
+    }
+
+    function getFormattedDeviceCode(value) {
+        return formatDeviceCode(value) || DEVICE_CODE_PLACEHOLDER;
+    }
+
+    function readStoredActivationCode() {
+        return normalizeActivationCode(safeStorageGet(ACTIVATION_CODE_STORAGE_KEY));
+    }
+
+    function readStoredAccountId() {
+        return normalizeAccountId(safeStorageGet(ACCOUNT_ID_STORAGE_KEY));
+    }
+
+    function readStoredDeviceCode() {
         const cached = normalizeDeviceCode(safeStorageGet(DEVICE_CODE_STORAGE_KEY));
-        if (cached.length === 12) return cached;
+        return isCurrentDeviceCode(cached) ? cached : '';
+    }
 
-        const fingerprint = buildDeviceFingerprint();
-        const firstHalf = hashFingerprint(fingerprint, 2166136261).slice(0, 6);
-        const secondHalf = hashFingerprint(fingerprint.split('').reverse().join(''), 1315423911).slice(0, 6);
-        const deviceCode = normalizeDeviceCode(`${firstHalf}${secondHalf}`).padEnd(12, '0').slice(0, 12);
+    function saveAuthState(payload = {}) {
+        const activationCode = normalizeActivationCode(payload.activationCode);
+        const accountId = normalizeAccountId(payload.accountId);
+        if (activationCode) safeStorageSet(ACTIVATION_CODE_STORAGE_KEY, activationCode);
+        if (accountId) safeStorageSet(ACCOUNT_ID_STORAGE_KEY, accountId);
+    }
+
+    function clearActivationCode() {
+        safeStorageRemove(ACTIVATION_CODE_STORAGE_KEY);
+    }
+
+    function clearAuthState(options = {}) {
+        clearActivationCode();
+        if (!options.keepAccount) safeStorageRemove(ACCOUNT_ID_STORAGE_KEY);
+    }
+
+    function clearLegacyActivationStorage() {
+        LEGACY_ACTIVATION_CODE_STORAGE_KEYS.forEach(key => safeStorageRemove(key));
+        LEGACY_DEVICE_CODE_STORAGE_KEYS.forEach(key => safeStorageRemove(key));
+        if (!readStoredAccountId()) clearActivationCode();
+    }
+
+    async function requestJson(endpoint, body, method = 'POST') {
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timeoutId = controller ? window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : 0;
+
+        try {
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    Accept: 'application/json',
+                    ...(body ? { 'Content-Type': 'application/json' } : {})
+                },
+                cache: 'no-store',
+                credentials: 'same-origin',
+                signal: controller ? controller.signal : undefined,
+                body: body ? JSON.stringify(body) : undefined
+            });
+
+            let payload = {};
+            try {
+                payload = await response.json();
+            } catch (error) {
+                payload = {};
+            }
+
+            return { response, payload };
+        } finally {
+            if (timeoutId) window.clearTimeout(timeoutId);
+        }
+    }
+
+    async function requestDeviceCode() {
+        return requestJson(DEVICE_CODE_ENDPOINT, null, 'GET');
+    }
+
+    async function requestUserAuth(payload) {
+        return requestJson(AUTH_ENDPOINT, {
+            ...payload,
+            deviceCode: normalizeDeviceCode(state.deviceCode),
+            deviceProfile: collectDeviceProfile()
+        });
+    }
+
+    async function ensureDeviceCode() {
+        const cached = readStoredDeviceCode();
+        if (isCurrentDeviceCode(cached)) return cached;
+
+        const result = await requestDeviceCode();
+        if (!result.response.ok) {
+            throw new Error(result.payload && result.payload.message ? result.payload.message : 'Unable to allocate a unique device code.');
+        }
+
+        const deviceCode = normalizeDeviceCode(result.payload && result.payload.deviceCode);
+        if (!isCurrentDeviceCode(deviceCode)) {
+            throw new Error('Device code service returned an invalid code.');
+        }
+
         safeStorageSet(DEVICE_CODE_STORAGE_KEY, deviceCode);
         return deviceCode;
     }
@@ -131,40 +217,29 @@
         }
     }
 
-    function isLocalDevelopmentHost() {
-        const host = String(window.location.hostname || '').trim().toLowerCase();
-        return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]';
-    }
-
-    function ensureLocalDevelopmentPanel() {
-        // Issuer / duplicate-repair tools now live on the backend issuer page only.
-    }
-
     function getDom() {
         if (dom) return dom;
         dom = {
             gate: document.getElementById('activation-gate'),
             title: document.getElementById('activation-title'),
             copy: document.getElementById('activation-copy'),
-            deviceCode: document.getElementById('activation-device-code'),
-            copyButton: document.getElementById('activation-copy-device'),
-            input: document.getElementById('activation-code-input'),
             feedback: document.getElementById('activation-feedback'),
             submit: document.getElementById('activation-submit'),
             stateTag: document.getElementById('activation-state-tag'),
             verifyButton: document.getElementById('activation-verify-device'),
+            deviceCode: document.getElementById('activation-device-code'),
+            copyDeviceButton: document.getElementById('activation-copy-device'),
             supportNumber: document.getElementById('activation-support-number'),
             copySupportButton: document.getElementById('activation-copy-support'),
-            localIssueInput: document.getElementById('activation-local-device-input'),
-            localIssueButton: document.getElementById('activation-local-issue-button'),
-            localActivateButton: document.getElementById('activation-local-activate-button'),
-            localIssuedCode: document.getElementById('activation-local-issued-code'),
-            localCopyCodeButton: document.getElementById('activation-local-copy-code'),
-            localFeedback: document.getElementById('activation-local-feedback'),
-            localCheckDuplicatesButton: document.getElementById('activation-local-check-duplicates'),
-            localFixDuplicatesButton: document.getElementById('activation-local-fix-duplicates'),
-            localRevokeButton: document.getElementById('activation-local-revoke'),
-            localLicenseList: document.getElementById('activation-local-license-list')
+            tabLogin: document.getElementById('activation-tab-login'),
+            tabRegister: document.getElementById('activation-tab-register'),
+            loginForm: document.getElementById('activation-login-form'),
+            registerForm: document.getElementById('activation-register-form'),
+            loginAccountInput: document.getElementById('activation-account-input'),
+            loginPasswordInput: document.getElementById('activation-password-input'),
+            registerAccountInput: document.getElementById('activation-register-account-input'),
+            registerPasswordInput: document.getElementById('activation-register-password-input'),
+            registerActivationInput: document.getElementById('activation-register-code-input')
         };
         return dom;
     }
@@ -177,36 +252,6 @@
         else delete refs.feedback.dataset.tone;
     }
 
-    function setLocalIssueFeedback(text, tone = '') {
-        const refs = getDom();
-        if (!refs.localFeedback) return;
-        refs.localFeedback.textContent = String(text || '');
-        if (tone) refs.localFeedback.dataset.tone = tone;
-        else delete refs.localFeedback.dataset.tone;
-    }
-
-    function getSubmitButtonLabel() {
-        return document.body.dataset.activationMode === 'kicked' ? 'Reclaim access' : 'Verify and enter';
-    }
-
-    function setBusy(busy, buttonText = '') {
-        state.busy = Boolean(busy);
-        const refs = getDom();
-        if (refs.submit) {
-            refs.submit.disabled = state.busy;
-            if (buttonText) refs.submit.textContent = buttonText;
-        }
-        if (refs.verifyButton) refs.verifyButton.disabled = state.busy;
-        if (refs.input) refs.input.disabled = state.busy;
-        if (refs.localIssueInput) refs.localIssueInput.disabled = state.busy;
-        if (refs.localIssueButton) refs.localIssueButton.disabled = state.busy;
-        if (refs.localActivateButton) refs.localActivateButton.disabled = state.busy;
-        if (refs.localCopyCodeButton) refs.localCopyCodeButton.disabled = state.busy;
-        if (refs.localCheckDuplicatesButton) refs.localCheckDuplicatesButton.disabled = state.busy;
-        if (refs.localFixDuplicatesButton) refs.localFixDuplicatesButton.disabled = state.busy;
-        if (refs.localRevokeButton) refs.localRevokeButton.disabled = state.busy;
-    }
-
     function applyActivationMode(mode) {
         document.body.classList.remove('activation-booting', 'activation-required', 'activation-ready');
         if (mode === 'active') {
@@ -217,698 +262,450 @@
             document.body.classList.add('activation-required');
         }
         document.body.dataset.activationMode = mode;
+        state.currentMode = mode;
+    }
+
+    function getSubmitButtonLabel() {
+        if (state.currentMode === 'booting') return '校验中...';
+        if (state.currentMode === 'kicked') return '重新登录并接管';
+        return state.tab === 'register' ? '注册并进入' : '登录并进入';
+    }
+
+    function setBusy(busy, buttonText = '') {
+        state.busy = Boolean(busy);
+        const refs = getDom();
+        const disabled = state.busy;
+        const controls = [
+            refs.submit,
+            refs.verifyButton,
+            refs.copyDeviceButton,
+            refs.copySupportButton,
+            refs.loginAccountInput,
+            refs.loginPasswordInput,
+            refs.registerAccountInput,
+            refs.registerPasswordInput,
+            refs.registerActivationInput,
+            refs.tabLogin,
+            refs.tabRegister
+        ];
+        controls.forEach(control => {
+            if (control) control.disabled = disabled;
+        });
+        if (refs.submit) refs.submit.textContent = buttonText || getSubmitButtonLabel();
+    }
+
+    function syncAccountInputs() {
+        const refs = getDom();
+        const loginAccount = normalizeAccountId(refs.loginAccountInput && refs.loginAccountInput.value);
+        const registerAccount = normalizeAccountId(refs.registerAccountInput && refs.registerAccountInput.value);
+        const remembered = readStoredAccountId();
+        const sourceValue = loginAccount || registerAccount || remembered;
+        if (refs.loginAccountInput && sourceValue && !loginAccount) refs.loginAccountInput.value = sourceValue;
+        if (refs.registerAccountInput && sourceValue && !registerAccount) refs.registerAccountInput.value = sourceValue;
+    }
+
+    function applyTabUi() {
+        const refs = getDom();
+        if (refs.tabLogin) {
+            refs.tabLogin.classList.toggle('is-active', state.tab === 'login');
+            refs.tabLogin.setAttribute('aria-selected', state.tab === 'login' ? 'true' : 'false');
+        }
+        if (refs.tabRegister) {
+            refs.tabRegister.classList.toggle('is-active', state.tab === 'register');
+            refs.tabRegister.setAttribute('aria-selected', state.tab === 'register' ? 'true' : 'false');
+        }
+        if (refs.loginForm) refs.loginForm.hidden = state.tab !== 'login';
+        if (refs.registerForm) refs.registerForm.hidden = state.tab !== 'register';
+    }
+
+    function updateGateCopy(message = '') {
+        const refs = getDom();
+        if (!refs.gate) return;
+
+        if (refs.deviceCode) refs.deviceCode.textContent = getFormattedDeviceCode(state.deviceCode);
+
+        if (state.currentMode === 'booting') {
+            if (refs.title) refs.title.textContent = '正在校验登录状态';
+            if (refs.copy) refs.copy.textContent = '正在确认这个浏览器是否仍然持有当前账号的登录资格。';
+            if (refs.stateTag) refs.stateTag.textContent = '校验中';
+            setFeedback(message || '正在连接验证服务...', 'muted');
+            return;
+        }
+
+        if (state.currentMode === 'kicked') {
+            state.tab = 'login';
+            applyTabUi();
+            if (refs.title) refs.title.textContent = '这个浏览器已被顶下线';
+            if (refs.copy) refs.copy.textContent = '同一个账号同时只允许一个设备或浏览器在线。重新输入账号密码即可把资格切回当前浏览器。';
+            if (refs.stateTag) refs.stateTag.textContent = '已顶号';
+            setFeedback(message || '这个账号已在其它设备登录，请重新登录。', 'error');
+            return;
+        }
+
+        if (state.tab === 'register') {
+            if (refs.title) refs.title.textContent = '首次注册';
+            if (refs.copy) refs.copy.textContent = '先复制设备码发给管理员签发激活码，再设置你的账号密码。以后再进站只需要账号密码。';
+            if (refs.stateTag) refs.stateTag.textContent = '待注册';
+            setFeedback(message || '首次注册需要设备码、激活码、账号和密码。', 'muted');
+            return;
+        }
+
+        if (refs.title) refs.title.textContent = '账号登录';
+        if (refs.copy) refs.copy.textContent = '已经注册过的用户，直接输入账号密码登录。新设备登录会自动顶掉旧设备。';
+        if (refs.stateTag) refs.stateTag.textContent = '待登录';
+        setFeedback(message || '输入账号密码后即可进入。', 'muted');
     }
 
     function renderGate(mode, message = '') {
-        const refs = getDom();
-        if (!refs.gate) return;
         applyActivationMode(mode === 'active' ? 'active' : mode);
-
-        if (refs.deviceCode) refs.deviceCode.textContent = state.deviceCode || '------------';
-
-        if (mode === 'booting') {
-            if (refs.title) refs.title.textContent = 'Verifying device access';
-            if (refs.copy) refs.copy.textContent = 'Checking whether this browser still owns a valid activation key.';
-            if (refs.stateTag) refs.stateTag.textContent = 'Checking';
-            if (refs.submit) refs.submit.textContent = 'Checking...';
-            setFeedback(message || 'Connecting to the activation service...', 'muted');
-            return;
-        }
-
-        if (mode === 'kicked') {
-            if (refs.title) refs.title.textContent = 'This device is no longer active';
-            if (refs.copy) refs.copy.textContent = 'The activation key was taken over by another device. Re-enter the key here to reclaim access.';
-            if (refs.stateTag) refs.stateTag.textContent = 'Kicked';
-            if (refs.submit) refs.submit.textContent = 'Reclaim access';
-            setFeedback(message || 'This device lost ownership of the activation key.', 'error');
-            if (refs.input) refs.input.value = '';
-            return;
-        }
-
-        if (refs.title) refs.title.textContent = 'Enter activation key';
-        if (refs.copy) refs.copy.textContent = 'First use: copy the device code, issue an activation key from the backend issuer page, then enter it below.';
-        if (refs.stateTag) refs.stateTag.textContent = 'Pending';
-        if (refs.submit) refs.submit.textContent = 'Verify and enter';
-        setFeedback(message || 'Copy the device code first, then enter a valid activation key.', 'muted');
+        updateGateCopy(message);
+        setBusy(false, getSubmitButtonLabel());
     }
 
     function hideGate() {
         applyActivationMode('active');
         setFeedback('', '');
+        setBusy(false, getSubmitButtonLabel());
         const refs = getDom();
-        if (refs.input) refs.input.blur();
+        if (refs.loginPasswordInput) refs.loginPasswordInput.blur();
+        if (refs.registerPasswordInput) refs.registerPasswordInput.blur();
     }
 
-    function focusActivationInput() {
+    function focusCurrentInput() {
         const refs = getDom();
-        window.setTimeout(() => refs.input && refs.input.focus(), 30);
-    }
-
-    async function requestAuth(mode, activationCode, reason) {
-        const controller = typeof AbortController === 'function' ? new AbortController() : null;
-        const timeoutId = controller
-            ? window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-            : 0;
-
-        try {
-            const response = await fetch(AUTH_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                cache: 'no-store',
-                credentials: 'same-origin',
-                signal: controller ? controller.signal : undefined,
-                body: JSON.stringify({
-                    mode,
-                    activationCode,
-                    deviceCode: state.deviceCode,
-                    reason: reason || '',
-                    deviceProfile: collectDeviceProfile()
-                })
-            });
-
-            let payload = {};
-            try {
-                payload = await response.json();
-            } catch (error) {
-                payload = {};
+        window.setTimeout(() => {
+            if (state.tab === 'register') {
+                if (!normalizeAccountId(refs.registerAccountInput && refs.registerAccountInput.value)) {
+                    refs.registerAccountInput && refs.registerAccountInput.focus();
+                    return;
+                }
+                if (!(refs.registerPasswordInput && refs.registerPasswordInput.value)) {
+                    refs.registerPasswordInput && refs.registerPasswordInput.focus();
+                    return;
+                }
+                refs.registerActivationInput && refs.registerActivationInput.focus();
+                return;
             }
 
-            return { response, payload };
-        } finally {
-            if (timeoutId) window.clearTimeout(timeoutId);
-        }
-    }
-
-    async function requestLocalIssue(deviceCode) {
-        const controller = typeof AbortController === 'function' ? new AbortController() : null;
-        const timeoutId = controller
-            ? window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-            : 0;
-
-        try {
-            const response = await fetch(LOCAL_ISSUE_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                cache: 'no-store',
-                credentials: 'same-origin',
-                signal: controller ? controller.signal : undefined,
-                body: JSON.stringify({
-                    deviceCode,
-                    note: 'localhost-dev-issue'
-                })
-            });
-
-            let payload = {};
-            try {
-                payload = await response.json();
-            } catch (error) {
-                payload = {};
+            if (!normalizeAccountId(refs.loginAccountInput && refs.loginAccountInput.value)) {
+                refs.loginAccountInput && refs.loginAccountInput.focus();
+                return;
             }
-
-            return { response, payload };
-        } finally {
-            if (timeoutId) window.clearTimeout(timeoutId);
-        }
+            refs.loginPasswordInput && refs.loginPasswordInput.focus();
+        }, 40);
     }
 
-    async function requestLocalLicenseLookup({ deviceCode = '', activationCode = '', expandDevice = false } = {}) {
-        const query = new URLSearchParams();
-        if (deviceCode) query.set('deviceCode', deviceCode);
-        if (activationCode) query.set('activationCode', activationCode);
-        if (expandDevice) query.set('expandDevice', 'true');
-        query.set('includeRevoked', 'true');
-        query.set('limit', '20');
-
-        const response = await fetch(`${LOCAL_LICENSE_ADMIN_ENDPOINT}?${query.toString()}`, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json'
-            },
-            cache: 'no-store',
-            credentials: 'same-origin'
-        });
-
-        let payload = {};
-        try {
-            payload = await response.json();
-        } catch (error) {
-            payload = {};
-        }
-
-        return { response, payload };
-    }
-
-    async function requestLocalLicenseRepair({ deviceCode = '', activationCode = '' } = {}) {
-        const response = await fetch(LOCAL_LICENSE_ADMIN_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            cache: 'no-store',
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                action: 'repair',
-                deviceCode,
-                activationCode
-            })
-        });
-
-        let payload = {};
-        try {
-            payload = await response.json();
-        } catch (error) {
-            payload = {};
-        }
-
-        return { response, payload };
-    }
-
-    async function requestLocalLicenseRevoke(activationCode) {
-        const response = await fetch(LOCAL_LICENSE_ADMIN_ENDPOINT, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            },
-            cache: 'no-store',
-            credentials: 'same-origin',
-            body: JSON.stringify({ activationCode })
-        });
-
-        let payload = {};
-        try {
-            payload = await response.json();
-        } catch (error) {
-            payload = {};
-        }
-
-        return { response, payload };
-    }
-
-    function readStoredActivationCode() {
-        const stored = normalizeActivationCode(safeStorageGet(ACTIVATION_CODE_STORAGE_KEY));
-        state.lastKnownCode = stored;
-        return stored;
-    }
-
-    function saveActivationCode(code) {
-        const normalized = normalizeActivationCode(code);
-        state.lastKnownCode = normalized;
-        safeStorageSet(ACTIVATION_CODE_STORAGE_KEY, normalized);
-    }
-
-    function clearActivationCode() {
-        state.lastKnownCode = '';
-        safeStorageRemove(ACTIVATION_CODE_STORAGE_KEY);
-    }
-
-    function readLocalIssuedActivationCode() {
+    function setTab(tab, preserveMessage = false) {
+        state.tab = tab === 'register' ? 'register' : 'login';
         const refs = getDom();
-        return normalizeActivationCode(refs.localIssuedCode && refs.localIssuedCode.value);
+        applyTabUi();
+        syncAccountInputs();
+        if (state.currentMode !== 'active') updateGateCopy(preserveMessage ? refs.feedback && refs.feedback.textContent : '');
+        if (refs.submit) refs.submit.textContent = getSubmitButtonLabel();
     }
 
-    function renderLocalLicenseEntries(entries) {
-        const refs = getDom();
-        if (!refs.localLicenseList) return;
-        const list = Array.isArray(entries) ? entries : [];
-        refs.localLicenseList.innerHTML = '';
-        list.forEach(entry => {
-            const item = document.createElement('li');
-            item.className = 'activation-local-license-item';
-            item.innerHTML = `
-                <strong class="activation-local-license-code">${entry.activationCode || ''}</strong>
-                <span class="activation-local-license-meta">Device ${entry.initialDeviceCode || '------------'} · Status ${entry.status || 'issued'}</span>
-                <span class="activation-local-license-meta">${entry.issuedAt ? new Date(entry.issuedAt).toLocaleString() : '-'}</span>
-                <div class="activation-local-license-actions">
-                    <button type="button" data-local-license-copy="${entry.activationCode || ''}">Copy</button>
-                    <button type="button" data-local-license-fill="${entry.activationCode || ''}">Use this key</button>
-                    <button type="button" data-local-license-repair="${entry.activationCode || ''}">Fix</button>
-                    <button type="button" data-local-license-revoke="${entry.activationCode || ''}">Revoke</button>
-                </div>
-            `;
-            refs.localLicenseList.appendChild(item);
-        });
-    }
-
-    function scheduleHeartbeat() {
-        if (state.heartbeatTimer) window.clearInterval(state.heartbeatTimer);
+    function startHeartbeat() {
+        stopHeartbeat();
         state.heartbeatTimer = window.setInterval(() => {
             if (!document.body.classList.contains('activation-ready')) return;
-            const storedCode = readStoredActivationCode();
-            if (!storedCode) return;
-            void verifyCurrentDevice('heartbeat', true);
+            void verifyStoredSession('heartbeat');
         }, HEARTBEAT_INTERVAL_MS);
     }
 
-    function handleDeniedAccess(payload) {
-        clearActivationCode();
-        if (payload && payload.status === 'kicked') {
-            renderGate('kicked', payload.message || '');
-        } else {
-            renderGate('required', payload && payload.message
-                ? payload.message
-                : 'This activation key cannot be used right now. Please try another key.');
-        }
-        focusActivationInput();
+    function stopHeartbeat() {
+        if (!state.heartbeatTimer) return;
+        window.clearInterval(state.heartbeatTimer);
+        state.heartbeatTimer = 0;
     }
 
-    async function issueLocalActivationCode(autoActivate = false) {
-        if (!isLocalDevelopmentHost() || state.busy) return;
-        const refs = getDom();
-        const issueDeviceCode = normalizeDeviceCode(refs.localIssueInput && refs.localIssueInput.value);
-
-        if (issueDeviceCode.length !== 12) {
-            setLocalIssueFeedback('Enter a valid 12-character device code first.', 'error');
-            refs.localIssueInput && refs.localIssueInput.focus();
-            return;
-        }
-
-        if (refs.localIssueInput) refs.localIssueInput.value = issueDeviceCode;
-        if (autoActivate && issueDeviceCode !== state.deviceCode) {
-            setLocalIssueFeedback('"Generate and enter" only works for this browser device.', 'error');
-            refs.localIssueInput && refs.localIssueInput.focus();
-            return;
-        }
-
-        let handOffToActivation = false;
-        setBusy(true, getSubmitButtonLabel());
-        setLocalIssueFeedback(
-            autoActivate
-                ? 'Issuing an activation key for this browser device...'
-                : 'Issuing an activation key from the device code...',
-            'muted'
-        );
-
-        try {
-            const result = await requestLocalIssue(issueDeviceCode);
-            if (!result.response.ok) {
-                if (result.response.status === 409 && result.payload && result.payload.activationCode) {
-                    if (refs.localIssuedCode) refs.localIssuedCode.value = normalizeActivationCode(result.payload.activationCode);
-                    if (refs.input) refs.input.value = normalizeActivationCode(result.payload.activationCode);
-                    renderLocalLicenseEntries([result.payload]);
-                }
-                setLocalIssueFeedback(
-                    result.payload && result.payload.message
-                        ? result.payload.message
-                        : 'Local key issuance failed.',
-                    'error'
-                );
-                return;
-            }
-
-            const activationCode = normalizeActivationCode(result.payload && result.payload.activationCode);
-            if (!activationCode) {
-                setLocalIssueFeedback('The local issuer did not return a valid activation key.', 'error');
-                return;
-            }
-
-            if (refs.localIssuedCode) refs.localIssuedCode.value = activationCode;
-            if (refs.input) refs.input.value = activationCode;
-            renderLocalLicenseEntries([result.payload]);
-
-            if (autoActivate) {
-                setLocalIssueFeedback('Activation key generated. Entering now...', 'success');
-                handOffToActivation = true;
-                setBusy(false, getSubmitButtonLabel());
-                await activateCurrentDevice();
-                return;
-            }
-
-            setLocalIssueFeedback('Activation key generated and filled into the main input.', 'success');
-        } catch (error) {
-            setLocalIssueFeedback('Local key issuance is temporarily unavailable.', 'error');
-        } finally {
-            if (!handOffToActivation) setBusy(false, getSubmitButtonLabel());
-        }
+    function translateResponse(result, fallback) {
+        const payload = result && result.payload ? result.payload : {};
+        const code = String(payload.code || '').trim().toUpperCase();
+        if (code === 'INVALID_CODE') return '激活码不存在或格式不正确。';
+        if (code === 'INVALID_SIGNATURE') return '激活码签名无效，请重新签发。';
+        if (code === 'REVOKED_CODE') return '这个激活码已经失效，请联系管理员重新签发。';
+        if (code === 'INITIAL_DEVICE_MISMATCH') return '首次注册必须在原始设备码对应的浏览器完成。';
+        if (code === 'ACCOUNT_ALREADY_REGISTERED') return '这个激活码已经注册过账号了，请直接登录。';
+        if (code === 'ACCOUNT_ID_TAKEN') return '这个账号已经被别的激活码占用，请换一个账号。';
+        if (code === 'ALREADY_ACTIVATED') return '这个激活码已经被领取，请直接登录绑定的账号。';
+        if (code === 'ACCOUNT_NOT_FOUND') return '没有找到这个账号，请先切到首次注册。';
+        if (code === 'INVALID_CREDENTIALS') return '账号或密码不正确。';
+        if (code === 'ACCOUNT_REQUIRED') return '这个激活码还没有完成首次注册。';
+        if (code === 'ACCOUNT_MISMATCH') return '当前浏览器保存的账号信息和激活记录不一致，请重新登录。';
+        if (code === 'DEVICE_REPLACED') return '这个账号刚在其它设备登录了，请重新登录接管回来。';
+        if (code === 'DUPLICATE_DEVICE_CODE') return '设备码存在重复记录，请先在后台修复后再试。';
+        if (payload && payload.message) return payload.message;
+        return fallback;
     }
 
-    async function lookupLocalDuplicates() {
-        if (!isLocalDevelopmentHost() || state.busy) return;
-        const refs = getDom();
-        const deviceCode = normalizeDeviceCode(refs.localIssueInput && refs.localIssueInput.value);
-        const activationCode = readLocalIssuedActivationCode();
-        const useActivationLookup = activationCode && deviceCode.length !== 12;
+    function validateAccountId(accountId) {
+        return accountId.length >= 3;
+    }
 
-        if (!useActivationLookup && deviceCode.length !== 12) {
-            setLocalIssueFeedback('Enter a device code or keep a generated key in the result box first.', 'error');
-            refs.localIssueInput && refs.localIssueInput.focus();
+    async function submitRegister() {
+        const refs = getDom();
+        const accountId = normalizeAccountId(refs.registerAccountInput && refs.registerAccountInput.value);
+        const password = String(refs.registerPasswordInput && refs.registerPasswordInput.value || '').trim();
+        const activationCode = normalizeActivationCode(refs.registerActivationInput && refs.registerActivationInput.value);
+
+        if (!validateAccountId(accountId)) {
+            setFeedback('账号至少要 3 位，建议用邮箱或英文账号。', 'error');
+            refs.registerAccountInput && refs.registerAccountInput.focus();
             return;
         }
 
-        setBusy(true, getSubmitButtonLabel());
-        setLocalIssueFeedback('Checking duplicate activation records...', 'muted');
+        if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+            setFeedback(`密码需要 ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} 位。`, 'error');
+            refs.registerPasswordInput && refs.registerPasswordInput.focus();
+            return;
+        }
+
+        if (!activationCode) {
+            setFeedback('请先输入管理员签发给这个设备码的激活码。', 'error');
+            refs.registerActivationInput && refs.registerActivationInput.focus();
+            return;
+        }
+
+        setBusy(true, '注册中...');
+        setFeedback('正在绑定账号和当前设备...', 'muted');
 
         try {
-            const result = await requestLocalLicenseLookup({
-                deviceCode,
+            const result = await requestUserAuth({
+                mode: 'register',
+                accountId,
+                password,
                 activationCode,
-                expandDevice: useActivationLookup
+                accountDisplayName: accountId
             });
 
-            if (!result.response.ok) {
-                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Duplicate lookup failed.', 'error');
+            if (!result.response.ok || !result.payload || !result.payload.ok) {
+                renderGate('required', translateResponse(result, '注册失败，请检查激活码和账号信息。'));
+                setTab('register', true);
+                focusCurrentInput();
                 return;
             }
 
-            if (result.payload.deviceCode && refs.localIssueInput) refs.localIssueInput.value = result.payload.deviceCode;
-            renderLocalLicenseEntries(result.payload.entries);
-            setLocalIssueFeedback(`Found ${result.payload.duplicateCount || 0} related record(s).`, (result.payload.duplicateCount || 0) > 1 ? 'error' : 'success');
+            if (refs.loginPasswordInput) refs.loginPasswordInput.value = '';
+            saveAuthState({
+                activationCode: result.payload.activationCode,
+                accountId: result.payload.accountId || accountId
+            });
+            hideGate();
+            startHeartbeat();
         } catch (error) {
-            setLocalIssueFeedback('Duplicate lookup is temporarily unavailable.', 'error');
-        } finally {
-            setBusy(false, getSubmitButtonLabel());
+            renderGate('required', '注册服务暂时不可用，请稍后再试。');
+            setTab('register', true);
+            focusCurrentInput();
         }
     }
 
-    async function repairLocalDuplicates(activationCodeOverride = '') {
-        if (!isLocalDevelopmentHost() || state.busy) return;
+    async function submitLogin() {
         const refs = getDom();
-        const deviceCode = normalizeDeviceCode(refs.localIssueInput && refs.localIssueInput.value);
-        const activationCode = normalizeActivationCode(activationCodeOverride || readLocalIssuedActivationCode());
+        const accountId = normalizeAccountId(refs.loginAccountInput && refs.loginAccountInput.value);
+        const password = String(refs.loginPasswordInput && refs.loginPasswordInput.value || '').trim();
 
-        if (deviceCode.length !== 12 && !activationCode) {
-            setLocalIssueFeedback('Enter a device code or keep a generated key in the result box first.', 'error');
-            refs.localIssueInput && refs.localIssueInput.focus();
+        if (!validateAccountId(accountId)) {
+            setFeedback('请输入注册时使用的账号。', 'error');
+            refs.loginAccountInput && refs.loginAccountInput.focus();
             return;
         }
 
-        setBusy(true, getSubmitButtonLabel());
-        setLocalIssueFeedback('Repairing duplicate records and issuing a new key...', 'muted');
-
-        try {
-            const result = await requestLocalLicenseRepair({ deviceCode, activationCode });
-            if (!result.response.ok) {
-                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Duplicate repair failed.', 'error');
-                return;
-            }
-
-            const nextCode = normalizeActivationCode(result.payload && result.payload.entry && result.payload.entry.activationCode);
-            if (result.payload.deviceCode && refs.localIssueInput) refs.localIssueInput.value = result.payload.deviceCode;
-            if (nextCode) {
-                if (refs.localIssuedCode) refs.localIssuedCode.value = nextCode;
-                if (refs.input) refs.input.value = nextCode;
-            }
-            renderLocalLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
-            setLocalIssueFeedback(`Revoked ${result.payload.revokedCount || 0} old record(s) and issued 1 new key.`, 'success');
-        } catch (error) {
-            setLocalIssueFeedback('Duplicate repair is temporarily unavailable.', 'error');
-        } finally {
-            setBusy(false, getSubmitButtonLabel());
-        }
-    }
-
-    async function revokeLocalActivationCode(activationCodeOverride = '') {
-        if (!isLocalDevelopmentHost() || state.busy) return;
-        const refs = getDom();
-        const activationCode = normalizeActivationCode(activationCodeOverride || readLocalIssuedActivationCode());
-
-        if (!activationCode) {
-            setLocalIssueFeedback('Keep a generated activation key in the result box first.', 'error');
+        if (!password) {
+            setFeedback('请输入账号密码。', 'error');
+            refs.loginPasswordInput && refs.loginPasswordInput.focus();
             return;
         }
 
-        setBusy(true, getSubmitButtonLabel());
-        setLocalIssueFeedback('Revoking activation key...', 'muted');
+        setBusy(true, state.currentMode === 'kicked' ? '接管中...' : '登录中...');
+        setFeedback(state.currentMode === 'kicked' ? '正在把登录资格切回当前浏览器...' : '正在验证账号密码...', 'muted');
 
         try {
-            const result = await requestLocalLicenseRevoke(activationCode);
-            if (!result.response.ok) {
-                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Revoke failed.', 'error');
+            const result = await requestUserAuth({
+                mode: 'login',
+                accountId,
+                password
+            });
+
+            if (!result.response.ok || !result.payload || !result.payload.ok) {
+                renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', translateResponse(result, '登录失败，请检查账号密码。'));
+                setTab('login', true);
+                focusCurrentInput();
                 return;
             }
 
-            renderLocalLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
-            setLocalIssueFeedback('Activation key revoked. It can no longer be used.', 'success');
+            saveAuthState({
+                activationCode: result.payload.activationCode,
+                accountId: result.payload.accountId || accountId
+            });
+            if (refs.registerPasswordInput) refs.registerPasswordInput.value = '';
+            hideGate();
+            startHeartbeat();
         } catch (error) {
-            setLocalIssueFeedback('Revoke is temporarily unavailable.', 'error');
-        } finally {
-            setBusy(false, getSubmitButtonLabel());
+            renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', '登录服务暂时不可用，请稍后再试。');
+            setTab('login', true);
+            focusCurrentInput();
         }
     }
 
-    async function activateCurrentDevice() {
-        if (state.busy) return;
-        const refs = getDom();
-        const activationCode = normalizeActivationCode(refs.input && refs.input.value);
+    async function verifyStoredSession(reason = 'manual-verify') {
+        const activationCode = readStoredActivationCode();
+        const accountId = readStoredAccountId();
 
-        if (!activationCode) {
-            setFeedback('Enter a valid activation key first.', 'error');
-            focusActivationInput();
-            return;
-        }
-
-        if (refs.input) refs.input.value = activationCode;
-        setBusy(true, 'Processing...');
-        setFeedback('Submitting device access request...', 'muted');
-
-        try {
-            const result = await requestAuth('activate', activationCode, 'manual-activate');
-            if (result.response.ok) {
-                saveActivationCode(activationCode);
-                hideGate();
-                scheduleHeartbeat();
-                return;
-            }
-
-            if (result.response.status === 403) {
-                handleDeniedAccess(result.payload);
-                return;
-            }
-
-            renderGate('required', result.payload && result.payload.message
-                ? result.payload.message
-                : 'Activation failed. Check the activation key and try again.');
-            focusActivationInput();
-        } catch (error) {
-            renderGate('required', 'The activation service is temporarily unavailable.');
-            focusActivationInput();
-        } finally {
-            setBusy(false, getSubmitButtonLabel());
-        }
-    }
-
-    async function verifyCurrentDevice(reason = 'manual-verify', silent = false) {
-        if (state.busy && !silent) return false;
-        const storedCode = readStoredActivationCode();
-
-        if (!storedCode) {
-            renderGate('required', 'No stored activation key was found in this browser.');
-            focusActivationInput();
+        if (!activationCode || !accountId) {
+            stopHeartbeat();
+            clearAuthState({ keepAccount: Boolean(accountId) });
+            setTab(accountId ? 'login' : 'register', true);
+            renderGate('required', accountId ? '请输入账号密码重新登录。' : '首次使用请先完成注册。');
+            focusCurrentInput();
             return false;
         }
 
-        if (!silent) {
-            renderGate('booting', 'Checking whether this device still owns the activation key...');
-            setBusy(true, 'Checking...');
-        }
+        renderGate('booting', '正在确认这个浏览器是否仍然持有当前账号...');
+        setBusy(true, '校验中...');
 
         try {
-            const result = await requestAuth('verify', storedCode, reason);
-            if (result.response.ok) {
+            const result = await requestUserAuth({
+                mode: 'verify',
+                activationCode,
+                accountId,
+                reason
+            });
+
+            if (result.response.ok && result.payload && result.payload.ok) {
+                saveAuthState({
+                    activationCode: result.payload.activationCode || activationCode,
+                    accountId: result.payload.accountId || accountId
+                });
                 hideGate();
-                scheduleHeartbeat();
+                startHeartbeat();
                 return true;
             }
 
-            if (result.response.status === 403) {
-                if (!silent) handleDeniedAccess(result.payload);
-                else clearActivationCode();
+            stopHeartbeat();
+            const message = translateResponse(result, '登录状态校验失败，请重新登录。');
+            if (result.response.status === 403 && result.payload && result.payload.code === 'DEVICE_REPLACED') {
+                clearAuthState({ keepAccount: true });
+                renderGate('kicked', message);
+                focusCurrentInput();
                 return false;
             }
 
-            if (!silent) {
-                renderGate('required', result.payload && result.payload.message
-                    ? result.payload.message
-                    : 'Device verification failed. Re-enter the activation key.');
-                focusActivationInput();
-            }
+            clearAuthState({ keepAccount: false });
+            setTab('login', true);
+            renderGate('required', message);
+            focusCurrentInput();
             return false;
         } catch (error) {
-            if (!silent) {
-                renderGate('required', 'The verification service is temporarily unavailable.');
-                focusActivationInput();
-            }
+            stopHeartbeat();
+            renderGate('required', '无法连接验证服务，请稍后再试。');
+            setTab(readStoredAccountId() ? 'login' : 'register', true);
+            focusCurrentInput();
             return false;
-        } finally {
-            if (!silent) setBusy(false, getSubmitButtonLabel());
         }
     }
 
     function bindActivationEvents() {
         const refs = getDom();
-        if (!refs.gate || refs.gate.dataset.bound === 'true') return;
-        refs.gate.dataset.bound = 'true';
+        if (!refs.gate) return;
 
-        refs.copyButton && refs.copyButton.addEventListener('click', async event => {
-            event.preventDefault();
-            const copied = await copyText(state.deviceCode);
-            setFeedback(copied ? 'Device code copied.' : 'Copy failed. Please copy the device code manually.', copied ? 'success' : 'error');
+        refs.tabLogin && refs.tabLogin.addEventListener('click', () => {
+            if (state.busy) return;
+            setTab('login');
+            focusCurrentInput();
         });
 
-        refs.copySupportButton && refs.copySupportButton.addEventListener('click', async event => {
-            event.preventDefault();
+        refs.tabRegister && refs.tabRegister.addEventListener('click', () => {
+            if (state.busy) return;
+            setTab('register');
+            focusCurrentInput();
+        });
+
+        refs.copyDeviceButton && refs.copyDeviceButton.addEventListener('click', async () => {
+            const copied = await copyText(getFormattedDeviceCode(state.deviceCode));
+            setFeedback(copied ? '设备码已复制。' : '复制失败，请手动复制设备码。', copied ? 'success' : 'error');
+        });
+
+        refs.copySupportButton && refs.copySupportButton.addEventListener('click', async () => {
             const copied = await copyText(refs.supportNumber && refs.supportNumber.textContent);
-            setFeedback(copied ? 'Support group number copied.' : 'Copy failed. Please copy the support number manually.', copied ? 'success' : 'error');
+            setFeedback(copied ? '售前群号已复制。' : '复制失败，请手动复制群号。', copied ? 'success' : 'error');
         });
 
-        refs.localIssueButton && refs.localIssueButton.addEventListener('click', event => {
-            event.preventDefault();
-            void issueLocalActivationCode(false);
+        refs.submit && refs.submit.addEventListener('click', () => {
+            if (state.busy) return;
+            if (state.tab === 'register') void submitRegister();
+            else void submitLogin();
         });
 
-        refs.localActivateButton && refs.localActivateButton.addEventListener('click', event => {
-            event.preventDefault();
-            void issueLocalActivationCode(true);
+        refs.verifyButton && refs.verifyButton.addEventListener('click', () => {
+            if (state.busy) return;
+            void verifyStoredSession('manual-verify');
         });
 
-        refs.localCopyCodeButton && refs.localCopyCodeButton.addEventListener('click', async event => {
-            event.preventDefault();
-            const copied = await copyText(refs.localIssuedCode && refs.localIssuedCode.value);
-            setLocalIssueFeedback(copied ? 'Activation key copied.' : 'Copy failed. Please copy the activation key manually.', copied ? 'success' : 'error');
+        [refs.loginAccountInput, refs.registerAccountInput].forEach(input => {
+            if (!input) return;
+            input.addEventListener('input', event => {
+                event.target.value = normalizeAccountId(event.target.value);
+                syncAccountInputs();
+            });
         });
 
-        refs.localCheckDuplicatesButton && refs.localCheckDuplicatesButton.addEventListener('click', event => {
-            event.preventDefault();
-            void lookupLocalDuplicates();
+        if (refs.registerActivationInput) {
+            refs.registerActivationInput.addEventListener('input', event => {
+                event.target.value = normalizeActivationCode(event.target.value);
+            });
+        }
+
+        [refs.loginPasswordInput, refs.registerPasswordInput].forEach(input => {
+            if (!input) return;
+            input.addEventListener('keydown', event => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                if (state.busy) return;
+                if (state.tab === 'register') void submitRegister();
+                else void submitLogin();
+            });
         });
 
-        refs.localFixDuplicatesButton && refs.localFixDuplicatesButton.addEventListener('click', event => {
-            event.preventDefault();
-            void repairLocalDuplicates();
-        });
-
-        refs.localRevokeButton && refs.localRevokeButton.addEventListener('click', event => {
-            event.preventDefault();
-            void revokeLocalActivationCode();
-        });
-
-        refs.submit && refs.submit.addEventListener('click', event => {
-            event.preventDefault();
-            void activateCurrentDevice();
-        });
-
-        refs.verifyButton && refs.verifyButton.addEventListener('click', event => {
-            event.preventDefault();
-            void verifyCurrentDevice('manual-verify');
-        });
-
-        refs.input && refs.input.addEventListener('input', event => {
-            const nextValue = normalizeActivationCode(event.target.value);
-            if (event.target.value !== nextValue) event.target.value = nextValue;
-        });
-
-        refs.input && refs.input.addEventListener('keydown', event => {
-            if (event.key !== 'Enter') return;
-            event.preventDefault();
-            void activateCurrentDevice();
-        });
-
-        refs.localIssueInput && refs.localIssueInput.addEventListener('input', event => {
-            const nextValue = normalizeDeviceCode(event.target.value);
-            if (event.target.value !== nextValue) event.target.value = nextValue;
-        });
-
-        refs.localIssueInput && refs.localIssueInput.addEventListener('keydown', event => {
-            if (event.key !== 'Enter') return;
-            event.preventDefault();
-            void issueLocalActivationCode(false);
-        });
-
-        refs.localLicenseList && refs.localLicenseList.addEventListener('click', event => {
-            const button = event.target.closest('button');
-            if (!button) return;
-            event.preventDefault();
-            const refsNow = getDom();
-            const copyCode = button.getAttribute('data-local-license-copy');
-            const fillCode = button.getAttribute('data-local-license-fill');
-            const repairCode = button.getAttribute('data-local-license-repair');
-            const revokeCode = button.getAttribute('data-local-license-revoke');
-
-            if (copyCode) {
-                void copyText(copyCode).then(copied => {
-                    setLocalIssueFeedback(copied ? 'Activation key copied.' : 'Copy failed. Please copy the activation key manually.', copied ? 'success' : 'error');
-                });
-                return;
-            }
-
-            if (fillCode) {
-                if (refsNow.localIssuedCode) refsNow.localIssuedCode.value = fillCode;
-                if (refsNow.input) refsNow.input.value = fillCode;
-                setLocalIssueFeedback('Activation key filled into both inputs.', 'success');
-                return;
-            }
-
-            if (repairCode) {
-                void repairLocalDuplicates(repairCode);
-                return;
-            }
-
-            if (revokeCode) {
-                void revokeLocalActivationCode(revokeCode);
-            }
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) return;
-            if (!document.body.classList.contains('activation-ready')) return;
-            void verifyCurrentDevice('visibility', true);
-        });
-
-        window.addEventListener('focus', () => {
-            if (!document.body.classList.contains('activation-ready')) return;
-            void verifyCurrentDevice('focus', true);
-        });
-
-        window.addEventListener('online', () => {
-            if (!document.body.classList.contains('activation-ready')) return;
-            void verifyCurrentDevice('online', true);
+        [refs.loginAccountInput, refs.registerAccountInput, refs.registerActivationInput].forEach(input => {
+            if (!input) return;
+            input.addEventListener('keydown', event => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                if (state.busy) return;
+                if (state.tab === 'register') void submitRegister();
+                else void submitLogin();
+            });
         });
     }
 
-    function initActivationGate() {
-        ensureLocalDevelopmentPanel();
-        const refs = getDom();
-        if (!refs.gate) return;
-
-        state.deviceCode = generateDeviceCode();
-        if (refs.deviceCode) refs.deviceCode.textContent = state.deviceCode;
-        if (refs.localIssueInput && !normalizeDeviceCode(refs.localIssueInput.value)) {
-            refs.localIssueInput.value = state.deviceCode;
-        }
+    async function bootActivationGate() {
+        clearLegacyActivationStorage();
         bindActivationEvents();
-        scheduleHeartbeat();
 
-        if (readStoredActivationCode()) {
-            renderGate('booting', 'Checking stored activation key...');
-            void verifyCurrentDevice('boot');
+        try {
+            state.deviceCode = await ensureDeviceCode();
+        } catch (error) {
+            renderGate('required', '设备码分配失败，请刷新页面重试。');
             return;
         }
 
-        renderGate('required', 'Copy the device code, issue a key, then activate this device.');
-        focusActivationInput();
-    }
+        const rememberedAccountId = readStoredAccountId();
+        setTab(rememberedAccountId ? 'login' : 'register', true);
+        renderGate('required', rememberedAccountId ? '请输入账号密码登录。' : '首次使用请先完成注册。');
 
-    window.rinnoActivation = {
-        getDeviceCode: () => state.deviceCode,
-        verifyNow: () => verifyCurrentDevice('external-verify'),
-        issueLocalKey: () => issueLocalActivationCode(false),
-        kickCurrentDevice: message => {
-            clearActivationCode();
-            renderGate('kicked', message || 'This device no longer owns the activation key.');
-            focusActivationInput();
+        const refs = getDom();
+        if (rememberedAccountId) {
+            if (refs.loginAccountInput) refs.loginAccountInput.value = rememberedAccountId;
+            if (refs.registerAccountInput) refs.registerAccountInput.value = rememberedAccountId;
         }
-    };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initActivationGate, { once: true });
-    } else {
-        initActivationGate();
+        if (readStoredActivationCode() && rememberedAccountId) {
+            await verifyStoredSession('boot');
+            return;
+        }
+
+        focusCurrentInput();
     }
+
+    void bootActivationGate();
 })();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rinno-public-shell-v20260430-root-runtime-fix-1';
+const CACHE_NAME = 'rinno-public-shell-v20260430-account-login-1';
 const PRECACHE_URLS = [
     './',
     'index.html',
@@ -7,8 +7,8 @@ const PRECACHE_URLS = [
     'icon-512.png',
     'icon-192-v20260428-app-refresh-1.png',
     'icon-512-v20260428-app-refresh-1.png',
-    'style.css?v=20260430-root-runtime-fix-1',
-    'script.js?v=20260430-root-runtime-fix-1',
+    'style.css?v=20260430-account-login-1',
+    'script.js?v=20260430-account-login-1',
     'vendor/dexie.js',
     'vendor/jszip.min.js'
 ];

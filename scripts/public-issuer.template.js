@@ -6,6 +6,9 @@
     const USERS_ENDPOINT = '/.netlify/functions/admin-users';
     const PASSWORD_ENDPOINT = '/.netlify/functions/admin-password';
     const AUDIT_LIMIT = 100;
+    const DEVICE_CODE_LENGTH = 16;
+    const DEVICE_CODE_GROUP_LENGTH = 4;
+    const DEVICE_CODE_PLACEHOLDER = 'XXXX-XXXX-XXXX-XXXX';
     const state = {
         authenticated: false,
         account: null,
@@ -28,7 +31,21 @@
     let resultCodeLookupTimer = 0;
 
     function normalizeDeviceCode(value) {
-        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, DEVICE_CODE_LENGTH);
+    }
+
+    function isSupportedDeviceCode(value) {
+        return normalizeDeviceCode(value).length === DEVICE_CODE_LENGTH;
+    }
+
+    function formatDeviceCode(value) {
+        const normalized = normalizeDeviceCode(value);
+        if (!normalized) return '';
+        return (normalized.match(new RegExp(`.{1,${DEVICE_CODE_GROUP_LENGTH}}`, 'g')) || [normalized]).join('-');
+    }
+
+    function getFormattedDeviceCode(value) {
+        return formatDeviceCode(value) || DEVICE_CODE_PLACEHOLDER;
     }
 
     function normalizeActivationCode(value) {
@@ -357,7 +374,7 @@
         if (refs.resultCode) refs.resultCode.value = state.lastIssuedCode;
         if (refs.resultMeta) {
             refs.resultMeta.innerHTML = [
-                payload.initialDeviceCode ? `<span class="issuer-chip">device ${payload.initialDeviceCode}</span>` : '',
+                payload.initialDeviceCode ? `<span class="issuer-chip">device ${getFormattedDeviceCode(payload.initialDeviceCode)}</span>` : '',
                 payload.status ? `<span class="issuer-chip">status ${payload.status}</span>` : '',
                 payload.issuedAt ? `<span class="issuer-chip">${formatDateTime(payload.issuedAt)}</span>` : ''
             ].filter(Boolean).join('');
@@ -394,7 +411,7 @@
         refs.licenseList.innerHTML = '';
         list.forEach(entry => {
             const duplicateMeta = entry.duplicateCount > 1
-                ? `<span class="issuer-item-meta">duplicate history ${entry.duplicateCount} · active ${entry.duplicateActiveCount || 0}</span>`
+                ? `<span class="issuer-item-meta">duplicate history ${entry.duplicateCount} - active ${entry.duplicateActiveCount || 0}</span>`
                 : '';
             const item = document.createElement('li');
             item.className = 'issuer-item';
@@ -404,14 +421,14 @@
             item.setAttribute('role', 'button');
             item.innerHTML = `
                 <strong class="issuer-item-code">${entry.activationCode || ''}</strong>
-                <span class="issuer-item-meta">设备码 ${entry.initialDeviceCode || '------------'} · 状态 ${entry.status || 'issued'}</span>
+                <span class="issuer-item-meta">Device ${getFormattedDeviceCode(entry.initialDeviceCode)} | Status ${entry.status || 'issued'}</span>
                 <span class="issuer-item-meta">${formatDateTime(entry.issuedAt)}</span>
                 ${duplicateMeta}
                 <div class="issuer-item-actions">
-                    <button class="issuer-button subtle" type="button" data-license-copy="${entry.activationCode || ''}">复制</button>
-                    <button class="issuer-button subtle" type="button" data-license-fill="${entry.activationCode || ''}">填入结果框</button>
-                    <button class="issuer-button subtle" type="button" data-license-repair="${entry.activationCode || ''}">修正</button>
-                    <button class="issuer-button subtle" type="button" data-license-revoke="${entry.activationCode || ''}">注销</button>
+                    <button class="issuer-button subtle" type="button" data-license-copy="${entry.activationCode || ''}">Copy</button>
+                    <button class="issuer-button subtle" type="button" data-license-fill="${entry.activationCode || ''}">Use This</button>
+                    <button class="issuer-button subtle" type="button" data-license-repair="${entry.activationCode || ''}">Fix</button>
+                    <button class="issuer-button subtle" type="button" data-license-revoke="${entry.activationCode || ''}">Revoke</button>
                 </div>
             `;
             refs.licenseList.appendChild(item);
@@ -443,7 +460,7 @@
 
         state.activeModalCode = normalizeActivationCode(record.activationCode);
         if (refs.licenseModalCode) refs.licenseModalCode.textContent = record.activationCode || '-';
-        if (refs.licenseModalDevice) refs.licenseModalDevice.textContent = record.initialDeviceCode || '------------';
+        if (refs.licenseModalDevice) refs.licenseModalDevice.textContent = getFormattedDeviceCode(record.initialDeviceCode);
         if (refs.licenseModalStatus) refs.licenseModalStatus.textContent = record.status || 'issued';
         if (refs.licenseModalIssuedAt) refs.licenseModalIssuedAt.textContent = formatDateTime(record.issuedAt);
         if (refs.licenseModalRevokeButton) refs.licenseModalRevokeButton.textContent = record.status === 'revoked' ? 'Already Revoked' : 'Revoke Record';
@@ -667,13 +684,13 @@
         const deviceCode = normalizeDeviceCode(refs.deviceCode && refs.deviceCode.value);
         const note = String(refs.note && refs.note.value || '').trim().slice(0, 120);
 
-        if (deviceCode.length !== 12) {
-            setFeedback('issue', '请输入有效的 12 位设备码。', 'error');
+        if (!isSupportedDeviceCode(deviceCode)) {
+            setFeedback('issue', 'Enter a valid device code. New format: XXXX-XXXX-XXXX-XXXX.', 'error');
             refs.deviceCode && refs.deviceCode.focus();
             return;
         }
 
-        if (refs.deviceCode) refs.deviceCode.value = deviceCode;
+        if (refs.deviceCode) refs.deviceCode.value = formatDeviceCode(deviceCode);
         setIssueBusy(true);
         setFeedback('issue', '正在签发激活码...', 'muted');
 
@@ -721,9 +738,9 @@
         const refs = getDom();
         const deviceCode = readActiveDeviceCode();
         const activationCode = readActiveActivationCode();
-        const useActivationLookup = activationCode && deviceCode.length !== 12;
+        const useActivationLookup = activationCode && !isSupportedDeviceCode(deviceCode);
         const useHistoryLookup = !useActivationLookup && deviceCode.length === 0;
-        if (!useHistoryLookup && !useActivationLookup && deviceCode.length !== 12) {
+        if (!useHistoryLookup && !useActivationLookup && !isSupportedDeviceCode(deviceCode)) {
             setFeedback('license', '请先输入设备码，或先在结果框里保留已生成的激活码。', 'error');
             return;
         }
@@ -754,7 +771,7 @@
             }
 
             renderLicenseEntries(result.payload.entries);
-            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = formatDeviceCode(result.payload.deviceCode);
             if (useHistoryLookup) {
                 const totalGroups = Number(result.payload.totalGroups) || 0;
                 const totalEntries = Number(result.payload.totalEntries) || 0;
@@ -817,7 +834,7 @@
         const refs = getDom();
         const deviceCode = readActiveDeviceCode();
         const activationCode = normalizeActivationCode(activationCodeOverride || readActiveActivationCode());
-        if (deviceCode.length !== 12 && !activationCode) {
+        if (!isSupportedDeviceCode(deviceCode) && !activationCode) {
             setFeedback('license', '请先输入设备码，或先在结果框里保留已生成的激活码。', 'error');
             return;
         }
@@ -850,7 +867,7 @@
 
             renderResult(result.payload.entry || {});
             renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
-            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = formatDeviceCode(result.payload.deviceCode);
             setFeedback('issue', '重复记录已修正，已重新生成新的激活码。', 'success');
             setFeedback('license', `已注销 ${result.payload.revokedCount || 0} 条旧记录，并重新生成 1 条新激活码。`, 'success');
             await loadAudit();
@@ -1009,7 +1026,7 @@
         const params = new URLSearchParams(window.location.search);
         const deviceCode = normalizeDeviceCode(params.get('deviceCode'));
         const note = String(params.get('note') || '').trim().slice(0, 120);
-        if (deviceCode && refs.deviceCode && !refs.deviceCode.value) refs.deviceCode.value = deviceCode;
+        if (deviceCode && refs.deviceCode && !refs.deviceCode.value) refs.deviceCode.value = formatDeviceCode(deviceCode);
         if (note && refs.note && !refs.note.value) refs.note.value = note;
     }
 
@@ -1020,7 +1037,7 @@
         const activationCode = normalizeActivationCode(options.activationCode);
         const useHistoryLookup = options.history === true;
         const useActivationLookup = !useHistoryLookup && Boolean(activationCode);
-        const useDeviceLookup = !useHistoryLookup && !useActivationLookup && deviceCode.length === 12;
+        const useDeviceLookup = !useHistoryLookup && !useActivationLookup && isSupportedDeviceCode(deviceCode);
 
         if (!useHistoryLookup && !useActivationLookup && !useDeviceLookup) {
             setFeedback('license', 'Enter a device code or activation code first.', 'error');
@@ -1074,7 +1091,7 @@
 
             const entries = Array.isArray(result.payload.entries) ? result.payload.entries : [];
             renderLicenseEntries(entries);
-            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = formatDeviceCode(result.payload.deviceCode);
 
             if (useActivationLookup) {
                 const selectedEntry = entries.find(entry => normalizeActivationCode(entry && entry.activationCode) === activationCode) || entries[0];
@@ -1201,7 +1218,7 @@
             if (!activationCode) deviceCode = readActiveDeviceCode();
         }
 
-        if (deviceCode.length !== 12 && !activationCode) {
+        if (!isSupportedDeviceCode(deviceCode) && !activationCode) {
             setFeedback('license', 'Enter a device code or activation code first.', 'error');
             return false;
         }
@@ -1238,7 +1255,7 @@
             nextActivationCode = normalizeActivationCode(result.payload && result.payload.entry && result.payload.entry.activationCode);
             renderResult(result.payload.entry || {});
             renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
-            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = formatDeviceCode(result.payload.deviceCode);
             setFeedback('issue', 'Duplicate records repaired and a fresh activation code was issued.', 'success');
             setFeedback('license', `Revoked ${result.payload.revokedCount || 0} old record(s) and issued 1 new activation code.`, 'success');
             shouldRefresh = Boolean(state.lastLicenseLookupMode);
@@ -1428,7 +1445,7 @@
         });
 
         refs.deviceCode && refs.deviceCode.addEventListener('input', event => {
-            const nextValue = normalizeDeviceCode(event.target.value);
+            const nextValue = formatDeviceCode(event.target.value);
             if (event.target.value !== nextValue) event.target.value = nextValue;
         });
 

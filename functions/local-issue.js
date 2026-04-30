@@ -1,11 +1,9 @@
 const {
     JSON_HEADERS,
-    buildActivationCode,
-    createIssuedRecord,
     getHeader,
-    getLicenseStore,
+    issueUniqueActivationRecord,
+    isSupportedDeviceCode,
     json,
-    makeCodeId,
     normalizeDeviceCode
 } = require('./_license');
 
@@ -75,32 +73,37 @@ exports.handler = async function handler(event) {
     }
 
     const deviceCode = normalizeDeviceCode(body.deviceCode);
-    if (deviceCode.length !== 12) {
+    if (!isSupportedDeviceCode(deviceCode)) {
         return json(400, {
             ok: false,
-            message: 'deviceCode must be a 12-character device fingerprint.'
+            message: 'deviceCode must be a valid device code.'
         });
     }
 
     const note = String(body.note || 'localhost-dev-issue').trim().slice(0, 120);
-    const issuedAt = new Date().toISOString();
-    const codeId = makeCodeId();
-    const activationCode = buildActivationCode(deviceCode, codeId);
-    const record = createIssuedRecord(deviceCode, activationCode, codeId, note, issuedAt);
-
     try {
-        const store = getLicenseStore();
-        await store.setJSON(activationCode, record, {
-            metadata: {
-                initialDeviceCode: record.initialDeviceCode,
-                status: record.status,
-                issuedAt: record.issuedAt
-            }
-        });
+        const issued = await issueUniqueActivationRecord(deviceCode, note);
+        if (!issued.ok) {
+            const duplicate = issued.record;
+            return json(409, {
+                ok: false,
+                code: 'DUPLICATE_DEVICE_CODE',
+                message: 'This device code already has an activation record.',
+                activationCode: duplicate.activationCode,
+                initialDeviceCode: duplicate.initialDeviceCode,
+                currentDeviceCode: duplicate.currentDeviceCode,
+                status: duplicate.status,
+                issuedAt: duplicate.issuedAt,
+                claimedAt: duplicate.claimedAt,
+                duplicateCount: Array.isArray(issued.duplicates) ? issued.duplicates.length : 1
+            });
+        }
+
+        const record = issued.record;
 
         return json(200, {
             ok: true,
-            activationCode,
+            activationCode: record.activationCode,
             initialDeviceCode: record.initialDeviceCode,
             status: record.status,
             issuedAt: record.issuedAt,

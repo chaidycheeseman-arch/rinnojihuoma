@@ -4,14 +4,18 @@ const {
     clearSessionCookie,
     coerceLicenseRecord,
     createSessionToken,
+    findRecordDeviceConflicts,
     getHeader,
     getLicenseStore,
     hasStrictSignature,
     isActivationCodeValidForRecord,
     isHttpsRequest,
+    isSupportedDeviceCode,
     json,
     normalizeActivationCode,
     normalizeDeviceCode,
+    releaseRemovedRecordDeviceClaims,
+    reserveRecordDeviceClaims,
     sanitizeDeviceProfile
 } = require('./_license');
 
@@ -43,6 +47,39 @@ function withCookie(response, cookie) {
 
 function jsonWithCookie(statusCode, payload, cookie) {
     return withCookie(json(statusCode, payload), cookie);
+}
+
+function serializeConflict(record) {
+    return {
+        activationCode: record.activationCode,
+        initialDeviceCode: record.initialDeviceCode,
+        currentDeviceCode: record.currentDeviceCode,
+        previousDeviceCode: record.previousDeviceCode,
+        status: record.status,
+        issuedAt: record.issuedAt,
+        claimedAt: record.claimedAt
+    };
+}
+
+function buildDuplicateDeviceResponse(conflicts) {
+    const list = Array.isArray(conflicts) ? conflicts : [];
+    return {
+        ok: false,
+        code: 'DUPLICATE_DEVICE_CODE',
+        status: 'denied',
+        duplicateCount: list.length,
+        conflicts: list.slice(0, 20).map(serializeConflict),
+        message: 'This device code is already used by another activation record. Repair duplicates in the issuer console first.'
+    };
+}
+
+async function persistReservedRecord(store, activationCode, previousRecord, nextRecord, metadata) {
+    try {
+        await store.setJSON(activationCode, nextRecord, { metadata });
+    } catch (error) {
+        await releaseRemovedRecordDeviceClaims(nextRecord, previousRecord, store).catch(() => undefined);
+        throw error;
+    }
 }
 
 exports.handler = async function handler(event) {
@@ -95,10 +132,10 @@ exports.handler = async function handler(event) {
         }, clearCookie);
     }
 
-    if (deviceCode.length !== 12) {
+    if (!isSupportedDeviceCode(deviceCode)) {
         return jsonWithCookie(400, {
             ok: false,
-            message: 'deviceCode must be a 12-character device fingerprint.'
+            message: 'deviceCode must be a valid device code.'
         }, clearCookie);
     }
 
@@ -162,14 +199,23 @@ exports.handler = async function handler(event) {
                 deviceProfile
             };
 
-            await store.setJSON(activationCode, activatedRecord, {
-                metadata: {
-                    initialDeviceCode: activatedRecord.initialDeviceCode,
-                    currentDeviceCode: activatedRecord.currentDeviceCode,
-                    claimedAt: activatedRecord.claimedAt,
-                    status: 'active'
-                }
+            const conflicts = await findRecordDeviceConflicts(activatedRecord, store);
+            if (conflicts.length > 0) {
+                return jsonWithCookie(409, buildDuplicateDeviceResponse(conflicts), clearCookie);
+            }
+
+            const reservation = await reserveRecordDeviceClaims(record, activatedRecord, store);
+            if (!reservation.ok) {
+                return jsonWithCookie(409, buildDuplicateDeviceResponse(reservation.conflicts), clearCookie);
+            }
+
+            await persistReservedRecord(store, activationCode, record, activatedRecord, {
+                initialDeviceCode: activatedRecord.initialDeviceCode,
+                currentDeviceCode: activatedRecord.currentDeviceCode,
+                claimedAt: activatedRecord.claimedAt,
+                status: 'active'
             });
+            await releaseRemovedRecordDeviceClaims(record, activatedRecord, store);
 
             const sessionCookie = buildSessionCookie(
                 createSessionToken({
@@ -249,14 +295,23 @@ exports.handler = async function handler(event) {
             deviceProfile
         };
 
-        await store.setJSON(activationCode, takeoverRecord, {
-            metadata: {
-                initialDeviceCode: takeoverRecord.initialDeviceCode,
-                currentDeviceCode: takeoverRecord.currentDeviceCode,
-                claimedAt: takeoverRecord.claimedAt,
-                status: 'active'
-            }
+        const takeoverConflicts = await findRecordDeviceConflicts(takeoverRecord, store);
+        if (takeoverConflicts.length > 0) {
+            return jsonWithCookie(409, buildDuplicateDeviceResponse(takeoverConflicts), clearCookie);
+        }
+
+        const reservation = await reserveRecordDeviceClaims(record, takeoverRecord, store);
+        if (!reservation.ok) {
+            return jsonWithCookie(409, buildDuplicateDeviceResponse(reservation.conflicts), clearCookie);
+        }
+
+        await persistReservedRecord(store, activationCode, record, takeoverRecord, {
+            initialDeviceCode: takeoverRecord.initialDeviceCode,
+            currentDeviceCode: takeoverRecord.currentDeviceCode,
+            claimedAt: takeoverRecord.claimedAt,
+            status: 'active'
         });
+        await releaseRemovedRecordDeviceClaims(record, takeoverRecord, store);
 
         const sessionCookie = buildSessionCookie(
             createSessionToken({

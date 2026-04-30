@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { syncRuntimeBundle } from './sync-runtime-bundle.mjs';
 
 const rootDir = process.cwd();
 const outputDir = path.join(rootDir, 'client-public');
@@ -66,6 +67,7 @@ async function addVersionedIcons() {
 }
 
 async function main() {
+    await syncRuntimeBundle();
     await ensureCleanDir(outputDir);
     await copyRootFiles();
     await copyRootDirs();

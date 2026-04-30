@@ -4,6 +4,7 @@ const {
     findLicenseRecords,
     getLicenseStore,
     issueUniqueActivationRecord,
+    isSupportedDeviceCode,
     json,
     normalizeActivationCode,
     normalizeDeviceCode,
@@ -267,7 +268,7 @@ exports.handler = async function handler(event) {
                 message: 'Unsupported action.'
             });
         }
-        if (deviceCode.length !== 12 && !activationCode) {
+        if (!isSupportedDeviceCode(deviceCode) && !activationCode) {
             return json(400, {
                 ok: false,
                 message: 'deviceCode or activationCode is required.'
@@ -276,7 +277,7 @@ exports.handler = async function handler(event) {
 
         try {
             const store = getLicenseStore();
-            if (deviceCode.length !== 12 && activationCode) {
+            if (!isSupportedDeviceCode(deviceCode) && activationCode) {
                 const seedEntries = await findLicenseRecords({
                     activationCode,
                     includeRevoked: true,

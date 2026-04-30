@@ -10,6 +10,7 @@ const {
     getHeader,
     issueUniqueActivationRecord,
     isHttpsRequest,
+    isSupportedDeviceCode,
     json,
     normalizeDeviceCode,
     readAuthenticatedAdminFromRequest,
@@ -95,10 +96,10 @@ exports.handler = async function handler(event) {
     }
 
     const deviceCode = normalizeDeviceCode(body.deviceCode);
-    if (deviceCode.length !== 12) {
+    if (!isSupportedDeviceCode(deviceCode)) {
         return jsonWithCookie(400, {
             ok: false,
-            message: 'deviceCode must be a 12-character device fingerprint.'
+            message: 'deviceCode must be a valid device code.'
         }, refreshedCookie);
     }
 

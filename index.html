@@ -40,7 +40,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v20260428-app-refresh-1.png">
     <script src="vendor/dexie.js"></script>
     <script src="vendor/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260430-root-runtime-fix-1">
+    <link rel="stylesheet" href="style.css?v=20260430-account-login-1">
     <link rel="stylesheet" href="app/style/style.css?v=20260425-top-chrome-controls-1">
     <link rel="stylesheet" href="app/settings/settings.css?v=20260424-storage-manager-1">
     <link rel="stylesheet" href="app/prologue/prologue.css?v=20260423-click-cleanup-3">
@@ -204,27 +204,52 @@
         <div id="activation-gate-inner">
             <div id="activation-panel">
                 <span id="activation-kicker">RINNO ACCESS</span>
-                <h1 id="activation-title">输入专属激活码</h1>
-                <p id="activation-copy">首次使用：先复制设备码发给管理员或售前群签发。首次激活成功后，这个码就会变成这位用户的通用个人码。</p>
+                <div id="activation-tab-row" role="tablist" aria-label="登录方式">
+                    <button id="activation-tab-login" class="activation-tab is-active" type="button" role="tab" aria-selected="true">账号登录</button>
+                    <button id="activation-tab-register" class="activation-tab" type="button" role="tab" aria-selected="false">首次注册</button>
+                </div>
+                <h1 id="activation-title">账号登录</h1>
+                <p id="activation-copy">已经注册过的用户，直接输入账号密码登录。首次注册需要激活码。</p>
 
-                <div id="activation-device-block">
-                    <span id="activation-device-label">DEVICE CODE</span>
-                    <div id="activation-device-row">
-                        <code id="activation-device-code">------------</code>
-                        <button id="activation-copy-device" type="button">复制设备码</button>
-                    </div>
+                <div id="activation-login-form" class="activation-form" role="group" aria-label="账号登录">
+                    <label class="activation-field" for="activation-account-input">
+                        <span class="activation-field-label">ACCOUNT</span>
+                        <input id="activation-account-input" type="text" inputmode="email" autocomplete="username" spellcheck="false" placeholder="输入邮箱或账号">
+                    </label>
+                    <label class="activation-field" for="activation-password-input">
+                        <span class="activation-field-label">PASSWORD</span>
+                        <input id="activation-password-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="输入账号密码">
+                    </label>
                 </div>
 
-                <label id="activation-field" for="activation-code-input">
-                    <span id="activation-field-label">ACTIVATION KEY</span>
-                    <input id="activation-code-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="输入首激活码或通用码">
-                </label>
+                <div id="activation-register-form" class="activation-form" role="group" aria-label="首次注册" hidden>
+                    <div id="activation-device-block">
+                        <span id="activation-device-label">DEVICE CODE</span>
+                        <div id="activation-device-row">
+                            <code id="activation-device-code">XXXX-XXXX-XXXX-XXXX</code>
+                            <button id="activation-copy-device" type="button">复制设备码</button>
+                        </div>
+                    </div>
+
+                    <label class="activation-field" for="activation-register-account-input">
+                        <span class="activation-field-label">ACCOUNT</span>
+                        <input id="activation-register-account-input" type="text" inputmode="email" autocomplete="username" spellcheck="false" placeholder="设置邮箱或账号">
+                    </label>
+                    <label class="activation-field" for="activation-register-password-input">
+                        <span class="activation-field-label">PASSWORD</span>
+                        <input id="activation-register-password-input" type="password" autocomplete="new-password" spellcheck="false" placeholder="设置登录密码">
+                    </label>
+                    <label class="activation-field" for="activation-register-code-input">
+                        <span class="activation-field-label">ACTIVATION KEY</span>
+                        <input id="activation-register-code-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="输入管理员签发的激活码">
+                    </label>
+                </div>
 
                 <p id="activation-feedback" aria-live="polite"></p>
-                <button id="activation-submit" type="button">验证并进入</button>
+                <button id="activation-submit" type="button">登录并进入</button>
 
                 <div id="activation-meta-row">
-                    <span id="activation-state-tag">待激活</span>
+                    <span id="activation-state-tag">待登录</span>
                     <button id="activation-verify-device" type="button">重新校验</button>
                 </div>
 
@@ -488,7 +513,7 @@
             window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
         })();
     </script>
-    <script src="script.js?v=20260430-root-runtime-fix-1"></script>
+    <script src="script.js?v=20260430-account-login-1"></script>
     <script>
         (() => {
             const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260430-root-runtime-fix-1';
