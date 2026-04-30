@@ -233,6 +233,8 @@
             copySupportButton: document.getElementById('activation-copy-support'),
             tabLogin: document.getElementById('activation-tab-login'),
             tabRegister: document.getElementById('activation-tab-register'),
+            switchToRegisterButton: document.getElementById('activation-switch-to-register'),
+            switchToLoginButton: document.getElementById('activation-switch-to-login'),
             loginForm: document.getElementById('activation-login-form'),
             registerForm: document.getElementById('activation-register-form'),
             loginAccountInput: document.getElementById('activation-account-input'),
@@ -286,7 +288,9 @@
             refs.registerPasswordInput,
             refs.registerActivationInput,
             refs.tabLogin,
-            refs.tabRegister
+            refs.tabRegister,
+            refs.switchToRegisterButton,
+            refs.switchToLoginButton
         ];
         controls.forEach(control => {
             if (control) control.disabled = disabled;
@@ -617,6 +621,18 @@
         refs.tabRegister && refs.tabRegister.addEventListener('click', () => {
             if (state.busy) return;
             setTab('register');
+            focusCurrentInput();
+        });
+
+        refs.switchToRegisterButton && refs.switchToRegisterButton.addEventListener('click', () => {
+            if (state.busy) return;
+            setTab('register');
+            focusCurrentInput();
+        });
+
+        refs.switchToLoginButton && refs.switchToLoginButton.addEventListener('click', () => {
+            if (state.busy) return;
+            setTab('login');
             focusCurrentInput();
         });
 
