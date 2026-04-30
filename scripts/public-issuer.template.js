@@ -1,10 +1,50 @@
 (() => {
-    const SESSION_ENDPOINT = '/.netlify/functions/admin-session';
-    const ISSUE_ENDPOINT = '/.netlify/functions/generate-code';
-    const LICENSES_ENDPOINT = '/.netlify/functions/admin-licenses';
-    const AUDIT_ENDPOINT = '/.netlify/functions/admin-audit';
-    const USERS_ENDPOINT = '/.netlify/functions/admin-users';
-    const PASSWORD_ENDPOINT = '/.netlify/functions/admin-password';
+    const DEFAULT_REMOTE_LICENSE_API_BASE = 'https://rinno520.netlify.app';
+
+    function normalizeLicenseApiBase(value) {
+        const source = String(value || '').trim();
+        if (!source) return '';
+        try {
+            const url = new URL(source, window.location.href);
+            return `${url.origin}${url.pathname}`.replace(/\/+$/, '');
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function isFrontendHostNeedingRemoteApi(hostname) {
+        const host = String(hostname || '').trim().toLowerCase();
+        return host === 'rinno.netlify.app';
+    }
+
+    function resolveIssuerApiBase() {
+        const params = new URLSearchParams(window.location.search);
+        const configuredBase = normalizeLicenseApiBase(
+            params.get('licenseApiBase')
+            || window.__RINNO_LICENSE_API_BASE__
+            || window.RINNO_LICENSE_API_BASE
+        );
+        if (configuredBase) return configuredBase;
+        return isFrontendHostNeedingRemoteApi(window.location.hostname)
+            ? DEFAULT_REMOTE_LICENSE_API_BASE
+            : '';
+    }
+
+    function resolveIssuerApiUrl(pathname) {
+        const normalizedPath = String(pathname || '').trim();
+        if (!normalizedPath) return resolveIssuerApiBase();
+        if (/^https?:\/\//i.test(normalizedPath)) return normalizedPath;
+        const path = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+        const base = resolveIssuerApiBase();
+        return base ? `${base}${path}` : path;
+    }
+
+    const SESSION_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/admin-session');
+    const ISSUE_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/generate-code');
+    const LICENSES_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/admin-licenses');
+    const AUDIT_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/admin-audit');
+    const USERS_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/admin-users');
+    const PASSWORD_ENDPOINT = resolveIssuerApiUrl('/.netlify/functions/admin-password');
     const AUDIT_LIMIT = 100;
     const DEVICE_CODE_LENGTH = 16;
     const DEVICE_CODE_GROUP_LENGTH = 4;
