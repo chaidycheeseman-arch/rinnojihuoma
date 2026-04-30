@@ -64,7 +64,6 @@ const PRIVATE_CONTACT_SUMMARY_MIN_THRESHOLD = 20;
 const PRIVATE_CONTACT_SUMMARY_MAX_THRESHOLD = 240;
 const PRIVATE_CONTACT_SUMMARY_TEXT_LIMIT = 1800;
 const PRIVATE_CONTACT_SUMMARY_DIGEST_LIMIT = 1200;
-const PRIVATE_CONTACT_SETTINGS_PROFILE_MAX_LENGTH = 900;
 const PRIVATE_CONTACT_SYSTEM_CAPSULE_PREFIX = '[[RINNO_CAPSULE]]';
 const PRIVATE_CONTACT_CHAT_MIN_FORCED_SEGMENT_CHARS = 4;
 const PRIVATE_CONTACT_CHAT_AUTO_REPLY_ENABLED = true;
@@ -304,8 +303,7 @@ function normalizePrivateContactProfileSetting(value) {
     return String(value || '')
         .replace(/\r/g, '')
         .replace(/\n{3,}/g, '\n\n')
-        .trim()
-        .slice(0, PRIVATE_CONTACT_SETTINGS_PROFILE_MAX_LENGTH);
+        .trim();
 }
 
 function getPrivateContactDisplayName(contact = {}) {
@@ -1104,7 +1102,6 @@ function getPrivateContactChatPlainText(message = {}) {
 function normalizePrivateContactChatMessages(value) {
     if (!Array.isArray(value)) return [];
     return value
-        .slice(0, 240)
         .map((item, index) => {
             if (!item || typeof item !== 'object') return null;
             const role = item.role === 'system'
@@ -1188,7 +1185,6 @@ function normalizePrivateContactChatMessages(value) {
 function normalizePrivateThreads(value) {
     if (!Array.isArray(value)) return [];
     return value
-        .slice(0, 50)
         .filter(item => item && typeof item === 'object')
         .map((item, index) => {
             const rawContactId = String(item.contactId || item.peerId || '').trim();
@@ -2897,11 +2893,12 @@ function normalizePrivateContactPromptInline(value, maxLength = 120) {
 }
 
 function normalizePrivateContactPromptBlock(value, maxLength = 280) {
-    return String(value || '')
+    const text = String(value || '')
         .replace(/\r/g, '')
         .replace(/\n{3,}/g, '\n\n')
-        .trim()
-        .slice(0, maxLength);
+        .trim();
+    if (!Number.isFinite(Number(maxLength)) || Number(maxLength) <= 0) return text;
+    return text.slice(0, maxLength);
 }
 
 function escapePrivateContactPromptTag(value, maxLength = 120) {
@@ -3194,7 +3191,7 @@ function buildPrivateContactChatAssistantSystemPrompt(contact = {}, promptContex
                 : '私聊对象';
     const safeUserName = escapePrivateContactPromptTag(promptContext.userName || '我', 24) || '我';
     const safeUserId = escapePrivateContactPromptTag(promptContext.userId || createDefaultPrivateUserPreset().id || '未设定', 40) || '未设定';
-    const safeUserPersona = escapePrivateContactPromptText(promptContext.userPersona || '未填写', 180) || '未填写';
+    const safeUserPersona = escapePrivateContactPromptText(promptContext.userPersona || '未填写', 0) || '未填写';
     const safeUserGender = escapePrivateContactPromptTag(promptContext.userGender || '未设定', 16) || '未设定';
     const safeRelationship = escapePrivateContactPromptTag(promptContext.relationship || '关系待设定', 40) || '关系待设定';
     const safeRelationshipNote = escapePrivateContactPromptText(promptContext.relationshipNote || '', 220) || '暂无额外关系备注';
@@ -3283,7 +3280,7 @@ function buildPrivateContactChatAssistantSystemPrompt(contact = {}, promptContex
         `    <subtitle>${escapePrivateContactPromptTag(trimPrivateContactChatSnippet(contact?.subtitle || '', 24) || '未填写', 24)}</subtitle>`,
         `    <profession>${escapePrivateContactPromptTag(trimPrivateContactChatSnippet(profile.profession || '未填写', 24) || '未填写', 24)}</profession>`,
         `    <signature>${escapePrivateContactPromptText(profile.signature || contact?.signature || '未填写', 40) || '未填写'}</signature>`,
-        `    <persona>${escapePrivateContactPromptText(contact?.note || record?.setting || '未填写', 220) || '未填写'}</persona>`,
+        `    <persona>${escapePrivateContactPromptText(contact?.note || record?.setting || '未填写', 0) || '未填写'}</persona>`,
         `    <monologue_seed>${escapePrivateContactPromptText(record?.monologue || '', 220) || '未填写'}</monologue_seed>`,
         '</identity_core>',
         '',
@@ -8882,7 +8879,7 @@ function createPrivateContactChatSettingsMarkup(contact) {
                     <div class="private-contact-settings-control">
                         <label class="private-contact-settings-field">
                             <span>联系人备注</span>
-                            <input class="private-contact-settings-input" name="remark" type="text" maxlength="${PRIVATE_CONTACT_CHAT_REMARK_MAX_LENGTH}" value="${escapePrivateHtml(normalizePrivateContactRemark(contact?.remark || ''))}" placeholder="例如：晚安对象 / 导师 / 小猫">
+                            <input class="private-contact-settings-input" name="remark" type="text" value="${escapePrivateHtml(normalizePrivateContactRemark(contact?.remark || ''))}" placeholder="例如：晚安对象 / 导师 / 小猫">
                         </label>
                         <button class="interactive private-soft-button primary" type="submit">保存备注</button>
                     </div>
@@ -8899,11 +8896,11 @@ function createPrivateContactChatSettingsMarkup(contact) {
                     </div>
                     <label class="private-contact-settings-field">
                         <span>${escapePrivateHtml(userName)}的设定</span>
-                        <textarea class="private-contact-settings-textarea" name="user_setting" rows="4" maxlength="${PRIVATE_CONTACT_SETTINGS_PROFILE_MAX_LENGTH}" placeholder="写下你的身份、语气、边界和互动习惯">${escapePrivateHtml(privateState.userPresetSetting || '')}</textarea>
+                        <textarea class="private-contact-settings-textarea" name="user_setting" rows="4" placeholder="写下你的身份、语气、边界和互动习惯">${escapePrivateHtml(privateState.userPresetSetting || '')}</textarea>
                     </label>
                     <label class="private-contact-settings-field">
                         <span>${escapePrivateHtml(actualName)}的设定</span>
-                        <textarea class="private-contact-settings-textarea" name="contact_setting" rows="5" maxlength="${PRIVATE_CONTACT_SETTINGS_PROFILE_MAX_LENGTH}" placeholder="写下角色设定，保存后其它应用同步更新">${escapePrivateHtml(record?.setting || contact?.note || '')}</textarea>
+                        <textarea class="private-contact-settings-textarea" name="contact_setting" rows="5" placeholder="写下角色设定，保存后其它应用同步更新">${escapePrivateHtml(record?.setting || contact?.note || '')}</textarea>
                     </label>
                     <div class="private-contact-settings-actions">
                         <button class="interactive private-soft-button primary" type="submit">同步档案</button>
@@ -10905,6 +10902,14 @@ document.getElementById('private-contact-list')?.addEventListener('click', e => 
 });
 
 document.getElementById('private-app')?.addEventListener('click', e => {
+    const privateTab = e.target.closest('[data-private-tab]');
+    if (privateTab) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        switchPrivateTab(privateTab.getAttribute('data-private-tab') || 'whisper', true);
+        return;
+    }
     const contactChatBack = e.target.closest('[data-private-contact-chat-back]');
     if (contactChatBack) {
         e.preventDefault();

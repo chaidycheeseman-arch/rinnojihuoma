@@ -122,7 +122,7 @@
                 </label>
                 <label class="dossier-field dossier-field-setting">
                     <span>设定内容</span>
-                    <textarea id="dossier-editor-setting" name="dossier_editor_setting" rows="7" maxlength="900"></textarea>
+                    <textarea id="dossier-editor-setting" name="dossier_editor_setting" rows="7"></textarea>
                 </label>
             </div>
             <div class="dossier-editor-actions">
@@ -179,7 +179,7 @@
                 </label>
                 <label class="dossier-network-preset-field dossier-network-wide-field" id="dossier-network-text-setting-field" hidden>
                     <span>纯 NPC 设定</span>
-                    <textarea id="dossier-network-text-setting" rows="3" maxlength="220" placeholder="简短写下身份、立场或线索"></textarea>
+                    <textarea id="dossier-network-text-setting" rows="3" placeholder="简短写下身份、立场或线索"></textarea>
                 </label>
                 <label class="dossier-network-preset-field">
                     <span>关系</span>

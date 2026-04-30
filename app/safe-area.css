@@ -1,5 +1,8 @@
 /* Final bottom safe-area guard: keep controls clear of the home indicator. */
 :root {
+    --rinno-safe-area-top: env(safe-area-inset-top, 0px);
+    --rinno-status-bar-clearance: max(20px, var(--rinno-safe-area-top));
+    --rinno-top-clearance: calc(var(--rinno-status-bar-clearance) + 20px);
     --rinno-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --rinno-home-indicator-bottom: calc(6px * var(--style-ui-scale-effective, 1));
     --rinno-dock-bottom-offset: calc(24px * var(--style-ui-scale-effective, 1));
@@ -106,9 +109,75 @@ body[data-style-page-preset="airy"] .page {
     .phone-stage,
     .wanye-stage,
     .lingguang-stage,
-    .guide-stage
+    .guide-stage,
+    .private-screen,
+    .private-pane,
+    .page-container
 ) {
+    scroll-padding-top: var(--rinno-top-clearance) !important;
     scroll-padding-bottom: var(--rinno-bottom-scroll-reserve) !important;
+}
+
+:where(
+    .private-screen,
+    .settings-security-view,
+    .settings-api-view,
+    .settings-debug-view,
+    .settings-storage-view,
+    .prologue-shell
+) {
+    padding-top: var(--rinno-top-clearance) !important;
+}
+
+.settings-top {
+    --settings-top-pad: var(--rinno-top-clearance) !important;
+}
+
+.settings-identity {
+    top: calc(var(--rinno-top-clearance) + 50px) !important;
+}
+
+.letter-top {
+    padding-top: var(--rinno-top-clearance) !important;
+}
+
+.letter-cover-strip {
+    top: calc(var(--rinno-top-clearance) - 2px) !important;
+}
+
+.letter-identity {
+    top: calc(var(--rinno-top-clearance) + 30px) !important;
+}
+
+:where(
+    .wanye-top,
+    .lingguang-top,
+    .guide-top,
+    .dossier-top
+) {
+    padding-top: var(--rinno-top-clearance) !important;
+}
+
+.phone-top,
+.zhenxuan-top {
+    padding-top: var(--rinno-top-clearance) !important;
+}
+
+.private-chat-top {
+    --private-top-pad: var(--rinno-top-clearance) !important;
+}
+
+.private-chat-heading {
+    top: calc(var(--rinno-top-clearance) + 50px) !important;
+}
+
+:where(.community-app, .encounter-app) .community-header {
+    height: calc(var(--rinno-top-clearance) + 50px) !important;
+    padding-top: var(--rinno-top-clearance) !important;
+}
+
+:where(.community-app, .encounter-app) .page-container {
+    padding-top: calc(var(--rinno-top-clearance) + 70px) !important;
 }
 
 .style-menu {
@@ -165,8 +234,15 @@ body[data-style-page-preset="airy"] .page {
 }
 
 #private-app .private-pane {
+    pointer-events: none !important;
+    visibility: hidden !important;
     padding-bottom: calc(96px + var(--rinno-bottom-clearance-loose)) !important;
     scroll-padding-bottom: calc(96px + var(--rinno-bottom-clearance-loose)) !important;
+}
+
+#private-app .private-pane.active {
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 #private-app .private-chat-screen[data-private-current-tab="contacts"] .private-pane {

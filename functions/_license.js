@@ -135,8 +135,10 @@ function isLicenseRecordKey(key) {
 }
 
 function shouldUseLocalStore() {
-    return Boolean(process.env.RINNO_LOCAL_STORE_PATH)
-        || process.env.NETLIFY_LOCAL === 'true'
+    const explicit = String(process.env.RINNO_USE_LOCAL_STORE || '').trim().toLowerCase();
+    if (explicit === 'true') return true;
+    if (explicit === 'false') return false;
+    return process.env.NETLIFY_LOCAL === 'true'
         || process.env.NETLIFY_DEV === 'true';
 }
 

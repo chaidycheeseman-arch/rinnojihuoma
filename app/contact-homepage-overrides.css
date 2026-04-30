@@ -583,6 +583,10 @@ body :is(
     box-shadow: none !important;
 }
 
+#private-app .private-contact-homepage-pane.active {
+    pointer-events: auto !important;
+}
+
 #private-app .private-contact-homepage-pane .private-contact-homepage-paper {
     position: relative !important;
     isolation: isolate !important;
@@ -666,7 +670,7 @@ body :is(
 
 #private-app #private-contact-homepage-page .private-contact-homepage-close {
     position: absolute !important;
-    top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    top: var(--rinno-top-clearance, 40px) !important;
     left: max(12px, env(safe-area-inset-left, 0px)) !important;
 }
 
@@ -756,6 +760,8 @@ body :is(
     line-height: 28px !important;
     font-weight: 400 !important;
     text-align: center !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
 }
 
 #private-app .private-contact-homepage-tabs button.active::after {
@@ -961,6 +967,8 @@ body :is(
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     text-align: left !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
 }
 
 #private-app .private-contact-homepage-links button::after {

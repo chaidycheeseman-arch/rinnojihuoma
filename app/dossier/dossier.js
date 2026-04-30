@@ -180,7 +180,7 @@ function createDossierFallbackMonologue(item, type) {
     const name = String(item?.name || (type === 'npc' ? '这个 NPC' : '这个角色')).trim();
     const setting = String(item?.setting || item?.note || '').replace(/\s+/g, ' ').trim();
     const settingLine = setting
-        ? `我把这些设定藏在日常里：${setting.slice(0, 86)}。`
+        ? `我把这些设定藏在日常里：${setting}。`
         : '我还没有被完整写下，很多事只在沉默里慢慢成形。';
     return formatDossierMonologue([
         `别人把我归进 ${label}，把姓名、来处和身份钉在纸面上，可我知道那不是全部。${settingLine}`,
@@ -219,7 +219,7 @@ function normalizeDossierItem(item, type, index, context = {}) {
     const gender = String(item?.gender || '').trim().slice(0, 16);
     const nationality = String(item?.nationality || '').trim().slice(0, 28);
     const settingSource = item?.setting || item?.note || item?.relation || '';
-    const setting = String(settingSource || '设定内容待补全。').trim().slice(0, 900);
+    const setting = String(settingSource || '设定内容待补全。').trim();
     const monologue = formatDossierMonologue(item?.monologue || item?.essay || item?.solo || '')
         || createDossierFallbackMonologue({ ...item, setting }, type);
     const metaLabel = [gender, nationality].filter(Boolean).join(' / ') || (type === 'npc' ? 'NPC / 旁支人物' : 'Char / 角色');
@@ -300,7 +300,7 @@ function createDossierNetworkNode(kind, data = {}) {
         kind: safeKind,
         refId,
         name: String(data.name || '').trim().slice(0, 28),
-        setting: String(data.setting || data.note || '').trim().slice(0, 220),
+        setting: String(data.setting || data.note || '').trim(),
         createdAt: data.createdAt || new Date().toISOString()
     };
 }

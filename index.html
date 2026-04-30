@@ -40,7 +40,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v20260428-app-refresh-1.png">
     <script src="vendor/dexie.js"></script>
     <script src="vendor/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260430-account-login-1">
+    <link rel="stylesheet" href="style.css?v=20260430-ios-viewport-fix-1">
     <link rel="stylesheet" href="app/style/style.css?v=20260425-top-chrome-controls-1">
     <link rel="stylesheet" href="app/settings/settings.css?v=20260424-storage-manager-1">
     <link rel="stylesheet" href="app/prologue/prologue.css?v=20260423-click-cleanup-3">
@@ -57,7 +57,7 @@
     <link rel="stylesheet" href="app/assets/assets.css?v=20260429-assets-bank-wallet-refresh-1">
     <link rel="stylesheet" href="app/theme-bridge.css?v=20260429-private-contact-layout-fix-1">
     <link rel="stylesheet" href="app/frame-shell/frame-shell.css?v=20260428-theme-frame-apps-1">
-    <link rel="stylesheet" href="app/contact-homepage-overrides.css?v=20260429-private-contact-layout-fix-1">
+    <link rel="stylesheet" href="app/contact-homepage-overrides.css?v=20260430-private-contact-click-fix-1">
     <style id="rinno-no-backdrop-filter">
         html body [class][class][class],
         html body .slider-container [class][class][class],
@@ -196,8 +196,8 @@
             color: #ffffff !important;
         }
     </style>
-    <link rel="stylesheet" href="app/safe-area.css?v=20260427-private-chat-direct-fix-3">
-    <link rel="stylesheet" href="app/private/private.tail-fix.css?v=20260429-chat-shell-tail-fix-2">
+    <link rel="stylesheet" href="app/safe-area.css?v=20260430-global-safe-area-unify-1">
+    <link rel="stylesheet" href="app/private/private.tail-fix.css?v=20260430-ios-viewport-fix-1">
 </head>
 <body class="activation-booting">
     <section id="activation-gate" aria-live="polite" aria-hidden="false">
@@ -210,11 +210,11 @@
                 <div id="activation-login-form" class="activation-form" role="group" aria-label="账号登录">
                     <label class="activation-field" for="activation-account-input">
                         <span class="activation-field-label">ACCOUNT</span>
-                        <input id="activation-account-input" type="text" inputmode="email" autocomplete="username" spellcheck="false" placeholder="输入邮箱或账号">
+                        <input id="activation-account-input" name="loginAccount" type="text" inputmode="email" autocomplete="section-login username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="输入邮箱或账号">
                     </label>
                     <label class="activation-field" for="activation-password-input">
                         <span class="activation-field-label">PASSWORD</span>
-                        <input id="activation-password-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="输入账号密码">
+                        <input id="activation-password-input" name="loginPassword" type="password" autocomplete="section-login current-password" spellcheck="false" placeholder="输入账号密码">
                     </label>
                     <div class="activation-switch-row">
                         <span class="activation-switch-copy">没有账号？</span>
@@ -233,11 +233,11 @@
 
                     <label class="activation-field" for="activation-register-account-input">
                         <span class="activation-field-label">ACCOUNT</span>
-                        <input id="activation-register-account-input" type="text" inputmode="email" autocomplete="username" spellcheck="false" placeholder="设置邮箱或账号">
+                        <input id="activation-register-account-input" name="registerAccount" type="text" inputmode="email" autocomplete="section-register username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="设置邮箱或账号">
                     </label>
                     <label class="activation-field" for="activation-register-password-input">
                         <span class="activation-field-label">PASSWORD</span>
-                        <input id="activation-register-password-input" type="password" autocomplete="new-password" spellcheck="false" placeholder="设置登录密码">
+                        <input id="activation-register-password-input" name="registerPassword" type="password" autocomplete="section-register new-password" spellcheck="false" placeholder="设置登录密码">
                     </label>
                     <label class="activation-field" for="activation-register-code-input">
                         <span class="activation-field-label">ACTIVATION KEY</span>
@@ -255,14 +255,6 @@
                 <div id="activation-meta-row">
                     <span id="activation-state-tag">待登录</span>
                     <button id="activation-verify-device" type="button">重新校验</button>
-                </div>
-
-                <div id="activation-support-row">
-                    <div id="activation-support-copy">
-                        <span id="activation-support-label">Rinno售前群</span>
-                        <strong id="activation-support-number">1094594376</strong>
-                    </div>
-                    <button id="activation-copy-support" type="button">复制群号</button>
                 </div>
             </div>
         </div>
@@ -502,22 +494,62 @@
     <script>
         (() => {
             const root = document.documentElement;
-            const syncViewportHeight = () => {
-                const viewport = window.visualViewport;
-                const height = viewport?.height || window.innerHeight || document.documentElement.clientHeight || 0;
-                if (!height) return;
-                root.style.setProperty('--app-height', `${Math.round(height)}px`);
+            const KEYBOARD_HEIGHT_THRESHOLD = 120;
+            const EDITABLE_SELECTOR = 'input:not([type="button"]):not([type="checkbox"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="image"]):not([type="radio"]):not([type="range"]):not([type="reset"]):not([type="submit"]), textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]';
+            let viewportSyncFrame = 0;
+            let viewportSyncTimer = 0;
+
+            const hasEditableFocus = () => {
+                const active = document.activeElement;
+                return active instanceof HTMLElement && (active.isContentEditable || active.matches(EDITABLE_SELECTOR));
             };
 
-            syncViewportHeight();
-            window.addEventListener('resize', syncViewportHeight, { passive: true });
-            window.addEventListener('orientationchange', syncViewportHeight, { passive: true });
-            window.addEventListener('pageshow', syncViewportHeight, { passive: true });
-            window.visualViewport?.addEventListener('resize', syncViewportHeight, { passive: true });
-            window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
+            const syncViewportHeight = () => {
+                const viewport = window.visualViewport;
+                const viewportHeight = viewport?.height || 0;
+                const viewportBottom = viewportHeight ? viewportHeight + (viewport?.offsetTop || 0) : 0;
+                const layoutHeight = Math.max(
+                    window.innerHeight || 0,
+                    document.documentElement.clientHeight || 0
+                );
+                const keyboardLikelyOpen = Boolean(
+                    viewportHeight
+                    && layoutHeight
+                    && hasEditableFocus()
+                    && layoutHeight - viewportHeight > KEYBOARD_HEIGHT_THRESHOLD
+                );
+                const nextHeight = keyboardLikelyOpen
+                    ? viewportHeight
+                    : Math.max(layoutHeight, viewportBottom, viewportHeight);
+                if (!nextHeight) return;
+                root.style.setProperty('--app-height', `${Math.round(nextHeight)}px`);
+            };
+
+            const queueViewportHeightSync = () => {
+                syncViewportHeight();
+                if (viewportSyncFrame) window.cancelAnimationFrame(viewportSyncFrame);
+                viewportSyncFrame = window.requestAnimationFrame(() => {
+                    viewportSyncFrame = 0;
+                    syncViewportHeight();
+                });
+                if (viewportSyncTimer) window.clearTimeout(viewportSyncTimer);
+                viewportSyncTimer = window.setTimeout(() => {
+                    viewportSyncTimer = 0;
+                    syncViewportHeight();
+                }, 120);
+            };
+
+            queueViewportHeightSync();
+            window.addEventListener('resize', queueViewportHeightSync, { passive: true });
+            window.addEventListener('orientationchange', queueViewportHeightSync, { passive: true });
+            window.addEventListener('pageshow', queueViewportHeightSync, { passive: true });
+            document.addEventListener('focusin', queueViewportHeightSync);
+            document.addEventListener('focusout', queueViewportHeightSync);
+            window.visualViewport?.addEventListener('resize', queueViewportHeightSync, { passive: true });
+            window.visualViewport?.addEventListener('scroll', queueViewportHeightSync, { passive: true });
         })();
     </script>
-    <script src="script.js?v=20260430-remote-api-fix-1"></script>
+    <script src="script.js?v=20260430-account-input-fix-1"></script>
     <script>
         (() => {
             const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260430-root-runtime-fix-1';

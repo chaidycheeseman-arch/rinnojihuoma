@@ -65,6 +65,13 @@
             .slice(0, ACCOUNT_ID_MAX_LENGTH);
     }
 
+    function normalizeAccountInput(input) {
+        if (!input) return '';
+        const normalized = normalizeAccountId(input.value);
+        if (input.value !== normalized) input.value = normalized;
+        return normalized;
+    }
+
     function isCurrentDeviceCode(value) {
         return normalizeDeviceCode(value).length === DEVICE_CODE_LENGTH;
     }
@@ -229,8 +236,6 @@
             verifyButton: document.getElementById('activation-verify-device'),
             deviceCode: document.getElementById('activation-device-code'),
             copyDeviceButton: document.getElementById('activation-copy-device'),
-            supportNumber: document.getElementById('activation-support-number'),
-            copySupportButton: document.getElementById('activation-copy-support'),
             tabLogin: document.getElementById('activation-tab-login'),
             tabRegister: document.getElementById('activation-tab-register'),
             switchToRegisterButton: document.getElementById('activation-switch-to-register'),
@@ -281,7 +286,6 @@
             refs.submit,
             refs.verifyButton,
             refs.copyDeviceButton,
-            refs.copySupportButton,
             refs.loginAccountInput,
             refs.loginPasswordInput,
             refs.registerAccountInput,
@@ -300,8 +304,8 @@
 
     function syncAccountInputs() {
         const refs = getDom();
-        const loginAccount = normalizeAccountId(refs.loginAccountInput && refs.loginAccountInput.value);
-        const registerAccount = normalizeAccountId(refs.registerAccountInput && refs.registerAccountInput.value);
+        const loginAccount = normalizeAccountInput(refs.loginAccountInput);
+        const registerAccount = normalizeAccountInput(refs.registerAccountInput);
         const remembered = readStoredAccountId();
         const sourceValue = loginAccount || registerAccount || remembered;
         if (refs.loginAccountInput && sourceValue && !loginAccount) refs.loginAccountInput.value = sourceValue;
@@ -422,7 +426,7 @@
         state.heartbeatTimer = 0;
     }
 
-    function translateResponse(result, fallback) {
+    function translateResponse(result) {
         const payload = result && result.payload ? result.payload : {};
         const code = String(payload.code || '').trim().toUpperCase();
         if (code === 'INVALID_CODE') return '激活码不存在或格式不正确。';
@@ -439,7 +443,16 @@
         if (code === 'DEVICE_REPLACED') return '这个账号刚在其它设备登录了，请重新登录接管回来。';
         if (code === 'DUPLICATE_DEVICE_CODE') return '设备码存在重复记录，请先在后台修复后再试。';
         if (payload && payload.message) return payload.message;
-        return fallback;
+        const status = Number(result && result.response && result.response.status) || 0;
+        return status ? `请求失败（HTTP ${status}）。` : '接口未返回错误信息。';
+    }
+
+    function translateRequestError(error) {
+        if (error && String(error.name || '') === 'AbortError') {
+            return '请求超时。';
+        }
+        const message = String(error && error.message || error || '').trim();
+        return message || '请求失败。';
     }
 
     function validateAccountId(accountId) {
@@ -483,7 +496,7 @@
             });
 
             if (!result.response.ok || !result.payload || !result.payload.ok) {
-                renderGate('required', translateResponse(result, '注册失败，请检查激活码和账号信息。'));
+                renderGate('required', translateResponse(result));
                 setTab('register', true);
                 focusCurrentInput();
                 return;
@@ -497,7 +510,7 @@
             hideGate();
             startHeartbeat();
         } catch (error) {
-            renderGate('required', '注册服务暂时不可用，请稍后再试。');
+            renderGate('required', translateRequestError(error));
             setTab('register', true);
             focusCurrentInput();
         }
@@ -531,7 +544,7 @@
             });
 
             if (!result.response.ok || !result.payload || !result.payload.ok) {
-                renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', translateResponse(result, '登录失败，请检查账号密码。'));
+                renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', translateResponse(result));
                 setTab('login', true);
                 focusCurrentInput();
                 return;
@@ -545,7 +558,7 @@
             hideGate();
             startHeartbeat();
         } catch (error) {
-            renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', '登录服务暂时不可用，请稍后再试。');
+            renderGate(state.currentMode === 'kicked' ? 'kicked' : 'required', translateRequestError(error));
             setTab('login', true);
             focusCurrentInput();
         }
@@ -586,7 +599,7 @@
             }
 
             stopHeartbeat();
-            const message = translateResponse(result, '登录状态校验失败，请重新登录。');
+            const message = translateResponse(result);
             if (result.response.status === 403 && result.payload && result.payload.code === 'DEVICE_REPLACED') {
                 clearAuthState({ keepAccount: true });
                 renderGate('kicked', message);
@@ -601,7 +614,7 @@
             return false;
         } catch (error) {
             stopHeartbeat();
-            renderGate('required', '无法连接验证服务，请稍后再试。');
+            renderGate('required', translateRequestError(error));
             setTab(readStoredAccountId() ? 'login' : 'register', true);
             focusCurrentInput();
             return false;
@@ -641,11 +654,6 @@
             setFeedback(copied ? '设备码已复制。' : '复制失败，请手动复制设备码。', copied ? 'success' : 'error');
         });
 
-        refs.copySupportButton && refs.copySupportButton.addEventListener('click', async () => {
-            const copied = await copyText(refs.supportNumber && refs.supportNumber.textContent);
-            setFeedback(copied ? '售前群号已复制。' : '复制失败，请手动复制群号。', copied ? 'success' : 'error');
-        });
-
         refs.submit && refs.submit.addEventListener('click', () => {
             if (state.busy) return;
             if (state.tab === 'register') void submitRegister();
@@ -659,8 +667,8 @@
 
         [refs.loginAccountInput, refs.registerAccountInput].forEach(input => {
             if (!input) return;
-            input.addEventListener('input', event => {
-                event.target.value = normalizeAccountId(event.target.value);
+            input.addEventListener('blur', event => {
+                normalizeAccountInput(event.target);
                 syncAccountInputs();
             });
         });
@@ -701,7 +709,7 @@
         try {
             state.deviceCode = await ensureDeviceCode();
         } catch (error) {
-            renderGate('required', '设备码分配失败，请刷新页面重试。');
+            renderGate('required', translateRequestError(error));
             return;
         }
 

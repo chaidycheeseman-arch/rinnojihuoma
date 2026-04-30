@@ -2482,7 +2482,7 @@
                 name: normalizeText(item?.name || '', 32),
                 nickname: normalizeText(item?.nickname || '', 32),
                 avatar: String(item?.avatar || '').trim(),
-                setting: normalizeText(item?.setting || item?.note || '', 900),
+                setting: String(item?.setting || item?.note || '').trim(),
                 monologue: normalizeText(item?.monologue || '', 520),
                 gender: normalizeText(item?.gender || '', 16),
                 nationality: normalizeText(item?.nationality || '', 28),

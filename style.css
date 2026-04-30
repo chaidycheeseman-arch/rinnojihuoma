@@ -53,6 +53,7 @@
 
 html {
     width: 100%;
+    min-height: var(--app-height);
     height: var(--app-height);
     max-height: var(--app-height);
     overflow: hidden;
@@ -63,11 +64,21 @@ html {
 body { 
     position: fixed;
     inset: 0;
-    width: 100%; height: var(--app-height); max-height: var(--app-height); overflow: hidden;
+    width: 100%;
+    min-height: var(--app-height);
+    height: var(--app-height);
+    max-height: var(--app-height);
+    overflow: hidden;
     overscroll-behavior: none;
     touch-action: manipulation;
     background: var(--page-bg);
     font-family: var(--style-global-font-family, var(--font-family)); color: var(--text-main); font-weight: normal; 
+}
+
+#system-root,
+#app-root,
+#activation-gate {
+    min-height: var(--app-height);
 }
 
 .phone-ui-root {
@@ -4344,69 +4355,6 @@ body[data-activation-mode="kicked"] #activation-state-tag {
     background: rgba(139, 74, 67, 0.06);
 }
 
-#activation-support-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(49, 40, 35, 0.08);
-}
-
-#activation-support-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-}
-
-#activation-support-label {
-    display: block;
-    color: #8a8179;
-    font-size: 10px;
-    line-height: 1;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-}
-
-#activation-support-number {
-    color: #1f1b19;
-    font-size: 16px;
-    line-height: 1.2;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-    font-family: "Courier New", Courier, monospace;
-    -webkit-user-select: text;
-    user-select: text;
-}
-
-#activation-copy-support {
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    border: 0;
-    border-radius: 0;
-    outline: none;
-    box-shadow: none;
-    background: none;
-    padding: 0;
-    color: #6f6760;
-    font: inherit;
-    font-size: 10px;
-    line-height: 1;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.18s ease, opacity 0.18s ease;
-}
-
-#activation-copy-support:hover,
-#activation-copy-support:focus-visible {
-    color: #1f1b19;
-}
-
 @media (max-width: 480px) {
     #activation-gate {
         padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
@@ -4426,11 +4374,6 @@ body[data-activation-mode="kicked"] #activation-state-tag {
     }
 
     #activation-meta-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    #activation-support-row {
         flex-direction: column;
         align-items: flex-start;
     }

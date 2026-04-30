@@ -4,7 +4,8 @@
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important;
-    height: 100% !important;
+    height: var(--app-height) !important;
+    min-height: var(--app-height) !important;
 }
 
 #private-app .private-chat-screen.active[data-private-screen="chat"] .private-panel-wrap {
@@ -20,9 +21,9 @@
     bottom: 0 !important;
     width: 100% !important;
     max-width: none !important;
-    min-height: 72px !important;
+    min-height: 76px !important;
     margin: 0 !important;
-    padding: 8px 14px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     transform: none !important;
     border-radius: 0 !important;
     border-left-width: 0 !important;
@@ -76,8 +77,8 @@
 
 #private-app .private-chat-screen.active[data-private-current-tab="contact-chat"] .private-contact-chat-content {
     padding-top: 14px !important;
-    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
-    scroll-padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+    scroll-padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 #private-app .private-chat-screen.active[data-private-current-tab="contact-chat"] .private-contact-chat-composer {
@@ -88,7 +89,7 @@
     z-index: 18 !important;
     display: grid !important;
     gap: 6px !important;
-    padding: 0 12px calc(2px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 12px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
     border: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -125,5 +126,19 @@
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+}
+
+/* iOS runtime viewport fix: keep auth/chat surfaces locked to the same measured shell height. */
+#private-app {
+    height: var(--app-height) !important;
+    min-height: var(--app-height) !important;
+}
+
+#private-app .private-screen.active,
+#private-app .private-chat-screen.active[data-private-screen="chat"],
+#private-app .private-chat-screen.active[data-private-current-tab="contact-chat"],
+#private-app .private-chat-screen.active[data-private-current-tab="contact-chat-settings"] {
+    height: var(--app-height) !important;
+    min-height: var(--app-height) !important;
 }
 
