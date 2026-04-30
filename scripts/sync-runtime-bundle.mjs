@@ -102,6 +102,26 @@ const appLauncherNamesMap = {
     '回响': 'echo'
 };
 
+const appTitleCloseSelectorEntries = [
+    ['#letter-title', 'letter'],
+    ['#settings-title', 'settings'],
+    ['#style-title', 'style'],
+    ['#private-register-exit', 'private'],
+    ['#prologue-close-title', 'prologue'],
+    ['#encounter-close-title', 'encounter'],
+    ['#dossier-close-title', 'dossier'],
+    ['#wanye-close-title', 'wanye'],
+    ['#lingguang-close-title', 'lingguang'],
+    ['#fuyue-close-title', 'fuyue'],
+    ['#mijing-close-title', 'mijing'],
+    ['#shiguang-close-title', 'shiguang'],
+    ['#echo-close-title', 'echo'],
+    ['#guide-close-title', 'guide'],
+    ['#zhenxuan-close-title', 'zhenxuan'],
+    ['#phone-close-title', 'phone'],
+    ['#assets-close-title', 'assets']
+];
+
 const bundleFallbackReplacements = [
     ['maxlength=\\"900\\"', ''],
     ['maxlength=\\"220\\"', ''],
@@ -156,6 +176,14 @@ function formatObjectConst(variableName, entries, { indent = '    ', quoteKeys =
 
 function formatStringConst(variableName, value, { indent = '    ' } = {}) {
     return `${indent}const ${variableName} = ${JSON.stringify(value)};\n`;
+}
+
+function formatTupleArrayConst(variableName, entries, { indent = '    ' } = {}) {
+    const lines = entries.map(([left, right]) => (
+        `${indent}    [${JSON.stringify(left)}, ${JSON.stringify(right)}]`
+    ));
+
+    return `${indent}const ${variableName} = [\n${lines.join(',\n')}\n${indent}];\n`;
 }
 
 function replaceSection(bundleSource, startToken, endToken, replacement, label) {
@@ -228,7 +256,7 @@ export async function syncRuntimeBundle() {
         bundleSource,
         'const appLauncherNames = {',
         'let appRuntimeReady =',
-        formatObjectConst('appLauncherNames', appLauncherNamesMap, { quoteKeys: true }),
+        `${formatObjectConst('appLauncherNames', appLauncherNamesMap, { quoteKeys: true })}\n${formatTupleArrayConst('appTitleCloseSelectors', appTitleCloseSelectorEntries)}`,
         'appLauncherNames'
     );
 
