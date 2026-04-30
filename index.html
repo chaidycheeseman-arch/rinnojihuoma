@@ -40,7 +40,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v20260428-app-refresh-1.png">
     <script src="vendor/dexie.js"></script>
     <script src="vendor/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260429-local-issue-1">
+    <link rel="stylesheet" href="style.css?v=20260430-issuer-only-1">
     <link rel="stylesheet" href="app/style/style.css?v=20260425-top-chrome-controls-1">
     <link rel="stylesheet" href="app/settings/settings.css?v=20260424-storage-manager-1">
     <link rel="stylesheet" href="app/prologue/prologue.css?v=20260423-click-cleanup-3">
@@ -470,10 +470,28 @@
     </div>
 
 
-    <script src="script.js?v=20260429-local-issue-1"></script>
     <script>
         (() => {
-            const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260429-local-issue-1';
+            const root = document.documentElement;
+            const syncViewportHeight = () => {
+                const viewport = window.visualViewport;
+                const height = viewport?.height || window.innerHeight || document.documentElement.clientHeight || 0;
+                if (!height) return;
+                root.style.setProperty('--app-height', `${Math.round(height)}px`);
+            };
+
+            syncViewportHeight();
+            window.addEventListener('resize', syncViewportHeight, { passive: true });
+            window.addEventListener('orientationchange', syncViewportHeight, { passive: true });
+            window.addEventListener('pageshow', syncViewportHeight, { passive: true });
+            window.visualViewport?.addEventListener('resize', syncViewportHeight, { passive: true });
+            window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
+        })();
+    </script>
+    <script src="script.js?v=20260430-issuer-only-1"></script>
+    <script>
+        (() => {
+            const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260430-issuer-only-1';
 
             function isLocalDevelopmentHost() {
                 const host = String(window.location.hostname || '').trim().toLowerCase();

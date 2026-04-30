@@ -1,6 +1,7 @@
 (() => {
     const AUTH_ENDPOINT = '/.netlify/functions/auth';
     const LOCAL_ISSUE_ENDPOINT = '/.netlify/functions/local-issue';
+    const LOCAL_LICENSE_ADMIN_ENDPOINT = '/.netlify/functions/local-license-admin';
     const ACTIVATION_CODE_STORAGE_KEY = 'rinno_activation_code_v1';
     const DEVICE_CODE_STORAGE_KEY = 'rinno_device_code_v1';
     const HEARTBEAT_INTERVAL_MS = 45000;
@@ -136,159 +137,7 @@
     }
 
     function ensureLocalDevelopmentPanel() {
-        if (!isLocalDevelopmentHost()) return;
-        if (document.getElementById('activation-local-dev')) return;
-
-        const panel = document.getElementById('activation-panel');
-        const deviceBlock = document.getElementById('activation-device-block');
-        if (!panel || !deviceBlock) return;
-
-        if (!document.getElementById('activation-local-dev-style')) {
-            const style = document.createElement('style');
-            style.id = 'activation-local-dev-style';
-            style.textContent = `
-                #activation-local-dev {
-                    margin: 16px 0 18px;
-                    padding: 14px;
-                    border-radius: 18px;
-                    border: 1px dashed rgba(127, 100, 111, 0.26);
-                    background: rgba(255, 255, 255, 0.48);
-                    display: grid;
-                    gap: 12px;
-                }
-
-                #activation-local-kicker,
-                #activation-local-field-label,
-                #activation-local-output-label,
-                #activation-local-issue-button,
-                #activation-local-activate-button,
-                #activation-local-copy-code {
-                    font-size: 10px;
-                    letter-spacing: 0.22em;
-                    text-transform: uppercase;
-                }
-
-                #activation-local-kicker {
-                    color: rgba(78, 57, 66, 0.72);
-                }
-
-                #activation-local-copy,
-                #activation-local-feedback {
-                    font-size: 12px;
-                    line-height: 1.6;
-                    color: rgba(59, 44, 51, 0.72);
-                }
-
-                #activation-local-field,
-                #activation-local-output-field {
-                    display: grid;
-                    gap: 8px;
-                }
-
-                #activation-local-device-input,
-                #activation-local-issued-code,
-                #activation-local-issue-button,
-                #activation-local-activate-button,
-                #activation-local-copy-code {
-                    min-height: 46px;
-                    border-radius: 14px;
-                    border: 1px solid rgba(112, 86, 97, 0.16);
-                    background: rgba(255, 255, 255, 0.9);
-                    padding: 0 14px;
-                    font-size: 13px;
-                    color: #2d2429;
-                }
-
-                #activation-local-device-input,
-                #activation-local-issued-code {
-                    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-                    letter-spacing: 0.08em;
-                }
-
-                #activation-local-device-input:focus,
-                #activation-local-device-input:focus-visible {
-                    outline: none;
-                    border-color: rgba(112, 86, 97, 0.44);
-                    box-shadow: 0 0 0 3px rgba(112, 86, 97, 0.12);
-                }
-
-                #activation-local-issued-code[readonly] {
-                    opacity: 0.88;
-                }
-
-                #activation-local-actions,
-                #activation-local-meta {
-                    display: grid;
-                    gap: 10px;
-                }
-
-                #activation-local-issue-button,
-                #activation-local-activate-button,
-                #activation-local-copy-code {
-                    cursor: pointer;
-                    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-                }
-
-                #activation-local-activate-button {
-                    background: linear-gradient(135deg, rgba(72, 62, 69, 0.96), rgba(102, 84, 94, 0.92));
-                    color: #fff8fb;
-                }
-
-                #activation-local-issue-button:hover,
-                #activation-local-issue-button:focus-visible,
-                #activation-local-activate-button:hover,
-                #activation-local-activate-button:focus-visible,
-                #activation-local-copy-code:hover,
-                #activation-local-copy-code:focus-visible {
-                    transform: translateY(-1px);
-                    box-shadow: 0 10px 24px rgba(40, 29, 34, 0.08);
-                    border-color: rgba(112, 86, 97, 0.28);
-                    outline: none;
-                }
-
-                #activation-local-feedback[data-tone="error"] {
-                    color: #b14d58;
-                }
-
-                #activation-local-feedback[data-tone="success"] {
-                    color: #2f7a5f;
-                }
-
-                @media (min-width: 720px) {
-                    #activation-local-actions,
-                    #activation-local-meta {
-                        grid-template-columns: repeat(2, minmax(0, 1fr));
-                        align-items: start;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        const section = document.createElement('section');
-        section.id = 'activation-local-dev';
-        section.innerHTML = `
-            <span id="activation-local-kicker">localhost dev issue</span>
-            <p id="activation-local-copy">Only shown on localhost. Input a device code to issue an activation key for local testing. Production does not expose this tool.</p>
-            <label id="activation-local-field" for="activation-local-device-input">
-                <span id="activation-local-field-label">device to issue</span>
-                <input id="activation-local-device-input" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Enter a 12-character device code">
-            </label>
-            <div id="activation-local-actions">
-                <button id="activation-local-issue-button" type="button">Generate activation key</button>
-                <button id="activation-local-activate-button" type="button">Generate and enter</button>
-            </div>
-            <label id="activation-local-output-field" for="activation-local-issued-code">
-                <span id="activation-local-output-label">issued key</span>
-                <input id="activation-local-issued-code" type="text" readonly placeholder="Generated key appears here">
-            </label>
-            <div id="activation-local-meta">
-                <p id="activation-local-feedback" aria-live="polite"></p>
-                <button id="activation-local-copy-code" type="button">Copy activation key</button>
-            </div>
-        `;
-
-        deviceBlock.insertAdjacentElement('afterend', section);
+        // Issuer / duplicate-repair tools now live on the backend issuer page only.
     }
 
     function getDom() {
@@ -311,7 +160,11 @@
             localActivateButton: document.getElementById('activation-local-activate-button'),
             localIssuedCode: document.getElementById('activation-local-issued-code'),
             localCopyCodeButton: document.getElementById('activation-local-copy-code'),
-            localFeedback: document.getElementById('activation-local-feedback')
+            localFeedback: document.getElementById('activation-local-feedback'),
+            localCheckDuplicatesButton: document.getElementById('activation-local-check-duplicates'),
+            localFixDuplicatesButton: document.getElementById('activation-local-fix-duplicates'),
+            localRevokeButton: document.getElementById('activation-local-revoke'),
+            localLicenseList: document.getElementById('activation-local-license-list')
         };
         return dom;
     }
@@ -349,6 +202,9 @@
         if (refs.localIssueButton) refs.localIssueButton.disabled = state.busy;
         if (refs.localActivateButton) refs.localActivateButton.disabled = state.busy;
         if (refs.localCopyCodeButton) refs.localCopyCodeButton.disabled = state.busy;
+        if (refs.localCheckDuplicatesButton) refs.localCheckDuplicatesButton.disabled = state.busy;
+        if (refs.localFixDuplicatesButton) refs.localFixDuplicatesButton.disabled = state.busy;
+        if (refs.localRevokeButton) refs.localRevokeButton.disabled = state.busy;
     }
 
     function applyActivationMode(mode) {
@@ -390,7 +246,7 @@
         }
 
         if (refs.title) refs.title.textContent = 'Enter activation key';
-        if (refs.copy) refs.copy.textContent = 'First use: copy the device code, issue an activation key from the local dev panel or your admin tool, then enter it below.';
+        if (refs.copy) refs.copy.textContent = 'First use: copy the device code, issue an activation key from the backend issuer page, then enter it below.';
         if (refs.stateTag) refs.stateTag.textContent = 'Pending';
         if (refs.submit) refs.submit.textContent = 'Verify and enter';
         setFeedback(message || 'Copy the device code first, then enter a valid activation key.', 'muted');
@@ -481,6 +337,81 @@
         }
     }
 
+    async function requestLocalLicenseLookup({ deviceCode = '', activationCode = '', expandDevice = false } = {}) {
+        const query = new URLSearchParams();
+        if (deviceCode) query.set('deviceCode', deviceCode);
+        if (activationCode) query.set('activationCode', activationCode);
+        if (expandDevice) query.set('expandDevice', 'true');
+        query.set('includeRevoked', 'true');
+        query.set('limit', '20');
+
+        const response = await fetch(`${LOCAL_LICENSE_ADMIN_ENDPOINT}?${query.toString()}`, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json'
+            },
+            cache: 'no-store',
+            credentials: 'same-origin'
+        });
+
+        let payload = {};
+        try {
+            payload = await response.json();
+        } catch (error) {
+            payload = {};
+        }
+
+        return { response, payload };
+    }
+
+    async function requestLocalLicenseRepair({ deviceCode = '', activationCode = '' } = {}) {
+        const response = await fetch(LOCAL_LICENSE_ADMIN_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            cache: 'no-store',
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                action: 'repair',
+                deviceCode,
+                activationCode
+            })
+        });
+
+        let payload = {};
+        try {
+            payload = await response.json();
+        } catch (error) {
+            payload = {};
+        }
+
+        return { response, payload };
+    }
+
+    async function requestLocalLicenseRevoke(activationCode) {
+        const response = await fetch(LOCAL_LICENSE_ADMIN_ENDPOINT, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            cache: 'no-store',
+            credentials: 'same-origin',
+            body: JSON.stringify({ activationCode })
+        });
+
+        let payload = {};
+        try {
+            payload = await response.json();
+        } catch (error) {
+            payload = {};
+        }
+
+        return { response, payload };
+    }
+
     function readStoredActivationCode() {
         const stored = normalizeActivationCode(safeStorageGet(ACTIVATION_CODE_STORAGE_KEY));
         state.lastKnownCode = stored;
@@ -496,6 +427,34 @@
     function clearActivationCode() {
         state.lastKnownCode = '';
         safeStorageRemove(ACTIVATION_CODE_STORAGE_KEY);
+    }
+
+    function readLocalIssuedActivationCode() {
+        const refs = getDom();
+        return normalizeActivationCode(refs.localIssuedCode && refs.localIssuedCode.value);
+    }
+
+    function renderLocalLicenseEntries(entries) {
+        const refs = getDom();
+        if (!refs.localLicenseList) return;
+        const list = Array.isArray(entries) ? entries : [];
+        refs.localLicenseList.innerHTML = '';
+        list.forEach(entry => {
+            const item = document.createElement('li');
+            item.className = 'activation-local-license-item';
+            item.innerHTML = `
+                <strong class="activation-local-license-code">${entry.activationCode || ''}</strong>
+                <span class="activation-local-license-meta">Device ${entry.initialDeviceCode || '------------'} · Status ${entry.status || 'issued'}</span>
+                <span class="activation-local-license-meta">${entry.issuedAt ? new Date(entry.issuedAt).toLocaleString() : '-'}</span>
+                <div class="activation-local-license-actions">
+                    <button type="button" data-local-license-copy="${entry.activationCode || ''}">Copy</button>
+                    <button type="button" data-local-license-fill="${entry.activationCode || ''}">Use this key</button>
+                    <button type="button" data-local-license-repair="${entry.activationCode || ''}">Fix</button>
+                    <button type="button" data-local-license-revoke="${entry.activationCode || ''}">Revoke</button>
+                </div>
+            `;
+            refs.localLicenseList.appendChild(item);
+        });
     }
 
     function scheduleHeartbeat() {
@@ -550,6 +509,11 @@
         try {
             const result = await requestLocalIssue(issueDeviceCode);
             if (!result.response.ok) {
+                if (result.response.status === 409 && result.payload && result.payload.activationCode) {
+                    if (refs.localIssuedCode) refs.localIssuedCode.value = normalizeActivationCode(result.payload.activationCode);
+                    if (refs.input) refs.input.value = normalizeActivationCode(result.payload.activationCode);
+                    renderLocalLicenseEntries([result.payload]);
+                }
                 setLocalIssueFeedback(
                     result.payload && result.payload.message
                         ? result.payload.message
@@ -567,6 +531,7 @@
 
             if (refs.localIssuedCode) refs.localIssuedCode.value = activationCode;
             if (refs.input) refs.input.value = activationCode;
+            renderLocalLicenseEntries([result.payload]);
 
             if (autoActivate) {
                 setLocalIssueFeedback('Activation key generated. Entering now...', 'success');
@@ -581,6 +546,110 @@
             setLocalIssueFeedback('Local key issuance is temporarily unavailable.', 'error');
         } finally {
             if (!handOffToActivation) setBusy(false, getSubmitButtonLabel());
+        }
+    }
+
+    async function lookupLocalDuplicates() {
+        if (!isLocalDevelopmentHost() || state.busy) return;
+        const refs = getDom();
+        const deviceCode = normalizeDeviceCode(refs.localIssueInput && refs.localIssueInput.value);
+        const activationCode = readLocalIssuedActivationCode();
+        const useActivationLookup = activationCode && deviceCode.length !== 12;
+
+        if (!useActivationLookup && deviceCode.length !== 12) {
+            setLocalIssueFeedback('Enter a device code or keep a generated key in the result box first.', 'error');
+            refs.localIssueInput && refs.localIssueInput.focus();
+            return;
+        }
+
+        setBusy(true, getSubmitButtonLabel());
+        setLocalIssueFeedback('Checking duplicate activation records...', 'muted');
+
+        try {
+            const result = await requestLocalLicenseLookup({
+                deviceCode,
+                activationCode,
+                expandDevice: useActivationLookup
+            });
+
+            if (!result.response.ok) {
+                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Duplicate lookup failed.', 'error');
+                return;
+            }
+
+            if (result.payload.deviceCode && refs.localIssueInput) refs.localIssueInput.value = result.payload.deviceCode;
+            renderLocalLicenseEntries(result.payload.entries);
+            setLocalIssueFeedback(`Found ${result.payload.duplicateCount || 0} related record(s).`, (result.payload.duplicateCount || 0) > 1 ? 'error' : 'success');
+        } catch (error) {
+            setLocalIssueFeedback('Duplicate lookup is temporarily unavailable.', 'error');
+        } finally {
+            setBusy(false, getSubmitButtonLabel());
+        }
+    }
+
+    async function repairLocalDuplicates(activationCodeOverride = '') {
+        if (!isLocalDevelopmentHost() || state.busy) return;
+        const refs = getDom();
+        const deviceCode = normalizeDeviceCode(refs.localIssueInput && refs.localIssueInput.value);
+        const activationCode = normalizeActivationCode(activationCodeOverride || readLocalIssuedActivationCode());
+
+        if (deviceCode.length !== 12 && !activationCode) {
+            setLocalIssueFeedback('Enter a device code or keep a generated key in the result box first.', 'error');
+            refs.localIssueInput && refs.localIssueInput.focus();
+            return;
+        }
+
+        setBusy(true, getSubmitButtonLabel());
+        setLocalIssueFeedback('Repairing duplicate records and issuing a new key...', 'muted');
+
+        try {
+            const result = await requestLocalLicenseRepair({ deviceCode, activationCode });
+            if (!result.response.ok) {
+                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Duplicate repair failed.', 'error');
+                return;
+            }
+
+            const nextCode = normalizeActivationCode(result.payload && result.payload.entry && result.payload.entry.activationCode);
+            if (result.payload.deviceCode && refs.localIssueInput) refs.localIssueInput.value = result.payload.deviceCode;
+            if (nextCode) {
+                if (refs.localIssuedCode) refs.localIssuedCode.value = nextCode;
+                if (refs.input) refs.input.value = nextCode;
+            }
+            renderLocalLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            setLocalIssueFeedback(`Revoked ${result.payload.revokedCount || 0} old record(s) and issued 1 new key.`, 'success');
+        } catch (error) {
+            setLocalIssueFeedback('Duplicate repair is temporarily unavailable.', 'error');
+        } finally {
+            setBusy(false, getSubmitButtonLabel());
+        }
+    }
+
+    async function revokeLocalActivationCode(activationCodeOverride = '') {
+        if (!isLocalDevelopmentHost() || state.busy) return;
+        const refs = getDom();
+        const activationCode = normalizeActivationCode(activationCodeOverride || readLocalIssuedActivationCode());
+
+        if (!activationCode) {
+            setLocalIssueFeedback('Keep a generated activation key in the result box first.', 'error');
+            return;
+        }
+
+        setBusy(true, getSubmitButtonLabel());
+        setLocalIssueFeedback('Revoking activation key...', 'muted');
+
+        try {
+            const result = await requestLocalLicenseRevoke(activationCode);
+            if (!result.response.ok) {
+                setLocalIssueFeedback(result.payload && result.payload.message ? result.payload.message : 'Revoke failed.', 'error');
+                return;
+            }
+
+            renderLocalLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            setLocalIssueFeedback('Activation key revoked. It can no longer be used.', 'success');
+        } catch (error) {
+            setLocalIssueFeedback('Revoke is temporarily unavailable.', 'error');
+        } finally {
+            setBusy(false, getSubmitButtonLabel());
         }
     }
 
@@ -705,6 +774,21 @@
             setLocalIssueFeedback(copied ? 'Activation key copied.' : 'Copy failed. Please copy the activation key manually.', copied ? 'success' : 'error');
         });
 
+        refs.localCheckDuplicatesButton && refs.localCheckDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            void lookupLocalDuplicates();
+        });
+
+        refs.localFixDuplicatesButton && refs.localFixDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            void repairLocalDuplicates();
+        });
+
+        refs.localRevokeButton && refs.localRevokeButton.addEventListener('click', event => {
+            event.preventDefault();
+            void revokeLocalActivationCode();
+        });
+
         refs.submit && refs.submit.addEventListener('click', event => {
             event.preventDefault();
             void activateCurrentDevice();
@@ -735,6 +819,40 @@
             if (event.key !== 'Enter') return;
             event.preventDefault();
             void issueLocalActivationCode(false);
+        });
+
+        refs.localLicenseList && refs.localLicenseList.addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            event.preventDefault();
+            const refsNow = getDom();
+            const copyCode = button.getAttribute('data-local-license-copy');
+            const fillCode = button.getAttribute('data-local-license-fill');
+            const repairCode = button.getAttribute('data-local-license-repair');
+            const revokeCode = button.getAttribute('data-local-license-revoke');
+
+            if (copyCode) {
+                void copyText(copyCode).then(copied => {
+                    setLocalIssueFeedback(copied ? 'Activation key copied.' : 'Copy failed. Please copy the activation key manually.', copied ? 'success' : 'error');
+                });
+                return;
+            }
+
+            if (fillCode) {
+                if (refsNow.localIssuedCode) refsNow.localIssuedCode.value = fillCode;
+                if (refsNow.input) refsNow.input.value = fillCode;
+                setLocalIssueFeedback('Activation key filled into both inputs.', 'success');
+                return;
+            }
+
+            if (repairCode) {
+                void repairLocalDuplicates(repairCode);
+                return;
+            }
+
+            if (revokeCode) {
+                void revokeLocalActivationCode(revokeCode);
+            }
         });
 
         document.addEventListener('visibilitychange', () => {

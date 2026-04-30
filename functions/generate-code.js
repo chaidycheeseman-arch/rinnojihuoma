@@ -1,19 +1,16 @@
 const {
     JSON_HEADERS,
     appendIssuerAuditLog,
-    buildActivationCode,
     buildAdminSessionCookie,
     clearAdminSessionCookie,
     createAdminSessionToken,
-    createIssuedRecord,
     getAdminKey,
     getClientIp,
     getFounderBootstrapEmail,
     getHeader,
-    getLicenseStore,
+    issueUniqueActivationRecord,
     isHttpsRequest,
     json,
-    makeCodeId,
     normalizeDeviceCode,
     readAuthenticatedAdminFromRequest,
     timingSafeEquals
@@ -106,23 +103,29 @@ exports.handler = async function handler(event) {
     }
 
     const note = String(body.note || '').trim().slice(0, 120);
-    const issuedAt = new Date().toISOString();
-    const codeId = makeCodeId();
-    const activationCode = buildActivationCode(deviceCode, codeId);
-    const record = createIssuedRecord(deviceCode, activationCode, codeId, note, issuedAt);
     const actorEmail = auth.ok ? auth.account.email : getFounderBootstrapEmail();
     const actorRole = auth.ok ? auth.account.role : 'founder';
     const actorId = auth.ok ? auth.account.id : 'legacy-admin-key';
 
     try {
-        const store = getLicenseStore();
-        await store.setJSON(activationCode, record, {
-            metadata: {
-                initialDeviceCode: record.initialDeviceCode,
-                status: record.status,
-                issuedAt: record.issuedAt
-            }
-        });
+        const issued = await issueUniqueActivationRecord(deviceCode, note);
+        if (!issued.ok) {
+            const duplicate = issued.record;
+            return jsonWithCookie(409, {
+                ok: false,
+                code: 'DUPLICATE_DEVICE_CODE',
+                message: 'This device code already has an activation record.',
+                activationCode: duplicate.activationCode,
+                initialDeviceCode: duplicate.initialDeviceCode,
+                currentDeviceCode: duplicate.currentDeviceCode,
+                status: duplicate.status,
+                issuedAt: duplicate.issuedAt,
+                claimedAt: duplicate.claimedAt,
+                duplicateCount: Array.isArray(issued.duplicates) ? issued.duplicates.length : 1
+            }, refreshedCookie);
+        }
+
+        const record = issued.record;
 
         await appendIssuerAuditLog({
             type: 'issue-code',
@@ -132,7 +135,7 @@ exports.handler = async function handler(event) {
             actorEmail,
             actorRole,
             initialDeviceCode: record.initialDeviceCode,
-            activationCode,
+            activationCode: record.activationCode,
             note: record.adminNote,
             origin,
             referer,
@@ -145,7 +148,7 @@ exports.handler = async function handler(event) {
 
         return jsonWithCookie(200, {
             ok: true,
-            activationCode,
+            activationCode: record.activationCode,
             initialDeviceCode: record.initialDeviceCode,
             status: record.status,
             issuedAt: record.issuedAt,

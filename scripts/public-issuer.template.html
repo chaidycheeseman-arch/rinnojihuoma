@@ -13,8 +13,8 @@
         :root {
             color-scheme: light;
             --bg: #f3eee8;
-            --panel: rgba(255, 251, 247, 0.94);
-            --panel-strong: rgba(255, 248, 241, 0.98);
+            --panel: #fffbf7;
+            --panel-strong: #fff8f1;
             --line: rgba(108, 83, 70, 0.14);
             --text: #2c241f;
             --subtle: rgba(76, 60, 52, 0.72);
@@ -61,7 +61,6 @@
             border: 1px solid var(--line);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow);
-            backdrop-filter: blur(16px);
         }
 
         .issuer-hero {
@@ -135,6 +134,7 @@
             font: inherit;
             padding: 14px 16px;
             min-height: 48px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .issuer-input,
@@ -170,6 +170,7 @@
             color: var(--accent-strong);
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .issuer-button:hover,
@@ -262,6 +263,16 @@
             align-items: center;
         }
 
+        .issuer-item-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .issuer-item-actions .issuer-button {
+            min-height: 38px;
+        }
+
         .issuer-session-summary {
             display: grid;
             gap: 6px;
@@ -342,6 +353,9 @@
                 </label>
                 <div class="issuer-actions">
                     <button class="issuer-button" id="issuer-copy" type="button">复制激活码</button>
+                    <button class="issuer-button subtle" id="issuer-result-check-duplicates" type="button">查重复</button>
+                    <button class="issuer-button subtle" id="issuer-result-fix-duplicates" type="button">修正</button>
+                    <button class="issuer-button subtle" id="issuer-result-revoke" type="button">注销</button>
                 </div>
                 <p class="issuer-feedback" id="issuer-issue-feedback" aria-live="polite"></p>
             </section>
@@ -350,7 +364,8 @@
         <section class="issuer-grid two">
             <section class="issuer-card">
                 <span class="issuer-card-kicker">Issue Activation Code</span>
-                <div class="issuer-panel" id="issuer-issue-panel" hidden>
+                <p class="issuer-caption" id="issuer-issue-panel-note">登录后台后可签发、查重、修正和注销激活码。</p>
+                <div class="issuer-panel" id="issuer-issue-panel">
                     <div class="issuer-fieldset">
                         <label class="issuer-label" for="issuer-device-code">
                             设备码
@@ -363,8 +378,13 @@
                     </div>
                     <div class="issuer-actions">
                         <button class="issuer-button primary" id="issuer-submit" type="button">签发激活码</button>
+                        <button class="issuer-button subtle" id="issuer-check-duplicates" type="button">一键查重复</button>
+                        <button class="issuer-button subtle" id="issuer-fix-duplicates" type="button">一键修正</button>
+                        <button class="issuer-button subtle" id="issuer-revoke" type="button">一键注销</button>
                     </div>
                 </div>
+                <p class="issuer-feedback" id="issuer-license-feedback" aria-live="polite"></p>
+                <ul class="issuer-list" id="issuer-license-list"></ul>
             </section>
 
             <section class="issuer-card">

@@ -1,6 +1,7 @@
 (() => {
     const SESSION_ENDPOINT = '/.netlify/functions/admin-session';
     const ISSUE_ENDPOINT = '/.netlify/functions/generate-code';
+    const LICENSES_ENDPOINT = '/.netlify/functions/admin-licenses';
     const AUDIT_ENDPOINT = '/.netlify/functions/admin-audit';
     const USERS_ENDPOINT = '/.netlify/functions/admin-users';
     const PASSWORD_ENDPOINT = '/.netlify/functions/admin-password';
@@ -13,6 +14,7 @@
         adminBusy: false,
         passwordBusy: false,
         auditBusy: false,
+        licenseBusy: false,
         lastIssuedCode: ''
     };
 
@@ -40,13 +42,22 @@
             logoutButton: document.getElementById('issuer-logout'),
             sessionFeedback: document.getElementById('issuer-session-feedback'),
             issuePanel: document.getElementById('issuer-issue-panel'),
+            issuePanelNote: document.getElementById('issuer-issue-panel-note'),
             deviceCode: document.getElementById('issuer-device-code'),
             note: document.getElementById('issuer-note'),
             submit: document.getElementById('issuer-submit'),
             issueFeedback: document.getElementById('issuer-issue-feedback'),
+            licenseFeedback: document.getElementById('issuer-license-feedback'),
             resultCode: document.getElementById('issuer-result-code'),
             resultMeta: document.getElementById('issuer-result-meta'),
             copy: document.getElementById('issuer-copy'),
+            resultCheckDuplicatesButton: document.getElementById('issuer-result-check-duplicates'),
+            resultFixDuplicatesButton: document.getElementById('issuer-result-fix-duplicates'),
+            resultRevokeButton: document.getElementById('issuer-result-revoke'),
+            checkDuplicatesButton: document.getElementById('issuer-check-duplicates'),
+            fixDuplicatesButton: document.getElementById('issuer-fix-duplicates'),
+            revokeButton: document.getElementById('issuer-revoke'),
+            licenseList: document.getElementById('issuer-license-list'),
             adminCreatePanel: document.getElementById('issuer-admin-create-panel'),
             adminPanelNote: document.getElementById('issuer-admin-panel-note'),
             adminEmail: document.getElementById('issuer-new-admin-email'),
@@ -83,7 +94,8 @@
             issue: refs.issueFeedback,
             admin: refs.adminFeedback,
             password: refs.passwordFeedback,
-            audit: refs.auditFeedback
+            audit: refs.auditFeedback,
+            license: refs.licenseFeedback
         })[target];
         if (!node) return;
         node.textContent = String(text || '');
@@ -113,6 +125,9 @@
         if (refs.deviceCode) refs.deviceCode.disabled = state.issueBusy || !state.authenticated;
         if (refs.note) refs.note.disabled = state.issueBusy || !state.authenticated;
         if (refs.copy) refs.copy.disabled = state.issueBusy;
+        if (refs.resultCheckDuplicatesButton) refs.resultCheckDuplicatesButton.disabled = state.issueBusy || !state.authenticated;
+        if (refs.resultFixDuplicatesButton) refs.resultFixDuplicatesButton.disabled = state.issueBusy || !state.authenticated;
+        if (refs.resultRevokeButton) refs.resultRevokeButton.disabled = state.issueBusy || !state.authenticated;
     }
 
     function setAdminBusy(busy) {
@@ -147,6 +162,14 @@
         if (refs.exportCsvButton) refs.exportCsvButton.disabled = state.auditBusy || !state.authenticated;
     }
 
+    function setLicenseBusy(busy) {
+        state.licenseBusy = Boolean(busy);
+        const refs = getDom();
+        if (refs.checkDuplicatesButton) refs.checkDuplicatesButton.disabled = state.licenseBusy || !state.authenticated;
+        if (refs.fixDuplicatesButton) refs.fixDuplicatesButton.disabled = state.licenseBusy || !state.authenticated;
+        if (refs.revokeButton) refs.revokeButton.disabled = state.licenseBusy || !state.authenticated;
+    }
+
     function clearSensitiveForms() {
         const refs = getDom();
         if (refs.loginPassword) refs.loginPassword.value = '';
@@ -164,9 +187,14 @@
         if (refs.sessionChip) refs.sessionChip.textContent = state.authenticated ? '已登录' : '未登录';
         if (refs.loginPanel) refs.loginPanel.hidden = state.authenticated;
         if (refs.sessionPanel) refs.sessionPanel.hidden = !state.authenticated;
-        if (refs.issuePanel) refs.issuePanel.hidden = !state.authenticated;
+        if (refs.issuePanel) refs.issuePanel.hidden = false;
         if (refs.passwordPanel) refs.passwordPanel.hidden = !state.authenticated;
         if (refs.adminCreatePanel) refs.adminCreatePanel.hidden = !canManageAdmins();
+        if (refs.issuePanelNote) {
+            refs.issuePanelNote.textContent = state.authenticated
+                ? '已经登录，可直接签发、查重、修正或注销。'
+                : '先登录后台，然后就能使用一键查重复、一键修正和一键注销。';
+        }
         if (refs.adminPanelNote) refs.adminPanelNote.textContent = canManageAdmins()
             ? '创始人账号可以创建新的管理员账号。'
             : '只有创始人账号可以新增管理员。';
@@ -178,6 +206,7 @@
             state.lastIssuedCode = '';
             if (refs.resultCode) refs.resultCode.value = '';
             if (refs.resultMeta) refs.resultMeta.innerHTML = '';
+            if (refs.licenseList) refs.licenseList.innerHTML = '';
             if (refs.adminList) refs.adminList.innerHTML = '';
             if (refs.auditList) refs.auditList.innerHTML = '';
             if (refs.adminEmpty) refs.adminEmpty.hidden = false;
@@ -189,6 +218,7 @@
         setAdminBusy(state.adminBusy);
         setPasswordBusy(state.passwordBusy);
         setAuditBusy(state.auditBusy);
+        setLicenseBusy(state.licenseBusy);
     }
 
     async function copyText(text) {
@@ -268,6 +298,47 @@
                 payload.issuedAt ? `<span class="issuer-chip">${new Date(payload.issuedAt).toLocaleString()}</span>` : ''
             ].filter(Boolean).join('');
         }
+    }
+
+    function readActiveDeviceCode() {
+        const refs = getDom();
+        return normalizeDeviceCode(refs.deviceCode && refs.deviceCode.value);
+    }
+
+    function readActiveActivationCode() {
+        const refs = getDom();
+        return normalizeActivationCode(String(
+            state.lastIssuedCode
+            || (refs.resultCode && refs.resultCode.value)
+            || ''
+        ));
+    }
+
+    function renderLicenseEntries(entries) {
+        const refs = getDom();
+        if (!refs.licenseList) return;
+        const list = Array.isArray(entries) ? entries : [];
+        refs.licenseList.innerHTML = '';
+        list.forEach(entry => {
+            const duplicateMeta = entry.duplicateCount > 1
+                ? `<span class="issuer-item-meta">duplicate history ${entry.duplicateCount} · active ${entry.duplicateActiveCount || 0}</span>`
+                : '';
+            const item = document.createElement('li');
+            item.className = 'issuer-item';
+            item.innerHTML = `
+                <strong class="issuer-item-code">${entry.activationCode || ''}</strong>
+                <span class="issuer-item-meta">设备码 ${entry.initialDeviceCode || '------------'} · 状态 ${entry.status || 'issued'}</span>
+                <span class="issuer-item-meta">${entry.issuedAt ? new Date(entry.issuedAt).toLocaleString() : '-'}</span>
+                ${duplicateMeta}
+                <div class="issuer-item-actions">
+                    <button class="issuer-button subtle" type="button" data-license-copy="${entry.activationCode || ''}">复制</button>
+                    <button class="issuer-button subtle" type="button" data-license-fill="${entry.activationCode || ''}">填入结果框</button>
+                    <button class="issuer-button subtle" type="button" data-license-repair="${entry.activationCode || ''}">修正</button>
+                    <button class="issuer-button subtle" type="button" data-license-revoke="${entry.activationCode || ''}">注销</button>
+                </div>
+            `;
+            refs.licenseList.appendChild(item);
+        });
     }
 
     function renderAccounts(accounts) {
@@ -480,17 +551,169 @@
                     applySessionState(null);
                     setFeedback('session', '管理员会话已失效，请重新登录。', 'error');
                 }
+                if (result.response.status === 409 && result.payload && result.payload.activationCode) {
+                    renderResult(result.payload);
+                    renderLicenseEntries([result.payload]);
+                    setFeedback('license', `查到 ${result.payload.duplicateCount || 1} 条重复记录。`, 'error');
+                }
                 setFeedback('issue', result.payload && result.payload.message ? result.payload.message : '签发失败，请稍后重试。', 'error');
                 return;
             }
 
             renderResult(result.payload);
+            renderLicenseEntries([result.payload]);
             setFeedback('issue', '激活码已签发，可以复制给用户了。', 'success');
+            setFeedback('license', '', '');
             await loadAudit();
         } catch (error) {
             setFeedback('issue', '后台暂时不可用，请稍后重试。', 'error');
         } finally {
             setIssueBusy(false);
+        }
+    }
+
+    async function lookupDuplicates() {
+        if (!state.authenticated || state.licenseBusy) return;
+        const refs = getDom();
+        const deviceCode = readActiveDeviceCode();
+        const activationCode = readActiveActivationCode();
+        const useActivationLookup = activationCode && deviceCode.length !== 12;
+        const useHistoryLookup = !useActivationLookup && deviceCode.length === 0;
+        if (!useHistoryLookup && !useActivationLookup && deviceCode.length !== 12) {
+            setFeedback('license', '请先输入设备码，或先在结果框里保留已生成的激活码。', 'error');
+            return;
+        }
+
+        setLicenseBusy(true);
+        setFeedback('license', '正在查询重复记录...', 'muted');
+
+        try {
+            const query = useHistoryLookup
+                ? 'duplicates=true&includeRevoked=true&maxGroups=50&maxEntries=500'
+                : useActivationLookup
+                    ? `activationCode=${encodeURIComponent(activationCode)}&expandDevice=true&includeRevoked=true&limit=20`
+                    : `deviceCode=${encodeURIComponent(deviceCode)}&includeRevoked=true&limit=20`;
+            const result = await requestJson(`${LICENSES_ENDPOINT}?${query}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', '管理员会话已失效，请重新登录。', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : '查询失败。', 'error');
+                return;
+            }
+
+            renderLicenseEntries(result.payload.entries);
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            if (useHistoryLookup) {
+                const totalGroups = Number(result.payload.totalGroups) || 0;
+                const totalEntries = Number(result.payload.totalEntries) || 0;
+                setFeedback('license', `History scan found ${totalGroups} duplicate group(s) and ${totalEntries} related record(s).`, totalGroups > 0 ? 'error' : 'success');
+                return;
+            }
+            setFeedback('license', `查到 ${result.payload.duplicateCount || 0} 条相关记录。`, result.payload.duplicateCount > 1 ? 'error' : 'success');
+        } catch (error) {
+            setFeedback('license', '重复查询暂时不可用。', 'error');
+        } finally {
+            setLicenseBusy(false);
+        }
+    }
+
+    async function revokeActivationCode(activationCode) {
+        if (!state.authenticated || state.licenseBusy) return;
+        const targetCode = String(activationCode || readActiveActivationCode()).trim().toUpperCase();
+        if (!targetCode) {
+            setFeedback('license', '请先生成、查询或填入一个激活码。', 'error');
+            return;
+        }
+
+        setLicenseBusy(true);
+        setFeedback('license', '正在注销激活码...', 'muted');
+
+        try {
+            const result = await requestJson(LICENSES_ENDPOINT, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    activationCode: targetCode
+                })
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', '管理员会话已失效，请重新登录。', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : '注销失败。', 'error');
+                return;
+            }
+
+            renderResult(result.payload.entry || { activationCode: targetCode });
+            renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            setFeedback('license', '激活码已注销，后续不允许再使用。', 'success');
+            await loadAudit();
+        } catch (error) {
+            setFeedback('license', '注销暂时不可用。', 'error');
+        } finally {
+            setLicenseBusy(false);
+        }
+    }
+
+    async function repairDuplicateLicenses(activationCodeOverride = '') {
+        if (!state.authenticated || state.licenseBusy) return;
+        const refs = getDom();
+        const deviceCode = readActiveDeviceCode();
+        const activationCode = normalizeActivationCode(activationCodeOverride || readActiveActivationCode());
+        if (deviceCode.length !== 12 && !activationCode) {
+            setFeedback('license', '请先输入设备码，或先在结果框里保留已生成的激活码。', 'error');
+            return;
+        }
+
+        setLicenseBusy(true);
+        setFeedback('license', '正在修正重复记录并重新生成激活码...', 'muted');
+
+        try {
+            const result = await requestJson(LICENSES_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'repair',
+                    deviceCode,
+                    activationCode
+                })
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', '管理员会话已失效，请重新登录。', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : '修正失败。', 'error');
+                return;
+            }
+
+            renderResult(result.payload.entry || {});
+            renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            setFeedback('issue', '重复记录已修正，已重新生成新的激活码。', 'success');
+            setFeedback('license', `已注销 ${result.payload.revokedCount || 0} 条旧记录，并重新生成 1 条新激活码。`, 'success');
+            await loadAudit();
+        } catch (error) {
+            setFeedback('license', '修正暂时不可用。', 'error');
+        } finally {
+            setLicenseBusy(false);
         }
     }
 
@@ -668,8 +891,45 @@
 
         refs.copy && refs.copy.addEventListener('click', async event => {
             event.preventDefault();
+            event.currentTarget.blur();
             const copied = await copyText(state.lastIssuedCode || (refs.resultCode && refs.resultCode.value));
             setFeedback('issue', copied ? '激活码已复制。' : '复制失败，请手动复制。', copied ? 'success' : 'error');
+        });
+
+        refs.resultCheckDuplicatesButton && refs.resultCheckDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void lookupDuplicates();
+        });
+
+        refs.resultFixDuplicatesButton && refs.resultFixDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void repairDuplicateLicenses();
+        });
+
+        refs.resultRevokeButton && refs.resultRevokeButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void revokeActivationCode();
+        });
+
+        refs.checkDuplicatesButton && refs.checkDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void lookupDuplicates();
+        });
+
+        refs.fixDuplicatesButton && refs.fixDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void repairDuplicateLicenses();
+        });
+
+        refs.revokeButton && refs.revokeButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void revokeActivationCode();
         });
 
         refs.createAdminButton && refs.createAdminButton.addEventListener('click', event => {
@@ -707,6 +967,49 @@
             const nextValue = normalizeDeviceCode(event.target.value);
             if (event.target.value !== nextValue) event.target.value = nextValue;
         });
+
+        document.querySelectorAll('.issuer-input, .issuer-output, .issuer-button').forEach(node => {
+            ['click', 'mousedown', 'touchstart', 'focus'].forEach(type => {
+                node.addEventListener(type, event => {
+                    event.stopPropagation();
+                });
+            });
+        });
+
+        refs.licenseList && refs.licenseList.addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            event.preventDefault();
+            button.blur();
+            const copyCode = button.getAttribute('data-license-copy');
+            const fillCode = button.getAttribute('data-license-fill');
+            const repairCode = button.getAttribute('data-license-repair');
+            const revokeCode = button.getAttribute('data-license-revoke');
+
+            if (copyCode) {
+                void copyText(copyCode).then(copied => {
+                    setFeedback('license', copied ? '激活码已复制。' : '复制失败，请手动复制。', copied ? 'success' : 'error');
+                });
+                return;
+            }
+
+            if (fillCode) {
+                const refsNow = getDom();
+                state.lastIssuedCode = fillCode;
+                if (refsNow.resultCode) refsNow.resultCode.value = fillCode;
+                setFeedback('license', '已填入结果框。', 'success');
+                return;
+            }
+
+            if (repairCode) {
+                void repairDuplicateLicenses(repairCode);
+                return;
+            }
+
+            if (revokeCode) {
+                void revokeActivationCode(revokeCode);
+            }
+        });
     }
 
     async function initIssuerConsole() {
@@ -717,6 +1020,7 @@
         setAdminBusy(false);
         setPasswordBusy(false);
         setAuditBusy(false);
+        setLicenseBusy(false);
         await refreshSession();
     }
 

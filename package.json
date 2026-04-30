@@ -3,12 +3,12 @@
     "private": true,
     "version": "1.0.0",
     "scripts": {
-        "build": "node scripts/sync-public.mjs",
+        "build": "node scripts/build-netlify-site.mjs",
         "build:user": "node scripts/build-user-client.mjs",
-        "prepare:public": "node scripts/sync-public.mjs",
-        "dev": "node scripts/sync-public.mjs && netlify dev --port 8888",
+        "prepare:public": "node scripts/build-netlify-site.mjs",
+        "dev": "node scripts/build-netlify-site.mjs && netlify dev --port 8888",
         "license:issue": "node scripts/issue-device-license.js",
-        "netlify:dev": "node scripts/sync-public.mjs && netlify dev --port 8888",
+        "netlify:dev": "node scripts/build-netlify-site.mjs && netlify dev --port 8888",
         "netlify:link": "npx netlify-cli link",
         "netlify:init": "npx netlify-cli init",
         "netlify:deploy": "npm run build && npx netlify-cli deploy --prod --dir public --functions functions"

@@ -21,6 +21,7 @@ const ADMIN_ACCOUNT_LIMIT = Math.max(2, Number(process.env.RINNO_ADMIN_ACCOUNT_L
 const ADMIN_PASSWORD_MIN_LENGTH = Math.max(8, Number(process.env.RINNO_ADMIN_PASSWORD_MIN_LENGTH) || 8);
 const AUDIT_LOG_KEY = '__rinno_issuer_audit_log__';
 const AUDIT_LOG_LIMIT = Math.max(20, Number(process.env.RINNO_AUDIT_LOG_LIMIT) || 200);
+const DEVICE_CLAIM_KEY_PREFIX = 'DEVICELOCK';
 const JSON_HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -86,6 +87,18 @@ function resolveLocalStorePath() {
     return path.resolve(process.cwd(), process.env.RINNO_LOCAL_STORE_PATH || DEFAULT_LOCAL_STORE_PATH);
 }
 
+function normalizeLicenseStatus(value) {
+    const status = sanitizeString(value, 24).toLowerCase();
+    if (status === 'active') return 'active';
+    if (status === 'revoked') return 'revoked';
+    return 'issued';
+}
+
+function isLicenseRecordKey(key) {
+    const normalized = normalizeActivationCode(key);
+    return normalized.startsWith(CODE_PREFIX) && normalized.length > CODE_PREFIX.length + DEVICE_PREFIX_LENGTH;
+}
+
 function shouldUseLocalStore() {
     return Boolean(process.env.RINNO_LOCAL_STORE_PATH)
         || process.env.NETLIFY_LOCAL === 'true'
@@ -136,15 +149,37 @@ function createLocalStore() {
             if (!value) return null;
             return options.type === 'json' ? value : JSON.stringify(value);
         },
-        async setJSON(key, value) {
+        async setJSON(key, value, options = {}) {
             const normalizedKey = normalizeActivationCode(key);
-            await queueLocalStoreWrite(async () => {
+            return queueLocalStoreWrite(async () => {
                 const filePath = resolveLocalStorePath();
                 await fs.mkdir(path.dirname(filePath), { recursive: true });
                 const snapshot = await readLocalStoreSnapshot();
+                if (options.onlyIfNew && Object.prototype.hasOwnProperty.call(snapshot, normalizedKey)) {
+                    return { modified: false };
+                }
                 snapshot[normalizedKey] = value;
                 await fs.writeFile(filePath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
+                return { modified: true };
             });
+        },
+        async delete(key) {
+            const normalizedKey = normalizeActivationCode(key);
+            return queueLocalStoreWrite(async () => {
+                const filePath = resolveLocalStorePath();
+                const snapshot = await readLocalStoreSnapshot();
+                if (!Object.prototype.hasOwnProperty.call(snapshot, normalizedKey)) return;
+                delete snapshot[normalizedKey];
+                await fs.mkdir(path.dirname(filePath), { recursive: true });
+                await fs.writeFile(filePath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
+            });
+        },
+        async list() {
+            const snapshot = await readLocalStoreSnapshot();
+            return {
+                blobs: Object.keys(snapshot).map(key => ({ key })),
+                directories: []
+            };
         }
     };
 }
@@ -340,7 +375,9 @@ function timingSafeEquals(left, right) {
 }
 
 function makeCodeId() {
-    return crypto.randomBytes(5).toString('hex').toUpperCase();
+    const digits = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    const letters = crypto.randomBytes(3).toString('base64').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4).padEnd(4, 'X');
+    return `${digits}${letters}`.slice(0, CODE_ID_LENGTH);
 }
 
 function computeSignature(initialDeviceCode, codeId, secret = getLicenseSecret()) {
@@ -383,6 +420,21 @@ function createIssuedRecord(initialDeviceCode, activationCode, codeId, adminNote
     };
 }
 
+function makeDeviceClaimKey(deviceCode) {
+    const normalizedDeviceCode = normalizeDeviceCode(deviceCode);
+    return `${DEVICE_CLAIM_KEY_PREFIX}${normalizedDeviceCode}`;
+}
+
+function sanitizeDeviceClaimRecord(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    return {
+        deviceCode: normalizeDeviceCode(source.deviceCode),
+        activationCode: normalizeActivationCode(source.activationCode),
+        createdAt: sanitizeString(source.createdAt, 64),
+        updatedAt: sanitizeString(source.updatedAt, 64)
+    };
+}
+
 function coerceLicenseRecord(activationCode, record, now) {
     const source = record && typeof record === 'object' ? record : {};
     const initialDeviceCode = normalizeDeviceCode(
@@ -394,7 +446,9 @@ function coerceLicenseRecord(activationCode, record, now) {
     const claimedAt = sanitizeString(source.claimedAt, 64)
         || sanitizeString(source.firstVerifiedAt, 64)
         || sanitizeString(source.boundAt, 64);
-    const status = sanitizeString(source.status, 24) || (claimedAt || currentDeviceCode ? 'active' : 'issued');
+    const status = normalizeLicenseStatus(
+        sanitizeString(source.status, 24) || (claimedAt || currentDeviceCode ? 'active' : 'issued')
+    );
 
     return {
         activationCode: normalizeActivationCode(activationCode),
@@ -416,6 +470,412 @@ function coerceLicenseRecord(activationCode, record, now) {
         adminNote: sanitizeString(source.adminNote, 120),
         deviceProfile: sanitizeDeviceProfile(source.deviceProfile)
     };
+}
+
+function collectReservedDeviceCodes(record) {
+    const source = record && typeof record === 'object' ? record : {};
+    return Array.from(new Set([
+        normalizeDeviceCode(source.initialDeviceCode),
+        normalizeDeviceCode(source.currentDeviceCode),
+        normalizeDeviceCode(source.previousDeviceCode)
+    ].filter(deviceCode => deviceCode.length === 12)));
+}
+
+async function readDeviceClaim(deviceCode, store = getLicenseStore()) {
+    const normalizedDeviceCode = normalizeDeviceCode(deviceCode);
+    if (normalizedDeviceCode.length !== 12) return null;
+    const raw = await store.get(makeDeviceClaimKey(normalizedDeviceCode), { type: 'json' });
+    if (!raw) return null;
+    const claim = sanitizeDeviceClaimRecord(raw);
+    return claim.deviceCode === normalizedDeviceCode && claim.activationCode
+        ? claim
+        : null;
+}
+
+async function isDeviceClaimStale(claim, store = getLicenseStore()) {
+    const normalizedClaim = sanitizeDeviceClaimRecord(claim);
+    if (normalizedClaim.deviceCode.length !== 12 || !normalizedClaim.activationCode) return true;
+
+    const raw = await store.get(normalizedClaim.activationCode, { type: 'json' });
+    if (!raw) return true;
+
+    const record = coerceLicenseRecord(normalizedClaim.activationCode, raw, new Date().toISOString());
+    if (record.status === 'revoked') return true;
+    return !collectReservedDeviceCodes(record).includes(normalizedClaim.deviceCode);
+}
+
+async function claimDeviceCode(deviceCode, activationCode, store = getLicenseStore()) {
+    const normalizedDeviceCode = normalizeDeviceCode(deviceCode);
+    const normalizedActivationCode = normalizeActivationCode(activationCode);
+    if (normalizedDeviceCode.length !== 12 || !normalizedActivationCode) {
+        return {
+            ok: false,
+            reason: 'invalid'
+        };
+    }
+
+    const now = new Date().toISOString();
+    const key = makeDeviceClaimKey(normalizedDeviceCode);
+    const claim = sanitizeDeviceClaimRecord({
+        deviceCode: normalizedDeviceCode,
+        activationCode: normalizedActivationCode,
+        createdAt: now,
+        updatedAt: now
+    });
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        const writeResult = await store.setJSON(key, claim, {
+            onlyIfNew: true,
+            metadata: {
+                deviceCode: normalizedDeviceCode,
+                activationCode: normalizedActivationCode
+            }
+        });
+
+        if (!writeResult || writeResult.modified !== false) {
+            return {
+                ok: true,
+                claimed: true,
+                claim
+            };
+        }
+
+        const existingClaim = await readDeviceClaim(normalizedDeviceCode, store);
+        if (existingClaim && existingClaim.activationCode === normalizedActivationCode) {
+            return {
+                ok: true,
+                claimed: false,
+                claim: existingClaim
+            };
+        }
+
+        if (existingClaim && await isDeviceClaimStale(existingClaim, store)) {
+            await store.delete(key);
+            continue;
+        }
+
+        return {
+            ok: false,
+            reason: 'conflict',
+            claim: existingClaim
+        };
+    }
+
+    return {
+        ok: false,
+        reason: 'conflict',
+        claim: await readDeviceClaim(normalizedDeviceCode, store)
+    };
+}
+
+async function releaseDeviceCodeClaim(deviceCode, activationCode, store = getLicenseStore()) {
+    const normalizedDeviceCode = normalizeDeviceCode(deviceCode);
+    const normalizedActivationCode = normalizeActivationCode(activationCode);
+    if (normalizedDeviceCode.length !== 12 || !normalizedActivationCode) {
+        return {
+            ok: false,
+            reason: 'invalid'
+        };
+    }
+
+    const key = makeDeviceClaimKey(normalizedDeviceCode);
+    const existingClaim = await readDeviceClaim(normalizedDeviceCode, store);
+    if (!existingClaim) {
+        return {
+            ok: true,
+            released: false
+        };
+    }
+
+    if (existingClaim.activationCode !== normalizedActivationCode) {
+        if (await isDeviceClaimStale(existingClaim, store)) {
+            await store.delete(key);
+            return {
+                ok: true,
+                released: true
+            };
+        }
+
+        return {
+            ok: false,
+            reason: 'owned-by-other',
+            claim: existingClaim
+        };
+    }
+
+    await store.delete(key);
+    return {
+        ok: true,
+        released: true
+    };
+}
+
+async function listLicenseKeys(store = getLicenseStore()) {
+    if (typeof store.list !== 'function') return [];
+    const result = await store.list();
+    const blobs = Array.isArray(result && result.blobs) ? result.blobs : [];
+    return blobs
+        .map(entry => normalizeActivationCode(entry && entry.key))
+        .filter(isLicenseRecordKey);
+}
+
+async function findLicenseRecords(options = {}) {
+    const now = new Date().toISOString();
+    const store = options.store || getLicenseStore();
+    const activationCode = normalizeActivationCode(options.activationCode);
+    const deviceCode = normalizeDeviceCode(options.deviceCode);
+    const includeRevoked = Boolean(options.includeRevoked);
+    const limit = Math.max(1, Math.min(5000, Number(options.limit) || 50));
+
+    const keys = activationCode
+        ? [activationCode]
+        : await listLicenseKeys(store);
+
+    const records = [];
+    for (const key of keys) {
+        const raw = await store.get(key, { type: 'json' });
+        if (!raw) continue;
+        const record = coerceLicenseRecord(key, raw, now);
+        if (!includeRevoked && record.status === 'revoked') continue;
+        if (activationCode && record.activationCode !== activationCode) continue;
+        if (deviceCode) {
+            const matchesDevice = record.initialDeviceCode === deviceCode
+                || record.currentDeviceCode === deviceCode
+                || record.previousDeviceCode === deviceCode;
+            if (!matchesDevice) continue;
+        }
+        records.push(record);
+    }
+
+    return records
+        .sort((left, right) => {
+            const a = new Date(right.issuedAt || right.createdAt || 0).getTime();
+            const b = new Date(left.issuedAt || left.createdAt || 0).getTime();
+            return a - b;
+        })
+        .slice(0, limit);
+}
+
+async function findDeviceOwnershipConflicts(deviceCode, activationCode, store = getLicenseStore()) {
+    const normalizedDeviceCode = normalizeDeviceCode(deviceCode);
+    const normalizedActivationCode = normalizeActivationCode(activationCode);
+    if (normalizedDeviceCode.length !== 12) return [];
+
+    const records = await findLicenseRecords({
+        store,
+        deviceCode: normalizedDeviceCode,
+        includeRevoked: false,
+        limit: 200
+    });
+
+    return records.filter(record => record.activationCode !== normalizedActivationCode);
+}
+
+async function findRecordDeviceConflicts(record, store = getLicenseStore()) {
+    const normalizedActivationCode = normalizeActivationCode(record && record.activationCode);
+    const seen = new Set();
+    const conflicts = [];
+
+    for (const deviceCode of collectReservedDeviceCodes(record)) {
+        const matches = await findDeviceOwnershipConflicts(deviceCode, normalizedActivationCode, store);
+        for (const match of matches) {
+            if (seen.has(match.activationCode)) continue;
+            seen.add(match.activationCode);
+            conflicts.push(match);
+        }
+    }
+
+    return conflicts;
+}
+
+async function reserveRecordDeviceClaims(previousRecord, nextRecord, store = getLicenseStore()) {
+    const previousCodes = new Set(collectReservedDeviceCodes(previousRecord));
+    const claimedCodes = [];
+
+    for (const deviceCode of collectReservedDeviceCodes(nextRecord)) {
+        if (previousCodes.has(deviceCode)) continue;
+
+        const conflicts = await findDeviceOwnershipConflicts(deviceCode, nextRecord.activationCode, store);
+        if (conflicts.length > 0) {
+            await Promise.allSettled(
+                claimedCodes.map(code => releaseDeviceCodeClaim(code, nextRecord.activationCode, store))
+            );
+            return {
+                ok: false,
+                reason: 'duplicate-device',
+                deviceCode,
+                conflicts
+            };
+        }
+
+        const claimResult = await claimDeviceCode(deviceCode, nextRecord.activationCode, store);
+        if (!claimResult.ok) {
+            await Promise.allSettled(
+                claimedCodes.map(code => releaseDeviceCodeClaim(code, nextRecord.activationCode, store))
+            );
+            return {
+                ok: false,
+                reason: 'duplicate-device',
+                deviceCode,
+                conflicts: await findDeviceOwnershipConflicts(deviceCode, nextRecord.activationCode, store)
+            };
+        }
+
+        if (claimResult.claimed) claimedCodes.push(deviceCode);
+    }
+
+    return {
+        ok: true,
+        claimedCodes
+    };
+}
+
+async function releaseRemovedRecordDeviceClaims(previousRecord, nextRecord, store = getLicenseStore()) {
+    const nextCodes = new Set(collectReservedDeviceCodes(nextRecord));
+    const activationCode = normalizeActivationCode(
+        (previousRecord && previousRecord.activationCode)
+        || (nextRecord && nextRecord.activationCode)
+    );
+
+    await Promise.allSettled(
+        collectReservedDeviceCodes(previousRecord)
+            .filter(deviceCode => !nextCodes.has(deviceCode))
+            .map(deviceCode => releaseDeviceCodeClaim(deviceCode, activationCode, store))
+    );
+}
+
+async function releaseRecordDeviceClaims(record, store = getLicenseStore()) {
+    const activationCode = normalizeActivationCode(record && record.activationCode);
+    if (!activationCode) return;
+
+    await Promise.allSettled(
+        collectReservedDeviceCodes(record).map(deviceCode => releaseDeviceCodeClaim(deviceCode, activationCode, store))
+    );
+}
+
+async function findHistoricalDuplicateRecords(options = {}) {
+    const store = options.store || getLicenseStore();
+    const includeRevoked = options.includeRevoked !== false;
+    const maxGroups = Math.max(1, Math.min(200, Number(options.maxGroups) || 50));
+    const maxEntries = Math.max(1, Math.min(5000, Number(options.maxEntries) || 500));
+    const records = await findLicenseRecords({
+        store,
+        includeRevoked,
+        limit: maxEntries
+    });
+
+    const groups = new Map();
+    for (const record of records) {
+        const deviceCode = normalizeDeviceCode(record.initialDeviceCode);
+        if (deviceCode.length !== 12) continue;
+        const list = groups.get(deviceCode) || [];
+        list.push(record);
+        groups.set(deviceCode, list);
+    }
+
+    const duplicateGroups = Array.from(groups.entries())
+        .map(([deviceCode, entries]) => {
+            const sortedEntries = entries.slice().sort((left, right) => {
+                const leftTime = new Date(left.issuedAt || left.createdAt || 0).getTime();
+                const rightTime = new Date(right.issuedAt || right.createdAt || 0).getTime();
+                return rightTime - leftTime;
+            });
+
+            return {
+                deviceCode,
+                duplicateCount: sortedEntries.length,
+                activeCount: sortedEntries.filter(entry => entry.status !== 'revoked').length,
+                entries: sortedEntries
+            };
+        })
+        .filter(group => group.duplicateCount > 1)
+        .sort((left, right) => {
+            if (right.duplicateCount !== left.duplicateCount) return right.duplicateCount - left.duplicateCount;
+            const rightTime = new Date(right.entries[0] && (right.entries[0].issuedAt || right.entries[0].createdAt) || 0).getTime();
+            const leftTime = new Date(left.entries[0] && (left.entries[0].issuedAt || left.entries[0].createdAt) || 0).getTime();
+            return rightTime - leftTime;
+        })
+        .slice(0, maxGroups);
+
+    const entries = duplicateGroups.flatMap(group => group.entries.map(entry => ({
+        ...entry,
+        duplicateCount: group.duplicateCount,
+        duplicateGroupDeviceCode: group.deviceCode,
+        duplicateActiveCount: group.activeCount
+    })));
+
+    return {
+        groups: duplicateGroups,
+        entries,
+        totalGroups: duplicateGroups.length,
+        totalEntries: entries.length
+    };
+}
+
+async function issueUniqueActivationRecord(initialDeviceCode, adminNote = '', issuedAt = new Date().toISOString()) {
+    const store = getLicenseStore();
+    const normalizedDeviceCode = normalizeDeviceCode(initialDeviceCode);
+    const duplicateRecords = await findLicenseRecords({
+        store,
+        deviceCode: normalizedDeviceCode,
+        includeRevoked: false,
+        limit: 20
+    });
+
+    if (duplicateRecords.length > 0) {
+        return {
+            ok: false,
+            reason: 'duplicate-device',
+            record: duplicateRecords[0],
+            duplicates: duplicateRecords
+        };
+    }
+
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+        const codeId = makeCodeId();
+        const activationCode = buildActivationCode(normalizedDeviceCode, codeId);
+        const record = createIssuedRecord(normalizedDeviceCode, activationCode, codeId, adminNote, issuedAt);
+        const claimResult = await claimDeviceCode(normalizedDeviceCode, activationCode, store);
+
+        if (!claimResult.ok) {
+            const conflicts = await findDeviceOwnershipConflicts(normalizedDeviceCode, activationCode, store);
+            if (conflicts.length > 0) {
+                return {
+                    ok: false,
+                    reason: 'duplicate-device',
+                    record: conflicts[0],
+                    duplicates: conflicts
+                };
+            }
+            continue;
+        }
+
+        try {
+            const writeResult = await store.setJSON(activationCode, record, {
+                onlyIfNew: true,
+                metadata: {
+                    initialDeviceCode: record.initialDeviceCode,
+                    status: record.status,
+                    issuedAt: record.issuedAt
+                }
+            });
+
+            if (writeResult && writeResult.modified === false) {
+                await releaseDeviceCodeClaim(normalizedDeviceCode, activationCode, store).catch(() => undefined);
+                continue;
+            }
+
+            return {
+                ok: true,
+                record
+            };
+        } catch (error) {
+            await releaseDeviceCodeClaim(normalizedDeviceCode, activationCode, store).catch(() => undefined);
+            throw error;
+        }
+    }
+
+    throw new Error('Unable to generate a unique activation code.');
 }
 
 function hasStrictSignature(record) {
@@ -801,9 +1261,13 @@ module.exports = {
     createIssuedRecord,
     createAdminSessionToken,
     createSessionToken,
+    findLicenseRecords,
     findAdminAccountByEmail,
     findAdminAccountById,
+    findHistoricalDuplicateRecords,
+    findRecordDeviceConflicts,
     formatIssuerAuditEntriesAsCsv,
+    issueUniqueActivationRecord,
     getClientIp,
     getAdminKey,
     getFounderBootstrapEmail,
@@ -820,7 +1284,11 @@ module.exports = {
     normalizeAdminEmail,
     normalizeActivationCode,
     normalizeDeviceCode,
+    normalizeLicenseStatus,
     parseCookieHeader,
+    releaseRecordDeviceClaims,
+    releaseRemovedRecordDeviceClaims,
+    reserveRecordDeviceClaims,
     readAdminAccounts,
     readAuthenticatedAdminFromRequest,
     readAdminSessionToken,
