@@ -15,13 +15,24 @@
         passwordBusy: false,
         auditBusy: false,
         licenseBusy: false,
-        lastIssuedCode: ''
+        lastIssuedCode: '',
+        lastRenderedCode: '',
+        lastLicenseEntries: [],
+        lastLicenseLookupMode: '',
+        lastLicenseLookupDeviceCode: '',
+        lastLicenseLookupActivationCode: '',
+        activeModalCode: ''
     };
 
     let dom = null;
+    let resultCodeLookupTimer = 0;
 
     function normalizeDeviceCode(value) {
         return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+    }
+
+    function normalizeActivationCode(value) {
+        return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 64);
     }
 
     function normalizeEmail(value) {
@@ -74,13 +85,51 @@
             changePasswordButton: document.getElementById('issuer-change-password'),
             passwordFeedback: document.getElementById('issuer-password-feedback'),
             refreshAuditButton: document.getElementById('issuer-refresh-audit'),
+            historyCheckDuplicatesButton: document.getElementById('issuer-history-check-duplicates'),
+            historyFixDuplicatesButton: document.getElementById('issuer-history-fix-duplicates'),
             exportJsonButton: document.getElementById('issuer-export-json'),
             exportCsvButton: document.getElementById('issuer-export-csv'),
             auditFeedback: document.getElementById('issuer-audit-feedback'),
             auditEmpty: document.getElementById('issuer-audit-empty'),
-            auditList: document.getElementById('issuer-audit-list')
+            auditList: document.getElementById('issuer-audit-list'),
+            licenseModal: document.getElementById('issuer-license-modal'),
+            licenseModalCode: document.getElementById('issuer-license-modal-code'),
+            licenseModalDevice: document.getElementById('issuer-license-modal-device'),
+            licenseModalStatus: document.getElementById('issuer-license-modal-status'),
+            licenseModalIssuedAt: document.getElementById('issuer-license-modal-issued-at'),
+            licenseModalFeedback: document.getElementById('issuer-license-modal-feedback'),
+            licenseModalCloseButton: document.getElementById('issuer-license-modal-close'),
+            licenseModalRevokeButton: document.getElementById('issuer-license-modal-revoke')
         };
         return dom;
+    }
+
+    function clearResultCodeLookupTimer() {
+        if (!resultCodeLookupTimer) return;
+        window.clearTimeout(resultCodeLookupTimer);
+        resultCodeLookupTimer = 0;
+    }
+
+    function rememberLicenseLookup(mode, { deviceCode = '', activationCode = '' } = {}) {
+        state.lastLicenseLookupMode = String(mode || '');
+        state.lastLicenseLookupDeviceCode = normalizeDeviceCode(deviceCode);
+        state.lastLicenseLookupActivationCode = normalizeActivationCode(activationCode);
+    }
+
+    function syncLicenseControls() {
+        const refs = getDom();
+        const disabled = !state.authenticated || state.issueBusy || state.licenseBusy;
+        const activeEntry = state.activeModalCode ? getLicenseEntryByCode(state.activeModalCode) : null;
+        if (refs.resultCode) refs.resultCode.disabled = disabled;
+        if (refs.resultCheckDuplicatesButton) refs.resultCheckDuplicatesButton.disabled = disabled;
+        if (refs.resultFixDuplicatesButton) refs.resultFixDuplicatesButton.disabled = disabled;
+        if (refs.resultRevokeButton) refs.resultRevokeButton.disabled = disabled;
+        if (refs.checkDuplicatesButton) refs.checkDuplicatesButton.disabled = disabled;
+        if (refs.fixDuplicatesButton) refs.fixDuplicatesButton.disabled = disabled;
+        if (refs.revokeButton) refs.revokeButton.disabled = disabled;
+        if (refs.historyCheckDuplicatesButton) refs.historyCheckDuplicatesButton.disabled = disabled;
+        if (refs.historyFixDuplicatesButton) refs.historyFixDuplicatesButton.disabled = disabled;
+        if (refs.licenseModalRevokeButton) refs.licenseModalRevokeButton.disabled = disabled || !state.activeModalCode || Boolean(activeEntry && activeEntry.status === 'revoked');
     }
 
     function canManageAdmins() {
@@ -128,6 +177,7 @@
         if (refs.resultCheckDuplicatesButton) refs.resultCheckDuplicatesButton.disabled = state.issueBusy || !state.authenticated;
         if (refs.resultFixDuplicatesButton) refs.resultFixDuplicatesButton.disabled = state.issueBusy || !state.authenticated;
         if (refs.resultRevokeButton) refs.resultRevokeButton.disabled = state.issueBusy || !state.authenticated;
+        syncLicenseControls();
     }
 
     function setAdminBusy(busy) {
@@ -168,6 +218,7 @@
         if (refs.checkDuplicatesButton) refs.checkDuplicatesButton.disabled = state.licenseBusy || !state.authenticated;
         if (refs.fixDuplicatesButton) refs.fixDuplicatesButton.disabled = state.licenseBusy || !state.authenticated;
         if (refs.revokeButton) refs.revokeButton.disabled = state.licenseBusy || !state.authenticated;
+        syncLicenseControls();
     }
 
     function clearSensitiveForms() {
@@ -203,7 +254,11 @@
         if (refs.currentRole) refs.currentRole.textContent = state.account ? `角色：${state.account.role}` : '-';
 
         if (!state.authenticated) {
+            clearResultCodeLookupTimer();
             state.lastIssuedCode = '';
+            state.lastRenderedCode = '';
+            state.lastLicenseEntries = [];
+            rememberLicenseLookup('');
             if (refs.resultCode) refs.resultCode.value = '';
             if (refs.resultMeta) refs.resultMeta.innerHTML = '';
             if (refs.licenseList) refs.licenseList.innerHTML = '';
@@ -211,6 +266,7 @@
             if (refs.auditList) refs.auditList.innerHTML = '';
             if (refs.adminEmpty) refs.adminEmpty.hidden = false;
             if (refs.auditEmpty) refs.auditEmpty.hidden = false;
+            closeLicenseModal();
         }
 
         clearSensitiveForms();
@@ -287,15 +343,23 @@
         URL.revokeObjectURL(objectUrl);
     }
 
+    function formatDateTime(value) {
+        if (!value) return '-';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return String(value);
+        return parsed.toLocaleString();
+    }
+
     function renderResult(payload) {
         const refs = getDom();
-        state.lastIssuedCode = String(payload.activationCode || '');
+        state.lastIssuedCode = normalizeActivationCode(payload.activationCode);
+        state.lastRenderedCode = state.lastIssuedCode;
         if (refs.resultCode) refs.resultCode.value = state.lastIssuedCode;
         if (refs.resultMeta) {
             refs.resultMeta.innerHTML = [
                 payload.initialDeviceCode ? `<span class="issuer-chip">device ${payload.initialDeviceCode}</span>` : '',
                 payload.status ? `<span class="issuer-chip">status ${payload.status}</span>` : '',
-                payload.issuedAt ? `<span class="issuer-chip">${new Date(payload.issuedAt).toLocaleString()}</span>` : ''
+                payload.issuedAt ? `<span class="issuer-chip">${formatDateTime(payload.issuedAt)}</span>` : ''
             ].filter(Boolean).join('');
         }
     }
@@ -308,8 +372,8 @@
     function readActiveActivationCode() {
         const refs = getDom();
         return normalizeActivationCode(String(
-            state.lastIssuedCode
-            || (refs.resultCode && refs.resultCode.value)
+            (refs.resultCode && refs.resultCode.value)
+            || state.lastIssuedCode
             || ''
         ));
     }
@@ -317,7 +381,16 @@
     function renderLicenseEntries(entries) {
         const refs = getDom();
         if (!refs.licenseList) return;
-        const list = Array.isArray(entries) ? entries : [];
+        const list = Array.isArray(entries)
+            ? entries
+                .filter(Boolean)
+                .map(entry => ({
+                    ...entry,
+                    activationCode: normalizeActivationCode(entry.activationCode)
+                }))
+                .filter(entry => entry.activationCode)
+            : [];
+        state.lastLicenseEntries = list;
         refs.licenseList.innerHTML = '';
         list.forEach(entry => {
             const duplicateMeta = entry.duplicateCount > 1
@@ -325,10 +398,14 @@
                 : '';
             const item = document.createElement('li');
             item.className = 'issuer-item';
+            item.dataset.licenseItem = 'true';
+            item.dataset.licenseCode = entry.activationCode || '';
+            item.tabIndex = 0;
+            item.setAttribute('role', 'button');
             item.innerHTML = `
                 <strong class="issuer-item-code">${entry.activationCode || ''}</strong>
                 <span class="issuer-item-meta">设备码 ${entry.initialDeviceCode || '------------'} · 状态 ${entry.status || 'issued'}</span>
-                <span class="issuer-item-meta">${entry.issuedAt ? new Date(entry.issuedAt).toLocaleString() : '-'}</span>
+                <span class="issuer-item-meta">${formatDateTime(entry.issuedAt)}</span>
                 ${duplicateMeta}
                 <div class="issuer-item-actions">
                     <button class="issuer-button subtle" type="button" data-license-copy="${entry.activationCode || ''}">复制</button>
@@ -339,6 +416,73 @@
             `;
             refs.licenseList.appendChild(item);
         });
+        refreshLicenseModal();
+    }
+
+    function getLicenseEntryByCode(activationCode) {
+        const targetCode = normalizeActivationCode(activationCode);
+        if (!targetCode) return null;
+        return state.lastLicenseEntries.find(entry => normalizeActivationCode(entry.activationCode) === targetCode) || null;
+    }
+
+    function setLicenseModalFeedback(text, tone = '') {
+        const refs = getDom();
+        if (!refs.licenseModalFeedback) return;
+        refs.licenseModalFeedback.textContent = String(text || '');
+        if (tone) refs.licenseModalFeedback.dataset.tone = tone;
+        else delete refs.licenseModalFeedback.dataset.tone;
+    }
+
+    function updateLicenseModal(entry) {
+        const refs = getDom();
+        const record = entry || getLicenseEntryByCode(state.activeModalCode);
+        if (!refs.licenseModal || !record) {
+            closeLicenseModal();
+            return;
+        }
+
+        state.activeModalCode = normalizeActivationCode(record.activationCode);
+        if (refs.licenseModalCode) refs.licenseModalCode.textContent = record.activationCode || '-';
+        if (refs.licenseModalDevice) refs.licenseModalDevice.textContent = record.initialDeviceCode || '------------';
+        if (refs.licenseModalStatus) refs.licenseModalStatus.textContent = record.status || 'issued';
+        if (refs.licenseModalIssuedAt) refs.licenseModalIssuedAt.textContent = formatDateTime(record.issuedAt);
+        if (refs.licenseModalRevokeButton) refs.licenseModalRevokeButton.textContent = record.status === 'revoked' ? 'Already Revoked' : 'Revoke Record';
+        setLicenseModalFeedback(record.status === 'revoked' ? 'This activation record has already been revoked.' : '', record.status === 'revoked' ? 'muted' : '');
+        syncLicenseControls();
+    }
+
+    function openLicenseModal(entryOrCode) {
+        const refs = getDom();
+        if (!refs.licenseModal) return;
+        const record = typeof entryOrCode === 'string' ? getLicenseEntryByCode(entryOrCode) : entryOrCode;
+        if (!record) return;
+        refs.licenseModal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        updateLicenseModal(record);
+    }
+
+    function closeLicenseModal() {
+        const refs = getDom();
+        state.activeModalCode = '';
+        if (refs.licenseModal) refs.licenseModal.hidden = true;
+        if (refs.licenseModalCode) refs.licenseModalCode.textContent = '-';
+        if (refs.licenseModalDevice) refs.licenseModalDevice.textContent = '-';
+        if (refs.licenseModalStatus) refs.licenseModalStatus.textContent = '-';
+        if (refs.licenseModalIssuedAt) refs.licenseModalIssuedAt.textContent = '-';
+        if (refs.licenseModalRevokeButton) refs.licenseModalRevokeButton.textContent = 'Revoke Record';
+        document.body.style.overflow = '';
+        setLicenseModalFeedback('', '');
+        syncLicenseControls();
+    }
+
+    function refreshLicenseModal() {
+        if (!state.activeModalCode) return;
+        const record = getLicenseEntryByCode(state.activeModalCode);
+        if (!record) {
+            closeLicenseModal();
+            return;
+        }
+        updateLicenseModal(record);
     }
 
     function renderAccounts(accounts) {
@@ -869,6 +1013,306 @@
         if (note && refs.note && !refs.note.value) refs.note.value = note;
     }
 
+    async function runLicenseLookup(options = {}) {
+        if (!state.authenticated || state.licenseBusy) return false;
+        const refs = getDom();
+        const deviceCode = normalizeDeviceCode(options.deviceCode);
+        const activationCode = normalizeActivationCode(options.activationCode);
+        const useHistoryLookup = options.history === true;
+        const useActivationLookup = !useHistoryLookup && Boolean(activationCode);
+        const useDeviceLookup = !useHistoryLookup && !useActivationLookup && deviceCode.length === 12;
+
+        if (!useHistoryLookup && !useActivationLookup && !useDeviceLookup) {
+            setFeedback('license', 'Enter a device code or activation code first.', 'error');
+            return false;
+        }
+
+        if (useActivationLookup) {
+            state.lastIssuedCode = activationCode;
+            if (refs.resultCode) refs.resultCode.value = activationCode;
+            if (activationCode !== state.lastRenderedCode && refs.resultMeta) refs.resultMeta.innerHTML = '';
+        }
+
+        rememberLicenseLookup(useHistoryLookup ? 'history' : useActivationLookup ? 'activation' : 'device', {
+            deviceCode,
+            activationCode
+        });
+
+        setLicenseBusy(true);
+        if (!options.silentFeedback) {
+            setFeedback('license', useHistoryLookup ? 'Scanning duplicate history...' : 'Checking duplicate records...', 'muted');
+        }
+
+        try {
+            const query = useHistoryLookup
+                ? 'duplicates=true&includeRevoked=true&maxGroups=200&maxEntries=5000'
+                : useActivationLookup
+                    ? `activationCode=${encodeURIComponent(activationCode)}&expandDevice=true&includeRevoked=true&limit=20`
+                    : `deviceCode=${encodeURIComponent(deviceCode)}&includeRevoked=true&limit=20`;
+            const result = await requestJson(`${LICENSES_ENDPOINT}?${query}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', 'Administrator session expired. Please sign in again.', 'error');
+                }
+                if (useActivationLookup && result.response.status === 404) {
+                    renderLicenseEntries([]);
+                    state.lastRenderedCode = '';
+                    if (refs.resultMeta) refs.resultMeta.innerHTML = '';
+                    setFeedback('license', 'Activation code not found.', 'error');
+                    return false;
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : 'Duplicate lookup failed.', 'error');
+                return false;
+            }
+
+            const entries = Array.isArray(result.payload.entries) ? result.payload.entries : [];
+            renderLicenseEntries(entries);
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+
+            if (useActivationLookup) {
+                const selectedEntry = entries.find(entry => normalizeActivationCode(entry && entry.activationCode) === activationCode) || entries[0];
+                if (selectedEntry) {
+                    renderResult(selectedEntry);
+                } else {
+                    state.lastRenderedCode = '';
+                    if (refs.resultMeta) refs.resultMeta.innerHTML = '';
+                }
+            }
+
+            if (useHistoryLookup) {
+                if (!options.silentFeedback) {
+                    const totalGroups = Number(result.payload.totalGroups) || 0;
+                    const totalEntries = Number(result.payload.totalEntries) || 0;
+                    setFeedback(
+                        'license',
+                        totalGroups > 0
+                            ? `History scan found ${totalGroups} duplicate group(s) and ${totalEntries} related record(s).`
+                            : 'No duplicate history found.',
+                        totalGroups > 0 ? 'error' : 'success'
+                    );
+                }
+                return true;
+            }
+
+            if (!options.silentFeedback) {
+                const duplicateCount = Number.isFinite(Number(result.payload.duplicateCount))
+                    ? Number(result.payload.duplicateCount)
+                    : entries.length;
+                setFeedback('license', `Found ${duplicateCount} related record(s).`, duplicateCount > 1 ? 'error' : 'success');
+            }
+            return true;
+        } catch (error) {
+            setFeedback('license', useHistoryLookup ? 'History scan is unavailable right now.' : 'Duplicate lookup is unavailable right now.', 'error');
+            return false;
+        } finally {
+            setLicenseBusy(false);
+        }
+    }
+
+    async function rerunLastLicenseLookup(fallback = {}) {
+        if (state.lastLicenseLookupMode === 'history') {
+            return runLicenseLookup({ history: true, silentFeedback: true });
+        }
+        if (state.lastLicenseLookupMode === 'device' && state.lastLicenseLookupDeviceCode) {
+            return runLicenseLookup({
+                deviceCode: state.lastLicenseLookupDeviceCode,
+                silentFeedback: true
+            });
+        }
+
+        const activationCode = state.lastLicenseLookupActivationCode || normalizeActivationCode(fallback.activationCode);
+        if (activationCode) {
+            return runLicenseLookup({
+                activationCode,
+                silentFeedback: true
+            });
+        }
+        return false;
+    }
+
+    async function revokeLicenseCode(activationCode) {
+        if (!state.authenticated || state.licenseBusy) return false;
+        const targetCode = normalizeActivationCode(activationCode || readActiveActivationCode());
+        if (!targetCode) {
+            setFeedback('license', 'Enter an activation code first.', 'error');
+            return false;
+        }
+
+        let succeeded = false;
+        let shouldRefresh = false;
+        setLicenseBusy(true);
+        setFeedback('license', 'Revoking activation code...', 'muted');
+
+        try {
+            const result = await requestJson(LICENSES_ENDPOINT, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    activationCode: targetCode
+                })
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', 'Administrator session expired. Please sign in again.', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : 'Unable to revoke activation code.', 'error');
+                return false;
+            }
+
+            renderResult(result.payload.entry || { activationCode: targetCode, status: 'revoked' });
+            renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            setFeedback('license', 'Activation code revoked.', 'success');
+            shouldRefresh = Boolean(state.lastLicenseLookupMode);
+            succeeded = true;
+            await loadAudit();
+        } catch (error) {
+            setFeedback('license', 'Activation revoke is unavailable right now.', 'error');
+            return false;
+        } finally {
+            setLicenseBusy(false);
+        }
+
+        if (succeeded && shouldRefresh) {
+            await rerunLastLicenseLookup({ activationCode: targetCode });
+        }
+        return succeeded;
+    }
+
+    async function repairLicenseSelection(options = {}) {
+        if (!state.authenticated || state.licenseBusy) return false;
+        const refs = getDom();
+        let deviceCode = normalizeDeviceCode(options.deviceCode);
+        let activationCode = normalizeActivationCode(options.activationCode);
+
+        if (!deviceCode && !activationCode) {
+            activationCode = readActiveActivationCode();
+            if (!activationCode) deviceCode = readActiveDeviceCode();
+        }
+
+        if (deviceCode.length !== 12 && !activationCode) {
+            setFeedback('license', 'Enter a device code or activation code first.', 'error');
+            return false;
+        }
+
+        let succeeded = false;
+        let shouldRefresh = false;
+        let nextActivationCode = '';
+        setLicenseBusy(true);
+        setFeedback('license', 'Repairing duplicate records...', 'muted');
+
+        try {
+            const result = await requestJson(LICENSES_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'repair',
+                    deviceCode,
+                    activationCode
+                })
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', 'Administrator session expired. Please sign in again.', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : 'Unable to repair duplicate records.', 'error');
+                return false;
+            }
+
+            nextActivationCode = normalizeActivationCode(result.payload && result.payload.entry && result.payload.entry.activationCode);
+            renderResult(result.payload.entry || {});
+            renderLicenseEntries(result.payload.entry ? [result.payload.entry] : []);
+            if (result.payload.deviceCode && refs.deviceCode) refs.deviceCode.value = result.payload.deviceCode;
+            setFeedback('issue', 'Duplicate records repaired and a fresh activation code was issued.', 'success');
+            setFeedback('license', `Revoked ${result.payload.revokedCount || 0} old record(s) and issued 1 new activation code.`, 'success');
+            shouldRefresh = Boolean(state.lastLicenseLookupMode);
+            succeeded = true;
+            await loadAudit();
+        } catch (error) {
+            setFeedback('license', 'Duplicate repair is unavailable right now.', 'error');
+            return false;
+        } finally {
+            setLicenseBusy(false);
+        }
+
+        if (succeeded && shouldRefresh) {
+            await rerunLastLicenseLookup({ activationCode: nextActivationCode || activationCode });
+        }
+        return succeeded;
+    }
+
+    async function repairHistoricalDuplicates() {
+        if (!state.authenticated || state.licenseBusy) return false;
+        rememberLicenseLookup('history');
+
+        let succeeded = false;
+        setLicenseBusy(true);
+        setFeedback('license', 'Repairing historical duplicate groups...', 'muted');
+
+        try {
+            const result = await requestJson(LICENSES_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'repair-history',
+                    maxGroups: 200,
+                    maxEntries: 5000
+                })
+            });
+
+            if (!result.response.ok) {
+                if (result.response.status === 403) {
+                    applySessionState(null);
+                    setFeedback('session', 'Administrator session expired. Please sign in again.', 'error');
+                }
+                setFeedback('license', result.payload && result.payload.message ? result.payload.message : 'Unable to repair history duplicates.', 'error');
+                return false;
+            }
+
+            const repairedGroups = Number(result.payload.repairedGroups) || 0;
+            const revokedCount = Number(result.payload.revokedCount) || 0;
+            const skippedGroups = Number(result.payload.skippedGroups) || 0;
+            const failedGroups = Number(result.payload.failedGroups) || 0;
+            const summary = failedGroups > 0
+                ? `Repaired ${repairedGroups} group(s), skipped ${skippedGroups}, failed ${failedGroups}, revoked ${revokedCount} record(s).`
+                : repairedGroups > 0
+                    ? `Repaired ${repairedGroups} group(s) and revoked ${revokedCount} record(s).`
+                    : 'No repairable history duplicates were found.';
+            setFeedback('license', summary, failedGroups > 0 ? (repairedGroups > 0 ? 'success' : 'error') : repairedGroups > 0 ? 'success' : 'muted');
+            succeeded = true;
+            await loadAudit();
+        } catch (error) {
+            setFeedback('license', 'Historical duplicate repair is unavailable right now.', 'error');
+            return false;
+        } finally {
+            setLicenseBusy(false);
+        }
+
+        if (succeeded) {
+            await runLicenseLookup({ history: true, silentFeedback: true });
+        }
+        return succeeded;
+    }
+
     function bindEvents() {
         const refs = getDom();
         if (!refs.loginButton || refs.loginButton.dataset.bound === 'true') return;
@@ -899,37 +1343,45 @@
         refs.resultCheckDuplicatesButton && refs.resultCheckDuplicatesButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void lookupDuplicates();
+            void runLicenseLookup({
+                activationCode: readActiveActivationCode()
+            });
         });
 
         refs.resultFixDuplicatesButton && refs.resultFixDuplicatesButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void repairDuplicateLicenses();
+            void repairLicenseSelection({
+                activationCode: readActiveActivationCode()
+            });
         });
 
         refs.resultRevokeButton && refs.resultRevokeButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void revokeActivationCode();
+            void revokeLicenseCode();
         });
 
         refs.checkDuplicatesButton && refs.checkDuplicatesButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void lookupDuplicates();
+            void runLicenseLookup({
+                deviceCode: readActiveDeviceCode()
+            });
         });
 
         refs.fixDuplicatesButton && refs.fixDuplicatesButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void repairDuplicateLicenses();
+            void repairLicenseSelection({
+                deviceCode: readActiveDeviceCode()
+            });
         });
 
         refs.revokeButton && refs.revokeButton.addEventListener('click', event => {
             event.preventDefault();
             event.currentTarget.blur();
-            void revokeActivationCode();
+            void revokeLicenseCode();
         });
 
         refs.createAdminButton && refs.createAdminButton.addEventListener('click', event => {
@@ -945,6 +1397,18 @@
         refs.refreshAuditButton && refs.refreshAuditButton.addEventListener('click', event => {
             event.preventDefault();
             void loadAudit();
+        });
+
+        refs.historyCheckDuplicatesButton && refs.historyCheckDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void runLicenseLookup({ history: true });
+        });
+
+        refs.historyFixDuplicatesButton && refs.historyFixDuplicatesButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            void repairHistoricalDuplicates();
         });
 
         refs.exportJsonButton && refs.exportJsonButton.addEventListener('click', event => {
@@ -968,6 +1432,55 @@
             if (event.target.value !== nextValue) event.target.value = nextValue;
         });
 
+        refs.resultCode && refs.resultCode.addEventListener('input', event => {
+            const nextValue = normalizeActivationCode(event.target.value);
+            if (event.target.value !== nextValue) event.target.value = nextValue;
+            state.lastIssuedCode = nextValue;
+            if (nextValue !== state.lastRenderedCode) {
+                const refsNow = getDom();
+                if (refsNow.resultMeta) refsNow.resultMeta.innerHTML = '';
+            }
+
+            clearResultCodeLookupTimer();
+            if (!nextValue) {
+                state.lastRenderedCode = '';
+                rememberLicenseLookup('');
+                renderLicenseEntries([]);
+                closeLicenseModal();
+                setFeedback('license', '', '');
+                return;
+            }
+            if (!state.authenticated) return;
+
+            resultCodeLookupTimer = window.setTimeout(() => {
+                resultCodeLookupTimer = 0;
+                void runLicenseLookup({
+                    activationCode: nextValue
+                });
+            }, 420);
+        });
+
+        refs.resultCode && refs.resultCode.addEventListener('blur', () => {
+            if (!state.authenticated) return;
+            clearResultCodeLookupTimer();
+            const activationCode = readActiveActivationCode();
+            if (!activationCode) return;
+            void runLicenseLookup({
+                activationCode
+            });
+        });
+
+        refs.resultCode && refs.resultCode.addEventListener('keydown', event => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            clearResultCodeLookupTimer();
+            const activationCode = normalizeActivationCode(event.currentTarget.value);
+            if (!activationCode) return;
+            void runLicenseLookup({
+                activationCode
+            });
+        });
+
         document.querySelectorAll('.issuer-input, .issuer-output, .issuer-button').forEach(node => {
             ['click', 'mousedown', 'touchstart', 'focus'].forEach(type => {
                 node.addEventListener(type, event => {
@@ -976,15 +1489,38 @@
             });
         });
 
-        refs.licenseList && refs.licenseList.addEventListener('click', event => {
-            const button = event.target.closest('button');
-            if (!button) return;
+        refs.licenseModal && refs.licenseModal.addEventListener('click', event => {
+            if (event.target !== event.currentTarget) return;
+            closeLicenseModal();
+        });
+
+        refs.licenseModalCloseButton && refs.licenseModalCloseButton.addEventListener('click', event => {
             event.preventDefault();
-            button.blur();
-            const copyCode = button.getAttribute('data-license-copy');
-            const fillCode = button.getAttribute('data-license-fill');
-            const repairCode = button.getAttribute('data-license-repair');
-            const revokeCode = button.getAttribute('data-license-revoke');
+            closeLicenseModal();
+        });
+
+        refs.licenseModalRevokeButton && refs.licenseModalRevokeButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.currentTarget.blur();
+            if (!state.activeModalCode) return;
+            void revokeLicenseCode(state.activeModalCode);
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape' || !state.activeModalCode) return;
+            closeLicenseModal();
+        });
+
+        if (false) {
+            const button = event.target.closest('button');
+            if (button) {
+                event.preventDefault();
+                button.blur();
+                const copyCode = button.getAttribute('data-license-copy');
+                const fillCode = button.getAttribute('data-license-fill');
+                const repairCode = button.getAttribute('data-license-repair');
+                const revokeCode = button.getAttribute('data-license-revoke');
+            }
 
             if (copyCode) {
                 void copyText(copyCode).then(copied => {
@@ -1009,6 +1545,60 @@
             if (revokeCode) {
                 void revokeActivationCode(revokeCode);
             }
+        }
+        refs.licenseList && refs.licenseList.addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (button) {
+                event.preventDefault();
+                button.blur();
+                const copyCode = button.getAttribute('data-license-copy');
+                const fillCode = button.getAttribute('data-license-fill');
+                const repairCode = button.getAttribute('data-license-repair');
+                const revokeCode = button.getAttribute('data-license-revoke');
+
+                if (copyCode) {
+                    void copyText(copyCode).then(copied => {
+                        setFeedback('license', copied ? 'Activation code copied.' : 'Copy failed. Please copy it manually.', copied ? 'success' : 'error');
+                    });
+                    return;
+                }
+
+                if (fillCode) {
+                    const refsNow = getDom();
+                    const record = getLicenseEntryByCode(fillCode);
+                    state.lastIssuedCode = normalizeActivationCode(fillCode);
+                    if (refsNow.resultCode) refsNow.resultCode.value = state.lastIssuedCode;
+                    if (record) renderResult(record);
+                    else if (refsNow.resultMeta) refsNow.resultMeta.innerHTML = '';
+                    setFeedback('license', 'Activation code filled into the result box.', 'success');
+                    return;
+                }
+
+                if (repairCode) {
+                    void repairLicenseSelection({
+                        activationCode: repairCode
+                    });
+                    return;
+                }
+
+                if (revokeCode) {
+                    void revokeLicenseCode(revokeCode);
+                }
+                return;
+            }
+
+            const item = event.target.closest('[data-license-item="true"]');
+            if (!item) return;
+            event.preventDefault();
+            openLicenseModal(item.getAttribute('data-license-code'));
+        });
+
+        refs.licenseList && refs.licenseList.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            const item = event.target.closest('[data-license-item="true"]');
+            if (!item) return;
+            event.preventDefault();
+            openLicenseModal(item.getAttribute('data-license-code'));
         });
     }
 

@@ -285,11 +285,131 @@ exports.handler = async function handler(event) {
         const action = String(body.action || '').trim().toLowerCase();
         let deviceCode = normalizeDeviceCode(body.deviceCode);
         const activationCode = normalizeActivationCode(body.activationCode);
-        if (action !== 'repair') {
+        if (action !== 'repair' && action !== 'repair-history') {
             return jsonWithCookie(400, {
                 ok: false,
                 message: 'Unsupported action.'
             }, refreshedCookie);
+        }
+        if (action === 'repair-history') {
+            const maxGroups = Math.max(1, Math.min(200, Number(body.maxGroups) || 200));
+            const maxEntries = Math.max(1, Math.min(5000, Number(body.maxEntries) || 5000));
+
+            try {
+                const store = getLicenseStore();
+                const report = await findHistoricalDuplicateRecords({
+                    store,
+                    includeRevoked: true,
+                    maxGroups,
+                    maxEntries
+                });
+
+                const repairedEntries = [];
+                const skippedDeviceCodes = [];
+                const failedDeviceCodes = [];
+                let revokedCount = 0;
+
+                for (const group of report.groups) {
+                    if (!group || !group.deviceCode || group.activeCount <= 1) {
+                        if (group && group.deviceCode) skippedDeviceCodes.push(group.deviceCode);
+                        continue;
+                    }
+
+                    try {
+                        const activeEntries = Array.isArray(group.entries)
+                            ? group.entries.filter(entry => entry && entry.status !== 'revoked')
+                            : [];
+                        if (activeEntries.length <= 1) {
+                            skippedDeviceCodes.push(group.deviceCode);
+                            continue;
+                        }
+
+                        for (const entry of activeEntries) {
+                            const revokedAt = new Date().toISOString();
+                            await store.setJSON(entry.activationCode, {
+                                ...entry,
+                                status: 'revoked',
+                                previousDeviceCode: entry.currentDeviceCode || entry.previousDeviceCode,
+                                currentDeviceCode: '',
+                                lastSeenAt: revokedAt
+                            }, {
+                                metadata: {
+                                    initialDeviceCode: entry.initialDeviceCode,
+                                    status: 'revoked',
+                                    issuedAt: entry.issuedAt
+                                }
+                            });
+                            await releaseRecordDeviceClaims(entry, store);
+                            revokedCount += 1;
+                        }
+
+                        const noteSource = group.entries[0] && group.entries[0].adminNote
+                            ? group.entries[0].adminNote
+                            : 'history-duplicate-repair';
+                        const issued = await issueUniqueActivationRecord(group.deviceCode, `${noteSource} / repaired`);
+                        if (!issued.ok) {
+                            throw new Error(`Unable to reissue activation record for ${group.deviceCode}.`);
+                        }
+
+                        repairedEntries.push(serializeLicenseRecord(issued.record));
+                    } catch (error) {
+                        console.error('Historical duplicate repair failed for device:', group.deviceCode, error);
+                        failedDeviceCodes.push(group.deviceCode);
+                    }
+                }
+
+                const repairedGroups = repairedEntries.length;
+                const skippedGroups = skippedDeviceCodes.length;
+                const failedGroups = failedDeviceCodes.length;
+                const requestSucceeded = failedGroups === 0 || repairedGroups > 0;
+                const outcome = failedGroups > 0
+                    ? (repairedGroups > 0 ? 'partial' : 'error')
+                    : (repairedGroups > 0 ? 'success' : 'noop');
+
+                await appendIssuerAuditLog({
+                    type: 'repair-history-duplicates',
+                    outcome,
+                    authMode: 'session',
+                    actorId: auth.account.id,
+                    actorEmail: auth.account.email,
+                    actorRole: auth.account.role,
+                    note: `groups=${report.totalGroups}; repaired=${repairedGroups}; skipped=${skippedGroups}; failed=${failedGroups}; revoked=${revokedCount}`,
+                    origin,
+                    referer,
+                    ip,
+                    userAgent,
+                    message: repairedGroups > 0
+                        ? `Historical duplicate repair processed ${repairedGroups} group(s).`
+                        : 'No repairable historical duplicate records were found.'
+                }).catch(error => {
+                    console.warn('Issuer audit log append skipped during history repair:', error);
+                });
+
+                return jsonWithCookie(failedGroups > 0 && repairedGroups === 0 ? 500 : 200, {
+                    ok: requestSucceeded,
+                    partial: failedGroups > 0,
+                    repairedGroups,
+                    skippedGroups,
+                    failedGroups,
+                    revokedCount,
+                    totalGroups: report.totalGroups,
+                    totalEntries: report.totalEntries,
+                    repairedEntries,
+                    skippedDeviceCodes,
+                    failedDeviceCodes,
+                    message: failedGroups > 0
+                        ? 'Historical duplicate repair finished with some failures.'
+                        : repairedGroups > 0
+                            ? 'Historical duplicate records repaired.'
+                            : 'No repairable historical duplicate records were found.'
+                }, refreshedCookie);
+            } catch (error) {
+                console.error('Historical duplicate repair failed:', error);
+                return jsonWithCookie(500, {
+                    ok: false,
+                    message: 'Unable to repair historical duplicate activation records.'
+                }, refreshedCookie);
+            }
         }
         if (deviceCode.length !== 12 && !activationCode) {
             return jsonWithCookie(400, {

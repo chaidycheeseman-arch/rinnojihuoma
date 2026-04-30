@@ -278,6 +278,75 @@
             gap: 6px;
         }
 
+        .issuer-item[data-license-item="true"] {
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .issuer-item[data-license-item="true"]:hover,
+        .issuer-item[data-license-item="true"]:focus-visible {
+            outline: none;
+            transform: translateY(-1px);
+            border-color: rgba(108, 83, 70, 0.24);
+            box-shadow: 0 10px 28px rgba(57, 39, 29, 0.08);
+        }
+
+        .issuer-modal-backdrop[hidden] {
+            display: none;
+        }
+
+        .issuer-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: rgba(34, 24, 20, 0.42);
+            backdrop-filter: blur(12px);
+        }
+
+        .issuer-modal {
+            width: min(520px, 100%);
+            display: grid;
+            gap: 14px;
+            padding: 22px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .issuer-modal-head,
+        .issuer-modal-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .issuer-modal-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .issuer-modal-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .issuer-modal-field span {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--subtle);
+        }
+
+        .issuer-modal-code {
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: clamp(18px, 4vw, 24px);
+            letter-spacing: 0.08em;
+            word-break: break-all;
+        }
+
         @media (min-width: 920px) {
             .issuer-grid.two {
                 grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
@@ -349,7 +418,7 @@
                 <div class="issuer-chip-row" id="issuer-result-meta"></div>
                 <label class="issuer-label" for="issuer-result-code">
                     已签发激活码
-                    <input class="issuer-output" id="issuer-result-code" type="text" readonly placeholder="签发成功后会显示在这里">
+                    <input class="issuer-output" id="issuer-result-code" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="签发后显示，也可以粘贴新激活码自动查重">
                 </label>
                 <div class="issuer-actions">
                     <button class="issuer-button" id="issuer-copy" type="button">复制激活码</button>
@@ -459,6 +528,8 @@
                 <span class="issuer-card-kicker">Issue Audit</span>
                 <div class="issuer-actions">
                     <button class="issuer-button subtle" id="issuer-refresh-audit" type="button">刷新审计</button>
+                    <button class="issuer-button subtle" id="issuer-history-check-duplicates" type="button">历史一键查重</button>
+                    <button class="issuer-button subtle" id="issuer-history-fix-duplicates" type="button">历史一键修正</button>
                     <button class="issuer-button subtle" id="issuer-export-json" type="button">导出 JSON</button>
                     <button class="issuer-button subtle" id="issuer-export-csv" type="button">导出 CSV</button>
                 </div>
@@ -469,6 +540,35 @@
         </section>
     </main>
 
-    <script src="script.js?v=20260429-controlled-issuer-3"></script>
+    <div class="issuer-modal-backdrop" id="issuer-license-modal" hidden>
+        <section class="issuer-modal" role="dialog" aria-modal="true" aria-labelledby="issuer-license-modal-title">
+            <div class="issuer-modal-head">
+                <span class="issuer-card-kicker">License Record</span>
+                <h2 class="issuer-title" id="issuer-license-modal-title" style="font-size: clamp(22px, 5vw, 30px);">记录详情</h2>
+                <p class="issuer-modal-code" id="issuer-license-modal-code">-</p>
+            </div>
+            <div class="issuer-modal-grid">
+                <div class="issuer-modal-field">
+                    <span>Device</span>
+                    <strong id="issuer-license-modal-device">-</strong>
+                </div>
+                <div class="issuer-modal-field">
+                    <span>Status</span>
+                    <strong id="issuer-license-modal-status">-</strong>
+                </div>
+                <div class="issuer-modal-field" style="grid-column: 1 / -1;">
+                    <span>Issued At</span>
+                    <strong id="issuer-license-modal-issued-at">-</strong>
+                </div>
+            </div>
+            <p class="issuer-feedback" id="issuer-license-modal-feedback" aria-live="polite"></p>
+            <div class="issuer-actions">
+                <button class="issuer-button subtle" id="issuer-license-modal-close" type="button">关闭</button>
+                <button class="issuer-button subtle" id="issuer-license-modal-revoke" type="button">注销此记录</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js?v=20260430-controlled-issuer-5"></script>
 </body>
 </html>
