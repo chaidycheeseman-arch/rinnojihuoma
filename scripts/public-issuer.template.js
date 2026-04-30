@@ -1127,7 +1127,7 @@
             });
         }
 
-        const activationCode = state.lastLicenseLookupActivationCode || normalizeActivationCode(fallback.activationCode);
+        const activationCode = normalizeActivationCode(fallback.activationCode) || state.lastLicenseLookupActivationCode;
         if (activationCode) {
             return runLicenseLookup({
                 activationCode,
