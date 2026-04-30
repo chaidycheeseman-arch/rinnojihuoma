@@ -40,7 +40,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v20260428-app-refresh-1.png">
     <script src="vendor/dexie.js"></script>
     <script src="vendor/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260430-issuer-only-1">
+    <link rel="stylesheet" href="style.css?v=20260430-root-runtime-fix-1">
     <link rel="stylesheet" href="app/style/style.css?v=20260425-top-chrome-controls-1">
     <link rel="stylesheet" href="app/settings/settings.css?v=20260424-storage-manager-1">
     <link rel="stylesheet" href="app/prologue/prologue.css?v=20260423-click-cleanup-3">
@@ -488,10 +488,10 @@
             window.visualViewport?.addEventListener('scroll', syncViewportHeight, { passive: true });
         })();
     </script>
-    <script src="script.js?v=20260430-issuer-only-1"></script>
+    <script src="script.js?v=20260430-root-runtime-fix-1"></script>
     <script>
         (() => {
-            const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260430-issuer-only-1';
+            const LOCAL_SW_RESET_KEY = 'rinno-local-sw-reset-v20260430-root-runtime-fix-1';
 
             function isLocalDevelopmentHost() {
                 const host = String(window.location.hostname || '').trim().toLowerCase();
